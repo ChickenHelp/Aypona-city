@@ -236,6 +236,64 @@ a{color:var(--blue)}
 
 .reduce *,.reduce *::before,.reduce *::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}}
+
+/* ---------- v0.2 · Bureau 102 ---------- */
+.homezone.homebarzone{height:24px}
+.c-fichiers{background:linear-gradient(180deg,#5ac8fa,#0a84ff)}
+.c-installe{background:linear-gradient(180deg,#3a3a3c,#1c1c1e)}
+.dom{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:3px 9px;border-radius:999px;background:rgba(255,255,255,.08);white-space:nowrap}
+.dom i{width:8px;height:8px;border-radius:50%;flex:none}
+.dom-prive i{background:#ff6fae}.dom-service i{background:#5ef0ff}.dom-public i{background:#f4f6ff}
+.legend{display:flex;flex-wrap:wrap;gap:8px}
+
+/* Sélecteur d'apps */
+.sw-cards{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;padding:8px 2px 18px;scrollbar-width:none;min-height:0}
+.sw-cards::-webkit-scrollbar{display:none}
+.sw-card{flex:0 0 min(62%,240px);scroll-snap-align:center;display:grid;gap:10px;justify-items:center;text-align:center;padding:16px 12px 14px;border-radius:26px;background:var(--glass);border:.5px solid var(--line);backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);position:relative;aspect-ratio:9/14;align-content:center;touch-action:pan-x}
+.sw-card .icon{width:72px}
+.sw-card b{font-size:16px}
+.sw-card small{color:var(--ink-2);font-size:13px}
+.sw-x{position:absolute;top:10px;right:10px;width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.16);display:grid;place-items:center;font-size:18px;line-height:1}
+.sw-card.leaving{transition:transform .25s var(--ease),opacity .25s;transform:translateY(-40%);opacity:0}
+
+/* Hôte d'apps */
+.appframe{flex:1;display:flex;flex-direction:column;min-height:100%}
+.appframe iframe{flex:1;width:100%;min-height:calc(100vh - 120px);border:0;background:#fff;display:block}
+.appbar{display:flex;align-items:center;gap:10px;padding:8px max(14px,env(safe-area-inset-right,0px)) 8px max(14px,env(safe-area-inset-left,0px));background:#0d0d10;border-bottom:.5px solid var(--line);min-height:48px}
+.appbar .icon{width:30px;border-radius:8px}
+.appbar b{flex:1;min-width:0;font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.extcard{margin:auto;display:grid;gap:14px;justify-items:center;text-align:center;padding:28px 22px;max-width:320px}
+.extcard .icon{width:88px}
+.extcard h2{font-size:24px}
+.extcard p{color:var(--ink-2);font-size:14px}
+.linkbtn{display:inline-flex;align-items:center;gap:6px;padding:12px 20px;border-radius:14px;background:var(--blue);color:#fff;font-weight:600;text-decoration:none;min-height:44px}
+.ghostbtn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:10px 16px;border-radius:12px;background:rgba(255,255,255,.12);font-weight:600;min-height:44px}
+.bluebtn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:10px 16px;border-radius:12px;background:var(--blue);color:#fff;font-weight:600;min-height:44px}
+.bluebtn[disabled],.ghostbtn[disabled]{opacity:.4;cursor:default}
+.btnrow{display:flex;flex-wrap:wrap;gap:8px}
+#switcher .sheet-head h2{font-size:24px}
+
+/* Champs */
+.fld{display:grid;gap:6px;padding:12px 16px;border-radius:12px;background:#1c1c1e}
+.fld label{font-size:13px;color:var(--ink-2)}
+.fld input,.fld textarea{width:100%;min-width:0;background:#2c2c2e;border:.5px solid rgba(255,255,255,.1);border-radius:10px;color:#fff;font:15px/1.45 var(--ui);padding:10px 12px;outline:none;user-select:text;-webkit-user-select:text}
+.fld textarea{min-height:42vh;resize:vertical;font-family:var(--ui)}
+.fld textarea.code{min-height:180px;font:13px/1.5 var(--mono)}
+.fld input:focus,.fld textarea:focus{border-color:var(--blue)}
+.msgs{list-style:none;display:grid;gap:6px;font-size:13.5px}
+.msgs li{display:flex;gap:8px;align-items:flex-start;padding:8px 12px;border-radius:10px;background:rgba(255,69,58,.12);color:#ffb3ad}
+.msgs li.ok{background:rgba(48,209,88,.12);color:#9ff0b5}
+.row .rv .dom{font-weight:600}
+.storeapp{display:grid;grid-template-columns:auto 1fr auto;gap:2px 12px;align-items:center;padding:12px 16px;border-top:.5px solid rgba(84,84,88,.55)}
+.list > .storeapp:first-child{border-top:0}
+.storeapp .icon{width:46px;border-radius:11px;grid-row:span 2}
+.storeapp b{font-size:15px;min-width:0}
+.storeapp small{grid-column:2;color:var(--ink-2);font-size:13px;min-width:0}
+.storeapp .act{grid-column:3;grid-row:1 / span 2}
+.filemeta{font-size:12.5px;color:var(--ink-2)}
+.w-list ul{list-style:none;display:grid;gap:4px;font-size:12.5px;min-width:0}
+.w-list li{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.w-list .big-n{font-size:30px;font-weight:700;line-height:1}
 </style>
 </head>
 <body>
@@ -256,6 +314,7 @@ a{color:var(--blue)}
       <button class="searchpill" id="searchPill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m20 20-4.6-4.6"/></svg><span data-t="search">Rechercher</span></button>
       <div class="dots" id="dots"></div>
       <div class="dockwrap"><div class="dock" id="dock"></div></div>
+      <div class="homezone homebarzone" id="homeZone" role="button" tabindex="0" aria-label="Apps ouvertes"><span class="homebar"></span></div>
     </section>
     <button class="editbar" id="editDone" hidden data-t="done">OK</button>
 
@@ -293,6 +352,14 @@ a{color:var(--blue)}
       <div class="homezone" id="centerZone"><span class="homebar"></span></div>
     </section>
 
+    <!-- Sélecteur d'apps -->
+    <section class="sheet" id="switcher" hidden aria-label="Apps ouvertes">
+      <div class="sheet-in" style="grid-template-rows:auto 1fr;align-content:stretch">
+        <div class="sheet-head"><h2 data-t="switcher">Apps ouvertes</h2><div style="display:flex;gap:8px"><button class="pillbtn" id="swClear" data-t="closeAll">Tout fermer</button><button class="pillbtn" id="swClose" data-t="close">Fermer</button></div></div>
+        <div class="sw-cards" id="swCards"></div>
+      </div>
+    </section>
+
     <div class="dlg" id="dlg" hidden><div class="dlg-card" role="alertdialog" aria-labelledby="dlgT"><div class="txt"><b id="dlgT"></b><p id="dlgP"></p></div><div class="acts"><button id="dlgNo" data-t="cancel">Annuler</button><button id="dlgYes" class="red"></button></div></div></div>
     <div id="island" role="status" aria-live="polite"></div>
 
@@ -307,14 +374,14 @@ a{color:var(--blue)}
 
 <script>
 /* =====================================================================
-   AYPONA OS · NOYAU v0.1 (Bureau 102 · Polaris, AYP-102-2610-0013)
-   Reconstruit à partir de l'ancienne base (v0.6.0) sans serveur :
-   pas de comptes, pas de licences côté navigateur, pas de codes en clair.
-   API publique : window.Aypona (bus, storage, settings, i18n, notify, apps, tests).
+   AYPONA OS · NOYAU v0.2 (Bureau 102 · Polaris, AYP-102-2610-0013)
+   Décret n°2 du mandat IV : catalogue neuf, apps décrites par un manifeste, trois domiciles.
+   Sans serveur : pas de comptes, pas de licences côté navigateur, pas de codes en clair.
+   API publique : window.Aypona (bus, storage, settings, i18n, notify, apps, manifest, files, recents, host, layout, tests).
    ===================================================================== */
 (function(){
 'use strict';
-const VERSION='0.1.0', BUILD='2026-10-17', SCHEMA=1;
+const VERSION='0.2.0', BUILD='2026-10-18', SCHEMA=2;
 const $=s=>document.querySelector(s);
 const h=(tag,attrs,...kids)=>{ const e=document.createElement(tag); if(attrs) for(const k in attrs){ const v=attrs[k]; if(v==null||v===false) continue; if(k==='class') e.className=v; else if(k==='html') e.innerHTML=v; else if(k.startsWith('on')) e.addEventListener(k.slice(2),v); else e.setAttribute(k,v===true?'':v); }
   for(const k of kids.flat()) if(k!=null&&k!==false) e.append(k.nodeType?k:document.createTextNode(k)); return e; };
@@ -324,13 +391,13 @@ const handlers={}, journal=[];
 const bus={
   on(ev,fn){ (handlers[ev]=handlers[ev]||[]).push(fn); return ()=>{ handlers[ev]=handlers[ev].filter(f=>f!==fn); }; },
   emit(ev,data){ journal.unshift({ t:Date.now(), ev, data: data&&typeof data==='object'? JSON.stringify(data).slice(0,80) : (data==null?'':String(data)) }); journal.length=Math.min(journal.length,80);
-    (handlers[ev]||[]).slice().forEach(fn=>{ try{ fn(data); }catch(e){ console.error('[Aypona] '+ev,e); } }); (handlers['*']||[]).forEach(fn=>{ try{ fn(ev,data); }catch(e){} }); },
+    (handlers[ev]||[]).slice().forEach(fn=>{ try{ fn(data); }catch(e){ console.error('[Aypona] '+ev,e); } }); },
   journal:()=>journal.slice(),
 };
 
 /* ---------- Stockage (registre des clés, préfixe propre à l'OS) ---------- */
 const PREFIX='aypona-os:';
-const KEYS=Object.freeze({ schema:'schema', settings:'settings', layout:'layout', notifs:'notifs', installed:'installed', boots:'boots' });
+const KEYS=Object.freeze({ schema:'schema', settings:'settings', layout:'layout', notifs:'notifs', installed:'installed', boots:'boots', files:'files', recents:'recents', prive:'prive', tipsSeen:'tipsSeen' });
 const mem={}; let persistent=true;
 const storage={
   key:k=>PREFIX+(KEYS[k]||k),
@@ -341,29 +408,38 @@ const storage={
   wipe(){ try{ const ks=[]; for(let i=0;i<localStorage.length;i++){ const k=localStorage.key(i); if(k&&k.startsWith(PREFIX)) ks.push(k); } ks.forEach(k=>localStorage.removeItem(k)); }catch(e){} for(const k in mem) delete mem[k]; },
   get persistent(){ return persistent; },
 };
-const MIGRATIONS={ 1:()=>{ /* schéma initial : rien à convertir */ } };
+const MIGRATIONS={
+  1:()=>{ /* schéma initial */ },
+  2:()=>{ /* v0.2 : widgets, notifications par app, fichiers, apps récentes */
+    const s=storage.get('settings',{})||{}; if(!Array.isArray(s.widgets)) s.widgets=['horloge','systeme']; if(!s.notifApps||typeof s.notifApps!=='object') s.notifApps={}; storage.set('settings',s);
+    if(!Array.isArray(storage.get('files',null))) storage.set('files',[]);
+    if(!Array.isArray(storage.get('recents',null))) storage.set('recents',[]);
+    if(!storage.get('prive',null)) storage.set('prive',{}); },
+};
 function migrate(){ let v=storage.get('schema',0); const from=v; while(v<SCHEMA){ v++; if(MIGRATIONS[v]) MIGRATIONS[v](); } storage.set('schema',SCHEMA); return { from, to:SCHEMA }; }
 
 /* ---------- Langues ---------- */
 const DICT={
-  fr:{ search:'Rechercher', cancel:'Annuler', done:'OK', close:'Fermer', clear:'Effacer', notifs:'Notifications', unlock:'Glisser vers le haut pour déverrouiller', unlockTap:'Déverrouiller',
-    reglages:'Réglages', store:'App Store', moniteur:'Moniteur', astuces:'Astuces', today:'Aujourd’hui', system:'Système', noNotifs:'Aucune notification', noResults:'Aucun résultat',
-    apps:'Apps', noApps:'Aucune app installée', noAppsTxt:'Le catalogue d’Aypona OS est recréé de zéro. Les nouvelles apps arriveront par l’App Store.',
+  fr:{ search:'Rechercher', cancel:'Annuler', done:'OK', close:'Fermer', clear:'Effacer', notifs:'Notifications', unlock:'Glisser vers le haut pour déverrouiller',
+    reglages:'Réglages', store:'App Store', moniteur:'Moniteur', astuces:'Astuces', fichiers:'Fichiers', today:'Aujourd’hui', noNotifs:'Aucune notification', noResults:'Aucun résultat',
+    noApps:'Aucune app installée', noAppsTxt:'Le catalogue d’Aypona OS est recréé de zéro. Les nouvelles apps arrivent par l’App Store, chacune avec son manifeste.',
     wallpaper:'Fond d’écran', general:'Général', about:'À propos', language:'Langue', motion:'Réduire les animations', lockNow:'Verrouiller l’écran', reset:'Réinitialiser Aypona OS',
-    resetQ:'Réinitialiser Aypona OS ?', resetP:'Les réglages, la disposition de l’écran d’accueil et les notifications de ce navigateur seront effacés.', resetYes:'Réinitialiser',
+    resetQ:'Réinitialiser Aypona OS ?', resetP:'Les réglages, la disposition, les apps installées, les fichiers et les notifications de ce navigateur seront effacés.', resetYes:'Réinitialiser',
     version:'Version', build:'Build', storage:'Stockage local', saved:'enregistré', notSaved:'non enregistré (navigateur)', tests:'Tests du noyau', modules:'Modules du noyau', events:'Journal du système',
-    welcomeT:'Bienvenue dans Aypona OS', welcomeP:'Version 0.1 du nouveau système. Glisse vers le bas depuis le haut pour voir tes notifications.', rebootT:'Aypona OS a redémarré', rebootP:'Démarrage n°{n} sur ce navigateur.',
-    editHint:'Appui long sur une icône pour réorganiser', moved:'Disposition enregistrée', locked:'Écran verrouillé', resetDone:'Aypona OS réinitialisé', storeTitle:'L’App Store arrive',
-    storeP:'Le magasin est construit par le chantier B03. Le système est déjà prêt à recevoir les apps : chaque app installée prendra sa place sur l’écran d’accueil.', installed:'Apps installées', online:'En ligne', offline:'Hors ligne', city:'Retour à Aypona City', settingsSearch:'Réglage', appSearch:'App' },
-  en:{ search:'Search', cancel:'Cancel', done:'Done', close:'Close', clear:'Clear', notifs:'Notifications', unlock:'Swipe up to unlock', unlockTap:'Unlock',
-    reglages:'Settings', store:'App Store', moniteur:'Monitor', astuces:'Tips', today:'Today', system:'System', noNotifs:'No notifications', noResults:'No results',
-    apps:'Apps', noApps:'No apps installed', noAppsTxt:'The Aypona OS catalog is being rebuilt from scratch. New apps will arrive through the App Store.',
+    welcomeT:'Bienvenue dans Aypona OS', welcomeP:'Version 0.2 : les apps arrivent avec leur manifeste. Glisse vers le haut sur la barre du bas pour voir les apps ouvertes.', rebootT:'Aypona OS a redémarré', rebootP:'Démarrage n°{n} sur ce navigateur.', updT:'Aypona OS 0.2 est installé', updP:'Nouveautés : apps avec manifeste, sélecteur d’apps, Fichiers, widgets au choix.',
+    editHint:'Appui long sur une icône pour réorganiser', moved:'Disposition enregistrée', resetDone:'Aypona OS réinitialisé', installed:'Apps installées', online:'En ligne', offline:'Hors ligne',
+    city:'Retour à Aypona City', settingsSearch:'Réglage', appSearch:'App', fileSearch:'Fichier', switcher:'Apps ouvertes', noRecents:'Aucune app ouverte récemment', closeAll:'Tout fermer',
+    widgets:'Widgets', apps:'Apps', dev:'Développeur', install:'Installer', uninstall:'Désinstaller', open:'Ouvrir' },
+  en:{ search:'Search', cancel:'Cancel', done:'Done', close:'Close', clear:'Clear', notifs:'Notifications', unlock:'Swipe up to unlock',
+    reglages:'Settings', store:'App Store', moniteur:'Monitor', astuces:'Tips', fichiers:'Files', today:'Today', noNotifs:'No notifications', noResults:'No results',
+    noApps:'No apps installed', noAppsTxt:'The Aypona OS catalog is being rebuilt from scratch. New apps arrive through the App Store, each with its manifest.',
     wallpaper:'Wallpaper', general:'General', about:'About', language:'Language', motion:'Reduce motion', lockNow:'Lock screen', reset:'Reset Aypona OS',
-    resetQ:'Reset Aypona OS?', resetP:'Settings, home screen layout and notifications in this browser will be erased.', resetYes:'Reset',
+    resetQ:'Reset Aypona OS?', resetP:'Settings, layout, installed apps, files and notifications in this browser will be erased.', resetYes:'Reset',
     version:'Version', build:'Build', storage:'Local storage', saved:'saved', notSaved:'not saved (browser)', tests:'Kernel tests', modules:'Kernel modules', events:'System log',
-    welcomeT:'Welcome to Aypona OS', welcomeP:'Version 0.1 of the new system. Swipe down from the top to see your notifications.', rebootT:'Aypona OS restarted', rebootP:'Boot #{n} in this browser.',
-    editHint:'Long-press an icon to rearrange', moved:'Layout saved', locked:'Screen locked', resetDone:'Aypona OS reset', storeTitle:'The App Store is coming',
-    storeP:'The store is being built by site B03. The system is already able to receive apps: each installed app will take its place on the home screen.', installed:'Installed apps', online:'Online', offline:'Offline', city:'Back to Aypona City', settingsSearch:'Setting', appSearch:'App' },
+    welcomeT:'Welcome to Aypona OS', welcomeP:'Version 0.2: apps arrive with their manifest. Swipe up on the bottom bar to see open apps.', rebootT:'Aypona OS restarted', rebootP:'Boot #{n} in this browser.', updT:'Aypona OS 0.2 is installed', updP:'New: apps with a manifest, app switcher, Files, widgets of your choice.',
+    editHint:'Long-press an icon to rearrange', moved:'Layout saved', resetDone:'Aypona OS reset', installed:'Installed apps', online:'Online', offline:'Offline',
+    city:'Back to Aypona City', settingsSearch:'Setting', appSearch:'App', fileSearch:'File', switcher:'Open apps', noRecents:'No recently opened apps', closeAll:'Close all',
+    widgets:'Widgets', apps:'Apps', dev:'Developer', install:'Install', uninstall:'Uninstall', open:'Open' },
 };
 const i18n={
   lang:()=>settings.get('lang'),
@@ -373,20 +449,99 @@ const i18n={
 const t=i18n.t;
 
 /* ---------- Réglages ---------- */
-const DEFAULTS=Object.freeze({ wallpaper:'aube', lang:'fr', reduceMotion:false });
+const WIDGETS=['horloge','systeme','notifs','fichiers'];
+const DEFAULTS=Object.freeze({ wallpaper:'aube', lang:'fr', reduceMotion:false, widgets:['horloge','systeme'], notifApps:{} });
 let cfg={ ...DEFAULTS, ...(storage.get('settings',{})||{}) };
 const settings={
   get:k=>cfg[k],
-  set(k,v){ if(!(k in DEFAULTS)) return; cfg={ ...cfg, [k]:v }; storage.set('settings',cfg); bus.emit('settings:'+k,v); bus.emit('settings',{ [k]:v }); },
+  set(k,v){ if(!(k in DEFAULTS)) return false; if(k==='widgets'){ if(!Array.isArray(v)) return false; v=v.filter((w,i)=>WIDGETS.includes(w)&&v.indexOf(w)===i).slice(0,4); }
+    cfg={ ...cfg, [k]:v }; storage.set('settings',cfg); bus.emit('settings:'+k,v); bus.emit('settings',{ [k]:v }); return true; },
   all:()=>({ ...cfg }),
+};
+
+/* ---------- Manifeste d'app (décret n°2 du mandat IV) ----------
+   Contrat entre le système et l'App Store. Mêmes règles que le validateur du bureau 102 dans la ville.
+   { id, nom, studio, version, domicile:'prive'|'service'|'public', entree, icone:{couleur,glyphe}, permissions:[], description }
+   - privé : aucune adresse dans le manifeste (elle reste sur l'appareil) ;
+   - service : adresse https (Netlify ou autre) ;
+   - public : adresse https (GitHub Pages) ou chemin publié avec le système (apps/<id>/…html). */
+const STUDIOS=['Devea','Nativus','BroNet','8Pool','Neural Pro'];
+const DOMICILES={ prive:{ nom:'privé', css:'#ff6fae' }, service:{ nom:'service', css:'#5ef0ff' }, public:{ nom:'public', css:'#f4f6ff' } };
+const PERMISSIONS={ notifications:'Envoyer des notifications', fichiers:'Lire et écrire ses propres fichiers' };
+const RESERVED=['reglages','store','moniteur','astuces','fichiers','aypona','systeme'];
+const manifest={
+  validate(m){
+    const err=[], out={};
+    if(!m||typeof m!=='object'||Array.isArray(m)) return { ok:false, errors:['Le manifeste doit être un objet.'], manifeste:null };
+    const str=v=>typeof v==='string'? v.trim() : '';
+    out.id=str(m.id); if(!/^[a-z][a-z0-9-]{1,31}$/.test(out.id)) err.push('id : 2 à 32 caractères, minuscules, chiffres et tirets, en commençant par une lettre.'); else if(RESERVED.includes(out.id)) err.push('id : « '+out.id+' » est réservé au système.');
+    out.nom=str(m.nom); if(out.nom.length<2||out.nom.length>24||/[<>]/.test(out.nom)) err.push('nom : 2 à 24 caractères, sans < ni >.');
+    out.studio=str(m.studio); if(!STUDIOS.includes(out.studio)) err.push('studio : '+STUDIOS.join(', ')+'.');
+    out.version=str(m.version); if(!/^\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(out.version)) err.push('version : trois nombres, par exemple 1.0.0.');
+    out.domicile=str(m.domicile); if(!DOMICILES[out.domicile]) err.push('domicile : prive, service ou public.');
+    out.entree=str(m.entree);
+    if(out.domicile==='prive'){ if(out.entree) err.push('entree : une app privée ne publie pas son adresse, elle se règle sur l’appareil.'); }
+    else if(DOMICILES[out.domicile]){
+      const rel=/^apps\/[a-z0-9-]+\/[A-Za-z0-9._\/-]*\.html$/.test(out.entree)&&!out.entree.includes('..');
+      let https=false; try{ const u=new URL(out.entree); https=u.protocol==='https:'&&!u.username&&!u.password; }catch(e){}
+      if(!out.entree) err.push('entree : adresse obligatoire pour une app '+DOMICILES[out.domicile].nom+'.');
+      else if(out.domicile==='service'&&!https) err.push('entree : une app de service s’ouvre par une adresse https.');
+      else if(out.domicile==='public'&&!https&&!rel) err.push('entree : adresse https, ou chemin apps/'+(out.id||'<id>')+'/….html publié avec le système.');
+      else if(rel&&!out.entree.startsWith('apps/'+out.id+'/')) err.push('entree : le chemin doit commencer par apps/'+out.id+'/.');
+    }
+    const ic=m.icone&&typeof m.icone==='object'? m.icone : {};
+    out.icone={ couleur:/^#[0-9a-fA-F]{6}$/.test(ic.couleur||'')? ic.couleur : '#636366', glyphe:str(ic.glyphe).replace(/[<>&"']/g,'').slice(0,2) || (out.nom[0]||'?').toUpperCase() };
+    const perms=m.permissions==null? [] : m.permissions;
+    if(!Array.isArray(perms)) err.push('permissions : une liste.'); else { const bad=perms.filter(p=>!PERMISSIONS[p]); if(bad.length) err.push('permissions inconnues : '+bad.join(', ')+'.'); out.permissions=[...new Set(perms.filter(p=>PERMISSIONS[p]))]; }
+    if(!out.permissions) out.permissions=[];
+    out.description=str(m.description).replace(/[<>]/g,'').slice(0,140);
+    return { ok:!err.length, errors:err, manifeste:err.length? null : out };
+  },
+  exemple:()=>({ id:'exemple-notes', nom:'Notes', studio:'Nativus', version:'1.0.0', domicile:'public', entree:'https://exemple.github.io/notes/', icone:{ couleur:'#ffd60a', glyphe:'N' }, permissions:['fichiers'], description:'Exemple de manifeste : une app de notes publique.' }),
 };
 
 /* ---------- Notifications ---------- */
 const notify={
   list:()=>storage.get('notifs',[])||[],
-  add(n){ const list=notify.list(); const item={ id:'n'+Date.now().toString(36)+Math.random().toString(36).slice(2,6), t:Date.now(), app:n.app||'aypona', title:String(n.title||''), body:String(n.body||'') }; list.unshift(item); storage.set('notifs',list.slice(0,40)); bus.emit('notify',item); return item; },
+  allowed:app=>app==='aypona'||(settings.get('notifApps')||{})[app]!==false,
+  add(n){ const app=n.app||'aypona'; if(!notify.allowed(app)) return null;
+    const list=notify.list(); const item={ id:'n'+Date.now().toString(36)+Math.random().toString(36).slice(2,6), t:Date.now(), app, title:String(n.title||'').slice(0,60), body:String(n.body||'').slice(0,240) };
+    list.unshift(item); storage.set('notifs',list.slice(0,40)); bus.emit('notify',item); return item; },
   remove(id){ storage.set('notifs',notify.list().filter(n=>n.id!==id)); bus.emit('notify:remove',id); },
   clear(){ storage.set('notifs',[]); bus.emit('notify:clear'); },
+};
+
+/* ---------- Fichiers (stockage local, chaque app ne voit que les siens) ---------- */
+const FILE_MAX=200*1024, FILES_MAX=1024*1024;
+const files={
+  all:()=>storage.get('files',[])||[],
+  list(app){ return files.all().filter(f=>!app||f.app===app).sort((a,b)=>b.modifie-a.modifie); },
+  get(id,app){ const f=files.all().find(x=>x.id===id); return f&&(!app||f.app===app)? f : null; },
+  find(nom,app){ return files.all().find(x=>x.nom===nom&&x.app===app)||null; },
+  usage(){ return files.all().reduce((s,f)=>s+(f.contenu||'').length+(f.nom||'').length,0); },
+  save({ id, nom, contenu, app }){
+    nom=String(nom||'').trim().replace(/[\\/<>:"|?*]/g,'').slice(0,60); contenu=String(contenu==null?'':contenu); app=app||'fichiers';
+    if(!nom) return { ok:false, error:'Donne un nom au fichier.' };
+    if(contenu.length>FILE_MAX) return { ok:false, error:'Fichier trop gros : 200 Ko au maximum.' };
+    const all=files.all(), cur=id? all.find(f=>f.id===id&&f.app===app) : null;
+    if(id&&!cur) return { ok:false, error:'Fichier introuvable.' };
+    if(all.some(f=>f.nom===nom&&f.app===app&&f!==cur)) return { ok:false, error:'Un fichier porte déjà ce nom.' };
+    const size=files.usage()-(cur? (cur.contenu.length+cur.nom.length) : 0)+contenu.length+nom.length;
+    if(size>FILES_MAX) return { ok:false, error:'Espace plein : 1 Mo de fichiers au maximum dans ce navigateur.' };
+    const f=cur||{ id:'f'+Date.now().toString(36)+Math.random().toString(36).slice(2,6), cree:Date.now(), app };
+    Object.assign(f,{ nom, contenu, modifie:Date.now(), taille:new Blob([contenu]).size });
+    const next=cur? all.map(x=>x.id===f.id?f:x) : [f,...all]; storage.set('files',next); bus.emit('files',{ id:f.id }); return { ok:true, file:f };
+  },
+  remove(id,app){ const all=files.all(), f=all.find(x=>x.id===id&&(!app||x.app===app)); if(!f) return false; storage.set('files',all.filter(x=>x!==f)); bus.emit('files',{ removed:id }); return true; },
+};
+
+/* ---------- Apps récentes (sélecteur) ---------- */
+const RECENTS_MAX=6;
+const recents={
+  list:()=>(storage.get('recents',[])||[]).filter(r=>apps.get(r.id)),
+  touch(id){ const l=(storage.get('recents',[])||[]).filter(r=>r.id!==id); l.unshift({ id, t:Date.now() }); storage.set('recents',l.slice(0,RECENTS_MAX)); },
+  remove(id){ storage.set('recents',(storage.get('recents',[])||[]).filter(r=>r.id!==id)); },
+  clear(){ storage.set('recents',[]); },
 };
 
 /* ---------- Icônes ---------- */
@@ -395,34 +550,45 @@ const SVG={
   store:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.1" stroke-linecap="round"><path d="M9.2 4.5 4.6 12.5M14.8 4.5l7 12.1M2.5 16.5h12.5M16.5 12.5h5M5.6 20 4.4 18"/></svg>',
   moniteur:'<svg viewBox="0 0 24 24" fill="none" stroke="#30d158" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 12.5h4l2.5-6 4 11 2.6-7.5 1.4 2.5h4.5"/></svg>',
   astuces:'<svg viewBox="0 0 24 24" fill="#fff"><path d="M12 2.5a6.5 6.5 0 0 0-3.9 11.7c.6.5.9 1.1.9 1.8v.5h6v-.5c0-.7.3-1.3.9-1.8A6.5 6.5 0 0 0 12 2.5ZM9.5 18h5v1.2a1.8 1.8 0 0 1-1.8 1.8h-1.4a1.8 1.8 0 0 1-1.8-1.8V18Z"/></svg>',
+  fichiers:'<svg viewBox="0 0 24 24" fill="#fff"><path d="M3 6.5A2.5 2.5 0 0 1 5.5 4h4.2l2 2.2h6.8A2.5 2.5 0 0 1 21 8.7v8.8a2.5 2.5 0 0 1-2.5 2.5h-13A2.5 2.5 0 0 1 3 17.5v-11Z"/></svg>',
   aypona:'<svg viewBox="0 0 24 24" fill="#1a1206"><path d="M12 3 4 21h3.4l1.6-4h6l1.6 4H20L12 3Zm0 6.3 2 5.2h-4l2-5.2Z"/></svg>',
-  globe:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.7 2.5 15.3 0 18M12 3c-2.5 2.7-2.5 15.3 0 18"/></svg>',
   image:'<svg viewBox="0 0 24 24" fill="#fff"><path d="M5 4h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Zm0 13h14l-4.5-6-3.5 4.5-2.5-3L5 17Zm3.5-7a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z"/></svg>',
   motion:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="3.5"/><path d="M4 12a8 8 0 0 1 8-8M20 12a8 8 0 0 1-8 8"/></svg>',
   lock:'<svg viewBox="0 0 24 24" fill="#fff"><path d="M7 10V7.5a5 5 0 0 1 10 0V10h1a1.5 1.5 0 0 1 1.5 1.5v8A1.5 1.5 0 0 1 18 21H6a1.5 1.5 0 0 1-1.5-1.5v-8A1.5 1.5 0 0 1 6 10h1Zm2.2 0h5.6V7.5a2.8 2.8 0 0 0-5.6 0V10Z"/></svg>',
-  info:'<svg viewBox="0 0 24 24" fill="#fff"><path d="M12 2.5a9.5 9.5 0 1 0 0 19 9.5 9.5 0 0 0 0-19Zm1.2 14.5h-2.4v-6h2.4v6Zm-1.2-7.6a1.4 1.4 0 1 1 0-2.8 1.4 1.4 0 0 1 0 2.8Z"/></svg>',
+  widgets:'<svg viewBox="0 0 24 24" fill="#fff"><rect x="3" y="3" width="8" height="8" rx="2"/><rect x="13" y="3" width="8" height="8" rx="2"/><rect x="3" y="13" width="18" height="8" rx="2"/></svg>',
+  bell:'<svg viewBox="0 0 24 24" fill="#fff"><path d="M12 22a2.5 2.5 0 0 0 2.45-2h-4.9A2.5 2.5 0 0 0 12 22Zm7-6V11a7 7 0 0 0-5.5-6.84V3.5a1.5 1.5 0 0 0-3 0v.66A7 7 0 0 0 5 11v5l-2 2v1h18v-1l-2-2Z"/></svg>',
+  grid:'<svg viewBox="0 0 24 24" fill="#fff"><circle cx="6" cy="6" r="2.4"/><circle cx="12" cy="6" r="2.4"/><circle cx="18" cy="6" r="2.4"/><circle cx="6" cy="12" r="2.4"/><circle cx="12" cy="12" r="2.4"/><circle cx="18" cy="12" r="2.4"/><circle cx="6" cy="18" r="2.4"/><circle cx="12" cy="18" r="2.4"/><circle cx="18" cy="18" r="2.4"/></svg>',
+  code:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m8 7-5 5 5 5M16 7l5 5-5 5"/></svg>',
   chev:'<svg class="chev" viewBox="0 0 8 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m1 1 6 6-6 6"/></svg>',
   back:'<svg viewBox="0 0 12 20" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2 2 10l8 8"/></svg>',
 };
 
 /* ---------- Registre des apps ----------
-   Apps système livrées avec le noyau. Les apps du futur App Store s'installeront par Aypona.apps.install(manifeste)
-   et rejoindront l'écran d'accueil ; le système ne connaît pas le catalogue. */
+   Apps système livrées avec le noyau, plus les apps installées depuis l'App Store (manifeste validé). */
 const SYSTEM_APPS={
   reglages:{ id:'reglages', system:true, color:'c-reglages', icon:SVG.reglages, open:w=>Settings(w) },
   store:{ id:'store', system:true, color:'c-store', icon:SVG.store, open:w=>StoreApp(w) },
+  fichiers:{ id:'fichiers', system:true, color:'c-fichiers', icon:SVG.fichiers, open:w=>FilesApp(w) },
   moniteur:{ id:'moniteur', system:true, color:'c-moniteur', icon:SVG.moniteur, open:w=>Monitor(w) },
   astuces:{ id:'astuces', system:true, color:'c-astuces', icon:SVG.astuces, open:w=>Tips(w) },
 };
 const apps={
-  all(){ const out={ ...SYSTEM_APPS }; (storage.get('installed',[])||[]).forEach(m=>{ if(m&&m.id&&!out[m.id]) out[m.id]={ ...m, system:false }; }); return out; },
+  installed:()=>(storage.get('installed',[])||[]).filter(m=>manifest.validate(m).ok),
+  all(){ const out={ ...SYSTEM_APPS }; apps.installed().forEach(m=>{ if(!out[m.id]) out[m.id]={ ...m, system:false, manifeste:m }; }); return out; },
   get:id=>apps.all()[id],
-  label:a=>a.system? t(a.id) : (a.label||a.id),
-  install(m){ if(!m||!/^[a-z0-9-]{2,32}$/.test(m.id||'')||SYSTEM_APPS[m.id]) return false; const list=(storage.get('installed',[])||[]).filter(x=>x.id!==m.id); list.push({ id:m.id, label:String(m.label||m.id).slice(0,24), url:String(m.url||''), color:m.color||'c-gris' }); storage.set('installed',list); layout.add(m.id); bus.emit('apps:install',m.id); return true; },
+  label:a=>a.system? t(a.id) : (a.nom||a.id),
+  install(m,source){ const v=manifest.validate(m); if(!v.ok) return v;
+    const list=(storage.get('installed',[])||[]).filter(x=>x.id!==v.manifeste.id); list.push({ ...v.manifeste, source:source==='ville'?'ville':'local', installe:Date.now() });
+    storage.set('installed',list); layout.add(v.manifeste.id); bus.emit('apps:install',v.manifeste.id); return v; },
+  uninstall(id){ if(SYSTEM_APPS[id]) return false; storage.set('installed',(storage.get('installed',[])||[]).filter(x=>x.id!==id)); recents.remove(id);
+    const p=storage.get('prive',{})||{}; delete p[id]; storage.set('prive',p); const l=layout.get(); l.grid=l.grid.filter(x=>x!==id); l.dock=l.dock.filter(x=>x!==id); layout.set(l);
+    files.list(id).forEach(f=>files.remove(f.id,id)); bus.emit('apps:uninstall',id); return true; },
+  privateEntry:id=>(storage.get('prive',{})||{})[id]||'',
+  setPrivateEntry(id,url){ let ok=false; try{ const u=new URL(url); ok=/^https?:$/.test(u.protocol)&&!u.username&&!u.password; }catch(e){} if(!ok) return false; const p=storage.get('prive',{})||{}; p[id]=url; storage.set('prive',p); return true; },
 };
 
 /* ---------- Disposition de l'écran d'accueil ---------- */
-const DEFAULT_LAYOUT={ grid:['moniteur','astuces'], dock:['store','reglages'] };
+const DEFAULT_LAYOUT={ grid:['fichiers','moniteur','astuces'], dock:['store','reglages'] };
 const layout={
   get(){ const l=storage.get('layout',null); return l&&Array.isArray(l.grid)&&Array.isArray(l.dock)? l : { grid:DEFAULT_LAYOUT.grid.slice(), dock:DEFAULT_LAYOUT.dock.slice() }; },
   set(l){ storage.set('layout',l); bus.emit('layout',l); },
@@ -430,25 +596,85 @@ const layout={
   repair(){ const known=apps.all(), l=layout.get(), seen=new Set(), clean=a=>a.filter(id=>known[id]&&!seen.has(id)&&seen.add(id)); const out={ dock:clean(l.dock).slice(0,4), grid:[] }; out.grid=clean(l.grid); Object.keys(known).forEach(id=>{ if(!seen.has(id)){ seen.add(id); out.grid.push(id); } }); return out; },
 };
 
+/* ---------- Hôte d'apps : messages entre une app et le système ----------
+   Une app publiée avec le système (apps/<id>/…) tourne dans un cadre isolé (sandbox, origine opaque).
+   Elle parle au système par postMessage : { aypona:1, id, type, ... } ; la réponse porte re = id.
+   Types : hello ; notify {titre, texte} (permission notifications) ; fichiers.liste, fichiers.lire {nom}, fichiers.ecrire {nom, contenu}, fichiers.supprimer {nom} (permission fichiers).
+   Les messages ne sont acceptés que du cadre de l'app ouverte. */
+const host={
+  frame:null, app:null,
+  handle(app,msg){
+    if(!msg||msg.aypona!==1||typeof msg.type!=='string') return null;
+    const need=p=>{ if(!(app.permissions||[]).includes(p)) throw new Error('Permission « '+p+' » absente du manifeste.'); };
+    switch(msg.type){
+      case 'hello': return { version:VERSION, lang:i18n.lang(), app:app.id, permissions:app.permissions||[] };
+      case 'notify': need('notifications'); { const n=notify.add({ app:app.id, title:msg.titre||app.nom, body:msg.texte||'' }); if(!n) throw new Error('Notifications coupées pour cette app dans Réglages.'); return { id:n.id }; }
+      case 'fichiers.liste': need('fichiers'); return files.list(app.id).map(f=>({ nom:f.nom, taille:f.taille, modifie:f.modifie }));
+      case 'fichiers.lire': need('fichiers'); { const f=files.find(String(msg.nom||''),app.id); if(!f) throw new Error('Fichier introuvable.'); return { nom:f.nom, contenu:f.contenu }; }
+      case 'fichiers.ecrire': need('fichiers'); { const cur=files.find(String(msg.nom||'').trim(),app.id); const r=files.save({ id:cur&&cur.id, nom:msg.nom, contenu:msg.contenu, app:app.id }); if(!r.ok) throw new Error(r.error); return { nom:r.file.nom, taille:r.file.taille }; }
+      case 'fichiers.supprimer': need('fichiers'); { const f=files.find(String(msg.nom||''),app.id); if(!f) throw new Error('Fichier introuvable.'); files.remove(f.id,app.id); return { ok:true }; }
+      default: throw new Error('Type de message inconnu : '+msg.type);
+    }
+  },
+};
+addEventListener('message',e=>{
+  if(!host.frame||e.source!==host.frame.contentWindow||!host.app) return;
+  const msg=e.data; if(!msg||msg.aypona!==1) return;
+  let reply; try{ reply={ aypona:1, re:msg.id, ok:true, data:host.handle(host.app,msg) }; }catch(err){ reply={ aypona:1, re:msg.id, ok:false, error:err.message }; }
+  bus.emit('host:'+msg.type,host.app.id);
+  try{ e.source.postMessage(reply,'*'); }catch(err){}
+});
+
+/* ---------- Catalogue de la ville (lecture seule) ----------
+   L'App Store de la ville (bureau 102) publie les apps dans la collection apps : { manifeste, demande }.
+   Statut calculé comme dans la ville : publiée 12 h après la demande. Le système ne fait que lire. */
+const AUDIT_H=12;
+const city={ ok:false, apps:[], tried:false,
+  status:a=>Date.now()>=(a.demande||0)+AUDIT_H*36e5? 'publiée' : 'en audit',
+  async connect(){ city.tried=true; try{ if(!window.claude||typeof window.claude.use!=='function'){ bus.emit('city',false); return; }
+    const db=await window.claude.use('db'); if(!db){ bus.emit('city',false); return; }
+    db.collection('apps').onSnapshot(snap=>{ city.apps=snap.docs.map(d=>({ id:d.id, ...d.data() })).filter(a=>a&&a.manifeste); city.ok=true; bus.emit('city',true); },()=>{ bus.emit('city',false); });
+  }catch(e){ bus.emit('city',false); } },
+};
+
 /* ---------- Tests du noyau ---------- */
 function runTests(){
   const r=[]; const ok=(name,cond)=>r.push({ name, pass:!!cond });
-  try{ storage.set('__test',{ a:1 }); ok('Stockage : écriture et lecture', (storage.get('__test')||{}).a===1); storage.remove('__test'); ok('Stockage : suppression', storage.get('__test','x')==='x'); }catch(e){ ok('Stockage',false); }
-  let hit=0; const off=bus.on('__ping',d=>{ hit+=d; }); bus.emit('__ping',2); off(); bus.emit('__ping',5); ok('Bus : abonnement et désabonnement', hit===2);
-  ok('Réglages : valeurs par défaut', ['wallpaper','lang','reduceMotion'].every(k=>k in cfg));
-  ok('Langues : FR et EN complets', Object.keys(DICT.fr).every(k=>k in DICT.en));
-  ok('Langues : repli sur la clé', t('__inconnue')==='__inconnue');
-  const before=notify.list().length; const n=notify.add({ title:'test' }); ok('Notifications : ajout', notify.list().length===before+1); notify.remove(n.id); ok('Notifications : retrait', notify.list().length===before);
-  ok('Migrations : schéma à jour', storage.get('schema',0)===SCHEMA);
-  const l=layout.repair(), ids=[...l.grid,...l.dock]; ok('Accueil : chaque app placée une seule fois', ids.length===new Set(ids).size && Object.keys(apps.all()).every(id=>ids.includes(id)));
-  ok('Accueil : dock de 4 apps maximum', l.dock.length<=4);
-  ok('Apps : refus d’un identifiant invalide', apps.install({ id:'../x' })===false && apps.install({ id:'reglages' })===false);
-  ok('Sécurité : aucune licence ni code dans le navigateur', !('ACCOUNTS' in window) && !('APPS_CATALOG' in window));
+  const keep={ files:storage.get('files',[]), recents:storage.get('recents',[]), notifs:storage.get('notifs',[]) };
+  try{
+    storage.set('__test',{ a:1 }); ok('Stockage : écriture et lecture', (storage.get('__test')||{}).a===1); storage.remove('__test'); ok('Stockage : suppression', storage.get('__test','x')==='x');
+    let hit=0; const off=bus.on('__ping',d=>{ hit+=d; }); bus.emit('__ping',2); off(); bus.emit('__ping',5); ok('Bus : abonnement et désabonnement', hit===2);
+    ok('Réglages : valeurs par défaut', ['wallpaper','lang','reduceMotion','widgets','notifApps'].every(k=>k in cfg));
+    ok('Langues : FR et EN complets', Object.keys(DICT.fr).every(k=>k in DICT.en));
+    ok('Langues : repli sur la clé', t('__inconnue')==='__inconnue');
+    const before=notify.list().length; const n=notify.add({ title:'test' }); ok('Notifications : ajout', notify.list().length===before+1); notify.remove(n.id); ok('Notifications : retrait', notify.list().length===before);
+    ok('Migrations : schéma à jour', storage.get('schema',0)===SCHEMA);
+    const l=layout.repair(), ids=[...l.grid,...l.dock]; ok('Accueil : chaque app placée une seule fois', ids.length===new Set(ids).size && Object.keys(apps.all()).every(id=>ids.includes(id)));
+    ok('Accueil : dock de 4 apps maximum', l.dock.length<=4);
+    ok('Sécurité : aucune licence ni code dans le navigateur', !('ACCOUNTS' in window) && !('APPS_CATALOG' in window));
+    const ex=manifest.exemple();
+    ok('Manifeste : exemple accepté', manifest.validate(ex).ok);
+    ok('Manifeste : id invalide ou réservé refusé', !manifest.validate({ ...ex, id:'../x' }).ok && !manifest.validate({ ...ex, id:'reglages' }).ok);
+    ok('Manifeste : studio inconnu refusé', !manifest.validate({ ...ex, studio:'Inconnu' }).ok);
+    ok('Manifeste : adresse non https refusée', !manifest.validate({ ...ex, entree:'http://exemple.org' }).ok && !manifest.validate({ ...ex, entree:'javascript:alert(1)' }).ok && !manifest.validate({ ...ex, entree:'apps/autre/index.html' }).ok);
+    ok('Manifeste : app privée sans adresse publiée', !manifest.validate({ ...ex, domicile:'prive' }).ok && manifest.validate({ ...ex, domicile:'prive', entree:'' }).ok);
+    ok('Manifeste : permission inconnue refusée', !manifest.validate({ ...ex, permissions:['camera'] }).ok);
+    const w=files.save({ nom:'__test.txt', contenu:'abc', app:'__t1' }); const rd=w.ok&&files.get(w.file.id,'__t1'); ok('Fichiers : écriture, lecture, suppression', w.ok&&rd&&rd.contenu==='abc'&&files.remove(w.file.id,'__t1')&&!files.get(w.file.id));
+    const a1=files.save({ nom:'a.txt', contenu:'1', app:'__t1' }), a2=files.save({ nom:'b.txt', contenu:'2', app:'__t2' });
+    ok('Fichiers : une app ne voit que les siens', files.list('__t1').length===1 && !files.get(a2.file.id,'__t1')); files.remove(a1.file.id); files.remove(a2.file.id);
+    ok('Fichiers : refus au-delà de 200 Ko', !files.save({ nom:'gros.txt', contenu:'x'.repeat(FILE_MAX+1), app:'__t1' }).ok);
+    let refused=false; try{ host.handle({ id:'__t', nom:'T', permissions:[] },{ aypona:1, type:'notify', titre:'x' }); }catch(e){ refused=true; }
+    ok('Hôte : refus d’une demande sans permission', refused && host.handle({ id:'__t', nom:'T', permissions:[] },{ aypona:1, type:'hello' }).app==='__t');
+    storage.set('recents',[]); ['reglages','store','fichiers','moniteur','astuces','reglages','store','fichiers'].forEach(id=>recents.touch(id));
+    ok('Sélecteur : 6 apps récentes au maximum, sans doublon', (storage.get('recents',[])||[]).length<=RECENTS_MAX && new Set((storage.get('recents',[])||[]).map(x=>x.id)).size===(storage.get('recents',[])||[]).length);
+    const wkeep=cfg.widgets; settings.set('widgets',['horloge','pirate','horloge']); ok('Widgets : seuls les widgets connus, sans doublon', JSON.stringify(cfg.widgets)==='["horloge"]'); cfg={ ...cfg, widgets:wkeep }; storage.set('settings',cfg);
+  }catch(e){ console.error(e); ok('Tests : exécution sans exception', false); }
+  storage.set('files',keep.files); storage.set('recents',keep.recents); storage.set('notifs',keep.notifs);
   return r;
 }
 
 /* ---------- API publique ---------- */
-const Aypona=window.Aypona={ version:VERSION, build:BUILD, bus, storage, settings, i18n, notify, apps, layout, tests:null };
+const Aypona=window.Aypona={ version:VERSION, build:BUILD, bus, storage, settings, i18n, notify, apps, manifest, files, recents, host, city, layout, tests:null };
 
 /* =====================================================================
    INTERFACE
@@ -457,12 +683,14 @@ const device=$('#device'), wall=$('#wall');
 let tests=[], migration=null;
 
 function applySettings(){ wall.dataset.wp=settings.get('wallpaper'); device.classList.toggle('reduce',!!settings.get('reduceMotion')); i18n.apply(); }
-bus.on('settings',()=>{ applySettings(); renderHome(); renderLock(); });
+bus.on('settings',()=>{ applySettings(); if(!$('#home').hidden) renderHome(); renderLock(); });
 
 /* Horloge */
-const fmtTime=d=>d.toLocaleTimeString(i18n.lang()==='en'?'en-GB':'fr-FR',{ hour:'2-digit', minute:'2-digit' });
-const fmtDate=d=>d.toLocaleDateString(i18n.lang()==='en'?'en-GB':'fr-FR',{ weekday:'long', day:'numeric', month:'long' });
-const fmtAgo=ts=>{ const m=Math.round((Date.now()-ts)/6e4); if(m<1) return i18n.lang()==='en'?'now':'maintenant'; if(m<60) return m+' min'; const hh=Math.round(m/60); if(hh<24) return hh+' h'; return new Date(ts).toLocaleDateString(i18n.lang()==='en'?'en-GB':'fr-FR',{ day:'numeric', month:'short' }); };
+const loc=()=>i18n.lang()==='en'?'en-GB':'fr-FR';
+const fmtTime=d=>d.toLocaleTimeString(loc(),{ hour:'2-digit', minute:'2-digit' });
+const fmtDate=d=>d.toLocaleDateString(loc(),{ weekday:'long', day:'numeric', month:'long' });
+const fmtAgo=ts=>{ const m=Math.round((Date.now()-ts)/6e4); if(m<1) return i18n.lang()==='en'?'now':'maintenant'; if(m<60) return m+' min'; const hh=Math.round(m/60); if(hh<24) return hh+' h'; return new Date(ts).toLocaleDateString(loc(),{ day:'numeric', month:'short' }); };
+const fmtSize=n=>n<1024? n+' o' : (n/1024).toFixed(n<10240?1:0)+' Ko';
 function tick(){ const d=new Date(), tm=fmtTime(d);
   $('#sbTime').textContent=tm; $('#lkTime').textContent=tm; $('#lkDate').textContent=fmtDate(d);
   document.querySelectorAll('[data-clock]').forEach(e=>{ e.textContent=e.dataset.clock==='t'? tm : fmtDate(d); }); }
@@ -472,33 +700,45 @@ setInterval(tick,1000*15);
 function netState(){ const off=!navigator.onLine; ['#sbNet','#lkNet'].forEach(s=>$(s).classList.toggle('off',off)); }
 addEventListener('online',()=>{ netState(); bus.emit('net','online'); }); addEventListener('offline',()=>{ netState(); bus.emit('net','offline'); });
 
-/* Dynamic Island (messages courts) */
+/* Dynamic Island */
 let islandT=0;
-function island(msg){ const e=$('#island'); e.textContent=msg; e.classList.add('on'); clearTimeout(islandT); islandT=setTimeout(()=>e.classList.remove('on'),2200); }
+function island(msg){ const e=$('#island'); e.textContent=msg; e.classList.add('on'); clearTimeout(islandT); islandT=setTimeout(()=>e.classList.remove('on'),2400); }
 
-/* Dialogue de confirmation (dans la page) */
+/* Dialogue de confirmation */
 function confirmDlg(title,body,yes){ return new Promise(res=>{ const d=$('#dlg'); $('#dlgT').textContent=title; $('#dlgP').textContent=body; $('#dlgYes').textContent=yes; d.hidden=false; $('#dlgNo').focus();
   const done=v=>{ d.hidden=true; $('#dlgYes').onclick=$('#dlgNo').onclick=null; res(v); }; $('#dlgYes').onclick=()=>done(true); $('#dlgNo').onclick=()=>done(false); }); }
 
-/* ---------- Écran d'accueil ---------- */
-function iconEl(a,big){ return h('div',{ class:'icon '+(a.color||'c-gris'), html:a.icon||'<svg viewBox="0 0 24 24"><text x="12" y="16.5" text-anchor="middle" font-size="12" font-weight="700" fill="#fff">'+(apps.label(a)[0]||'?').replace(/[<>&"']/g,'')+'</text></svg>' }); }
+/* ---------- Icônes et tuiles ---------- */
+function iconEl(a){ if(a.system) return h('div',{ class:'icon '+a.color, html:a.icon });
+  const ic=a.icone||{ couleur:'#636366', glyphe:'?' };
+  const d=h('div',{ class:'icon', style:'background:linear-gradient(160deg,'+ic.couleur+','+ic.couleur+'cc)' }); d.append(h('span',{ style:'font-weight:700;font-size:min(26px,6.5vw);color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.35)' },ic.glyphe)); return d; }
+function domBadge(dom){ const d=DOMICILES[dom]; return d? h('span',{ class:'dom dom-'+dom },h('i'),d.nom) : null; }
 function appTile(id,where){ const a=apps.get(id); if(!a) return null;
   const b=h('button',{ class:'app', 'data-id':id, 'data-where':where, 'aria-label':apps.label(a) }, iconEl(a), h('span',{ class:'label' },apps.label(a)));
   if(id==='astuces' && !storage.get('tipsSeen',false)) b.querySelector('.icon').append(h('span',{ class:'badge' },'1'));
   return b; }
-function widgetClock(){ return h('div',{ class:'widget w-clock', role:'img', 'aria-label':'Horloge' }, h('small',{},t('today')), h('div',{},h('div',{ class:'t', 'data-clock':'t' },fmtTime(new Date())),h('div',{ class:'d', 'data-clock':'d' },fmtDate(new Date())))); }
-function widgetSys(){ const pass=tests.filter(x=>x.pass).length, all=tests.length;
-  return h('button',{ class:'widget w-sys', onclick:e=>openApp('moniteur',e.currentTarget) }, h('small',{},'Aypona OS'), h('div',{ class:'v' },'v'+VERSION),
-    h('ul',{}, h('li',{},h('i',{ class:'dot'+(pass===all?'':' bad') }),t('tests')+' '+pass+'/'+all),
-      h('li',{},h('i',{ class:'dot'+(storage.persistent?'':' warn') }),t('storage')+' : '+(storage.persistent?t('saved'):t('notSaved'))),
-      h('li',{},h('i',{ class:'dot'+(navigator.onLine?'':' warn') }),navigator.onLine?t('online'):t('offline')))); }
+
+/* Widgets */
+const WIDGET_RENDER={
+  horloge:()=>h('div',{ class:'widget w-clock', role:'img', 'aria-label':'Horloge' }, h('small',{},t('today')), h('div',{},h('div',{ class:'t', 'data-clock':'t' },fmtTime(new Date())),h('div',{ class:'d', 'data-clock':'d' },fmtDate(new Date())))),
+  systeme:()=>{ const pass=tests.filter(x=>x.pass).length, all=tests.length;
+    return h('button',{ class:'widget w-sys', onclick:e=>openApp('moniteur',e.currentTarget) }, h('small',{},'Aypona OS'), h('div',{ class:'v' },'v'+VERSION),
+      h('ul',{}, h('li',{},h('i',{ class:'dot'+(pass===all?'':' bad') }),t('tests')+' '+pass+'/'+all),
+        h('li',{},h('i',{ class:'dot'+(storage.persistent?'':' warn') }),t('storage')+' : '+(storage.persistent?t('saved'):t('notSaved'))),
+        h('li',{},h('i',{ class:'dot'+(navigator.onLine?'':' warn') }),navigator.onLine?t('online'):t('offline')))); },
+  notifs:()=>{ const l=notify.list(); return h('button',{ class:'widget w-list', onclick:openCenter }, h('small',{},t('notifs')), h('div',{ class:'big-n' },String(l.length)),
+      h('ul',{},l.slice(0,2).map(n=>h('li',{},n.title)))); },
+  fichiers:()=>{ const l=files.list(); return h('button',{ class:'widget w-list', onclick:e=>openApp('fichiers',e.currentTarget) }, h('small',{},t('fichiers')), h('div',{ class:'big-n' },String(l.length)),
+      h('ul',{},l.slice(0,3).map(f=>h('li',{},f.nom)))); },
+};
+
+/* ---------- Écran d'accueil ---------- */
 function renderHome(){
   const l=layout.repair(); if(JSON.stringify(l)!==JSON.stringify(layout.get())) storage.set('layout',l);
   const pages=$('#pages'), keep=pages.scrollLeft; pages.innerHTML='';
-  const g1=h('div',{ class:'grid' }, widgetClock(), widgetSys(), l.grid.map(id=>appTile(id,'grid')));
-  pages.append(h('div',{ class:'page' },g1));
-  const installed=l.grid.filter(id=>!SYSTEM_APPS[id]);
-  pages.append(h('div',{ class:'page' }, installed.length? h('div',{ class:'grid' }) : h('div',{ class:'empty' },h('b',{},t('noApps')),h('p',{},t('noAppsTxt')))));
+  const sys=l.grid.filter(id=>SYSTEM_APPS[id]), inst=l.grid.filter(id=>!SYSTEM_APPS[id]);
+  pages.append(h('div',{ class:'page' },h('div',{ class:'grid' }, (settings.get('widgets')||[]).map(w=>WIDGET_RENDER[w]&&WIDGET_RENDER[w]()), sys.map(id=>appTile(id,'grid')))));
+  pages.append(h('div',{ class:'page' }, inst.length? h('div',{ class:'grid' },inst.map(id=>appTile(id,'grid'))) : h('div',{ class:'empty' },h('b',{},t('noApps')),h('p',{},t('noAppsTxt')))));
   const dock=$('#dock'); dock.innerHTML=''; l.dock.forEach(id=>dock.append(appTile(id,'dock')));
   const dots=$('#dots'); dots.innerHTML=''; [...pages.children].forEach((_,k)=>dots.append(h('button',{ 'aria-label':'Page '+(k+1), onclick:()=>pages.scrollTo({ left:k*pages.clientWidth, behavior:'smooth' }) })));
   pages.scrollLeft=keep; syncDots(); renderBadge();
@@ -507,30 +747,68 @@ function syncDots(){ const p=$('#pages'), k=Math.round(p.scrollLeft/Math.max(1,p
 $('#pages').addEventListener('scroll',syncDots,{ passive:true });
 function renderBadge(){ const n=notify.list().length, c=$('#sbCount'); c.hidden=!n; c.textContent=n>9?'9+':n; }
 
-/* Ouverture d'app depuis son icône */
+/* ---------- Ouverture et fermeture d'une app ---------- */
 let current=null;
+function setOrigin(win,fromEl){ const dr=device.getBoundingClientRect(), r=(fromEl&&fromEl.isConnected? fromEl : device).getBoundingClientRect();
+  win.style.setProperty('--dx',((r.left+r.width/2)-(dr.left+dr.width/2))+'px'); win.style.setProperty('--dy',((r.top+r.height/2)-(dr.top+dr.height/2))+'px'); }
 function openApp(id,fromEl){
   const a=apps.get(id); if(!a||editing) return;
-  if(!a.system){ island(apps.label(a)); return; }
-  const win=$('#win'), body=$('#winBody'); body.innerHTML=''; body.scrollTop=0;
-  const dr=device.getBoundingClientRect(), r=(fromEl||device).getBoundingClientRect();
-  win.style.setProperty('--dx',((r.left+r.width/2)-(dr.left+dr.width/2))+'px'); win.style.setProperty('--dy',((r.top+r.height/2)-(dr.top+dr.height/2))+'px');
-  current={ id, from:fromEl }; a.open(body); win.hidden=false; win.classList.remove('closing'); win.classList.add('opening'); device.classList.add('dim');
-  bus.emit('app:open',id); setTimeout(()=>{ const f=body.querySelector('button,input,[tabindex]'); if(f) f.focus({ preventScroll:true }); },60);
+  closeSheets();
+  const win=$('#win'), body=$('#winBody'); body.innerHTML=''; body.scrollTop=0; host.frame=null; host.app=null;
+  setOrigin(win,fromEl); current={ id, from:fromEl };
+  if(a.system) a.open(body); else AppHost(body,a);
+  win.hidden=false; win.classList.remove('closing'); win.classList.add('opening'); device.classList.add('dim');
+  recents.touch(id); bus.emit('app:open',id); setTimeout(()=>{ const f=body.querySelector('button,input,a,[tabindex]'); if(f) f.focus({ preventScroll:true }); },60);
 }
-function closeApp(){ if(!current) return; const win=$('#win'), id=current.id, from=current.from;
-  if(from&&from.isConnected){ const dr=device.getBoundingClientRect(), r=from.getBoundingClientRect(); win.style.setProperty('--dx',((r.left+r.width/2)-(dr.left+dr.width/2))+'px'); win.style.setProperty('--dy',((r.top+r.height/2)-(dr.top+dr.height/2))+'px'); }
-  win.classList.remove('opening'); win.classList.add('closing'); device.classList.remove('dim'); current=null; bus.emit('app:close',id);
-  setTimeout(()=>{ win.hidden=true; win.classList.remove('closing'); renderHome(); },280); }
-$('#winZone').addEventListener('click',closeApp);
-$('#winZone').addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); closeApp(); } });
-swipeUp($('#winZone'),closeApp);
+function closeApp(then){ if(!current){ if(then) then(); return; } const win=$('#win'), id=current.id; setOrigin(win,current.from);
+  win.classList.remove('opening'); win.classList.add('closing'); device.classList.remove('dim'); current=null; host.frame=null; host.app=null; bus.emit('app:close',id);
+  setTimeout(()=>{ win.hidden=true; win.classList.remove('closing'); $('#winBody').innerHTML=''; renderHome(); if(then) then(); },280); }
 
-/* Geste : glisser vers le haut sur une zone */
-function swipeUp(el,fn){ let y0=null; el.addEventListener('pointerdown',e=>{ y0=e.clientY; el.setPointerCapture&&el.setPointerCapture(e.pointerId); });
-  el.addEventListener('pointerup',e=>{ if(y0!=null&&y0-e.clientY>40) fn(); y0=null; }); el.addEventListener('pointercancel',()=>{ y0=null; }); }
+/* Barre du bas : toucher = accueil, glisser vers le haut ou appui long = apps ouvertes */
+function homeBar(el,onTap,onLong){ let y0=null, timer=0, fired=false;
+  el.addEventListener('pointerdown',e=>{ y0=e.clientY; fired=false; clearTimeout(timer); timer=setTimeout(()=>{ fired=true; onLong(); },480); try{ el.setPointerCapture(e.pointerId); }catch(err){} });
+  el.addEventListener('pointermove',e=>{ if(y0!=null&&Math.abs(e.clientY-y0)>8) clearTimeout(timer); });
+  el.addEventListener('pointerup',e=>{ clearTimeout(timer); if(fired||y0==null){ y0=null; return; } const dy=y0-e.clientY; y0=null; if(dy>40) onLong(); else onTap(); });
+  el.addEventListener('pointercancel',()=>{ clearTimeout(timer); y0=null; });
+  el.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); onTap(); } }); }
+homeBar($('#winZone'),()=>closeApp(),()=>closeApp(openSwitcher));
+homeBar($('#homeZone'),openSwitcher,openSwitcher);
 
-/* Appui long, mode édition et glisser-déposer */
+/* ---------- Hôte d'app (apps installées) ---------- */
+function AppHost(body,a){
+  const bar=h('div',{ class:'appbar' }, iconEl(a), h('b',{},a.nom), domBadge(a.domicile));
+  const entree=a.domicile==='prive'? apps.privateEntry(a.id) : a.entree;
+  if(entree&&/^apps\//.test(entree)){
+    const fr=h('iframe',{ src:entree, title:a.nom, sandbox:'allow-scripts allow-forms allow-popups', referrerpolicy:'no-referrer' });
+    body.append(h('div',{ class:'appframe' },bar,fr)); host.frame=fr; host.app=a; return;
+  }
+  const card=h('div',{ class:'extcard' }, iconEl(a), h('h2',{},a.nom), domBadge(a.domicile),
+    h('p',{},a.description||(a.studio+' · version '+a.version)));
+  if(entree){ card.append(h('a',{ class:'linkbtn', href:entree, target:'_blank', rel:'noopener noreferrer' },t('open')+' '+a.nom+' ↗'),
+      h('p',{},a.domicile==='prive'? 'Adresse réglée sur cet appareil, jamais publiée.' : 'Cette app est hébergée '+(a.domicile==='service'?'sur un service':'publiquement')+' : elle s’ouvre dans un nouvel onglet.')); }
+  else { const inp=h('input',{ id:'privUrl', type:'url', placeholder:'https://… ou http://ordinateur.local/…', autocomplete:'off' });
+    card.append(h('p',{},'App privée : son adresse reste sur ton appareil. Indique où elle est installée (ordinateur ou cloud personnel).'),
+      h('div',{ class:'fld', style:'width:100%' },h('label',{ for:'privUrl' },'Adresse de l’app sur cet appareil'),inp),
+      h('button',{ class:'bluebtn', onclick:()=>{ if(apps.setPrivateEntry(a.id,inp.value.trim())){ island('Adresse enregistrée sur cet appareil'); body.innerHTML=''; AppHost(body,a); } else island('Adresse invalide : http ou https'); } },'Enregistrer l’adresse')); }
+  body.append(h('div',{ class:'appframe' },bar,card));
+}
+
+/* ---------- Sélecteur d'apps ---------- */
+function openSwitcher(){ closeSheets(); const s=$('#switcher'); s.hidden=false; s.classList.remove('enter'); void s.offsetWidth; s.classList.add('enter'); renderSwitcher(); bus.emit('switcher:open'); }
+function closeSwitcher(){ $('#switcher').hidden=true; }
+function renderSwitcher(){ const box=$('#swCards'), list=recents.list(); box.innerHTML='';
+  $('#swClear').hidden=!list.length;
+  if(!list.length){ box.append(h('p',{ class:'muted', style:'margin:auto' },t('noRecents'))); return; }
+  list.forEach(r=>{ const a=apps.get(r.id);
+    const card=h('div',{ class:'sw-card' },
+      h('button',{ class:'sw-x', 'aria-label':t('close')+' '+apps.label(a), onclick:e=>{ e.stopPropagation(); card.classList.add('leaving'); setTimeout(()=>{ recents.remove(r.id); renderSwitcher(); },220); } },'×'),
+      h('button',{ style:'display:grid;gap:10px;justify-items:center', onclick:()=>{ closeSwitcher(); openApp(r.id,null); } }, iconEl(a), h('b',{},apps.label(a)), h('small',{},fmtAgo(r.t))));
+    let y0=null; card.addEventListener('pointerdown',e=>{ y0=e.clientY; });
+    card.addEventListener('pointerup',e=>{ if(y0!=null&&y0-e.clientY>70){ card.classList.add('leaving'); setTimeout(()=>{ recents.remove(r.id); renderSwitcher(); },220); } y0=null; });
+    box.append(card); });
+}
+
+/* ---------- Mode édition et glisser-déposer ---------- */
 let editing=false, press=null, drag=null;
 function setEditing(on){ editing=on; $('#home').classList.toggle('editing',on); $('#editDone').hidden=!on; if(on) island(t('editHint')); bus.emit('home:edit',on); }
 $('#editDone').addEventListener('click',()=>setEditing(false));
@@ -548,7 +826,7 @@ homeEl.addEventListener('pointermove',e=>{
 });
 function endPress(e){ if(press){ clearTimeout(press.timer); const tile=press.tile; press=null; if(e.type==='pointerup') openApp(tile.dataset.id,tile.querySelector('.icon')); }
   if(drag){ const { tile, over, ghost }=drag; ghost.remove(); tile.classList.remove('lifted'); document.querySelectorAll('.app.drop').forEach(x=>x.classList.remove('drop')); drag=null;
-    if(over){ const l=layout.repair(), a={ id:tile.dataset.id, w:tile.dataset.where }, b={ id:over.dataset.id, w:over.dataset.where }; const ia=l[a.w].indexOf(a.id), ib=l[b.w].indexOf(b.id); l[a.w][ia]=b.id; l[b.w][ib]=a.id; layout.set(l); renderHome(); island(t('moved')); } } }
+    if(over){ const l=layout.repair(), a={ id:tile.dataset.id, w:tile.dataset.where }, b={ id:over.dataset.id, w:over.dataset.where }; const ia=l[a.w].indexOf(a.id), ib=l[b.w].indexOf(b.id); if(ia>=0&&ib>=0){ l[a.w][ia]=b.id; l[b.w][ib]=a.id; layout.set(l); renderHome(); island(t('moved')); } } } }
 homeEl.addEventListener('pointerup',endPress); homeEl.addEventListener('pointercancel',endPress);
 function startDrag(tile,e){ const dr=device.getBoundingClientRect(); const ghost=tile.querySelector('.icon').cloneNode(true); ghost.classList.add('drag-ghost'); ghost.style.left=(e.clientX-dr.left)+'px'; ghost.style.top=(e.clientY-dr.top)+'px'; device.append(ghost); tile.classList.add('lifted'); drag={ tile, ghost, over:null }; }
 homeEl.addEventListener('contextmenu',e=>e.preventDefault());
@@ -558,15 +836,17 @@ homeEl.addEventListener('keydown',e=>{ const tile=e.target.closest&&e.target.clo
 (function pullDown(){ let s=null; homeEl.addEventListener('touchstart',e=>{ if(editing||e.touches.length!==1) return; const r=device.getBoundingClientRect(), y=e.touches[0].clientY-r.top; s={ y0:e.touches[0].clientY, x0:e.touches[0].clientX, top:y<64 }; },{ passive:true });
   homeEl.addEventListener('touchend',e=>{ if(!s) return; const tch=e.changedTouches[0], dy=tch.clientY-s.y0, dx=Math.abs(tch.clientX-s.x0); if(dy>70&&dx<50){ s.top? openCenter() : openSpot(); } s=null; },{ passive:true }); })();
 
+function closeSheets(){ ['#spot','#center','#switcher'].forEach(s=>{ $(s).hidden=true; }); }
+
 /* ---------- Spotlight ---------- */
-function openSpot(){ const s=$('#spot'); s.hidden=false; s.classList.remove('enter'); void s.offsetWidth; s.classList.add('enter'); $('#spotInput').value=''; renderSpot(''); setTimeout(()=>$('#spotInput').focus(),30); bus.emit('spotlight:open'); }
+function openSpot(){ closeSheets(); const s=$('#spot'); s.hidden=false; s.classList.remove('enter'); void s.offsetWidth; s.classList.add('enter'); $('#spotInput').value=''; renderSpot(''); setTimeout(()=>$('#spotInput').focus(),30); bus.emit('spotlight:open'); }
 function closeSpot(){ $('#spot').hidden=true; }
-const SETTING_ENTRIES=()=>[ { k:'wallpaper', go:'wallpaper' }, { k:'language', go:'general' }, { k:'motion', go:'general' }, { k:'lockNow', go:'root' }, { k:'about', go:'about' }, { k:'reset', go:'general' } ];
+const SETTING_ENTRIES=()=>[ { k:'wallpaper', go:'wallpaper' }, { k:'widgets', go:'widgets' }, { k:'notifs', go:'notifs' }, { k:'apps', go:'apps' }, { k:'language', go:'general' }, { k:'motion', go:'general' }, { k:'lockNow', go:'root' }, { k:'about', go:'about' }, { k:'dev', go:'dev' }, { k:'reset', go:'general' } ];
 function hl(text,q){ if(!q) return text; const i=text.toLowerCase().indexOf(q.toLowerCase()); if(i<0) return text; return h('span',{},text.slice(0,i),h('mark',{},text.slice(i,i+q.length)),text.slice(i+q.length)); }
-function renderSpot(q){ const box=$('#spotRes'); box.innerHTML=''; q=q.trim();
-  const all=apps.all(), list=Object.values(all).filter(a=>!q||apps.label(a).toLowerCase().includes(q.toLowerCase()));
-  list.forEach(a=>box.append(h('button',{ class:'res', onclick:e=>{ closeSpot(); openApp(a.id); } }, iconEl(a), h('div',{},h('div',{},hl(apps.label(a),q)),h('small',{},t('appSearch'))))));
-  if(q){ SETTING_ENTRIES().filter(s=>t(s.k).toLowerCase().includes(q.toLowerCase())).forEach(s=>box.append(h('button',{ class:'res', onclick:()=>{ closeSpot(); openApp('reglages'); settingsGo(s.go); } }, iconEl(SYSTEM_APPS.reglages), h('div',{},h('div',{},hl(t(s.k),q)),h('small',{},t('settingsSearch')+' · '+t('reglages')))))); }
+function renderSpot(q){ const box=$('#spotRes'); box.innerHTML=''; q=q.trim(); const ql=q.toLowerCase();
+  Object.values(apps.all()).filter(a=>!q||apps.label(a).toLowerCase().includes(ql)).forEach(a=>box.append(h('button',{ class:'res', onclick:()=>{ closeSpot(); openApp(a.id); } }, iconEl(a), h('div',{},h('div',{},hl(apps.label(a),q)),h('small',{},t('appSearch')+(a.system?'':' · '+(DOMICILES[a.domicile]||{}).nom))))));
+  if(q){ SETTING_ENTRIES().filter(s=>t(s.k).toLowerCase().includes(ql)).forEach(s=>box.append(h('button',{ class:'res', onclick:()=>{ closeSpot(); openApp('reglages'); settingsGo(s.go); } }, iconEl(SYSTEM_APPS.reglages), h('div',{},h('div',{},hl(t(s.k),q)),h('small',{},t('settingsSearch')+' · '+t('reglages'))))));
+    files.list('fichiers').filter(f=>f.nom.toLowerCase().includes(ql)).slice(0,5).forEach(f=>box.append(h('button',{ class:'res', onclick:()=>{ closeSpot(); openApp('fichiers'); filesGo(f.id); } }, iconEl(SYSTEM_APPS.fichiers), h('div',{},h('div',{},hl(f.nom,q)),h('small',{},t('fileSearch')+' · '+fmtSize(f.taille||0)))))); }
   if(!box.children.length) box.append(h('p',{ class:'muted' },t('noResults')));
 }
 $('#spotInput').addEventListener('input',e=>renderSpot(e.target.value));
@@ -574,31 +854,34 @@ $('#spotInput').addEventListener('keydown',e=>{ if(e.key==='Enter'){ const f=$('
 $('#spotClose').addEventListener('click',closeSpot); $('#searchPill').addEventListener('click',openSpot);
 
 /* ---------- Centre de notifications ---------- */
-function noteCard(n){ const a=apps.get(n.app)||{ color:'c-aypona', icon:SVG.aypona };
-  return h('div',{ class:'note' }, h('div',{ class:'ic '+(n.app==='aypona'?'c-aypona':a.color), html:n.app==='aypona'?SVG.aypona:a.icon }), h('b',{},n.title), h('time',{},fmtAgo(n.t)), h('p',{},n.body)); }
-function openCenter(){ const c=$('#center'); c.hidden=false; c.classList.remove('enter'); void c.offsetWidth; c.classList.add('enter'); renderCenter(); bus.emit('center:open'); }
+function noteCard(n){ const a=apps.get(n.app);
+  const ic= n.app==='aypona'||!a ? h('div',{ class:'ic c-aypona', html:SVG.aypona }) : (a.system? h('div',{ class:'ic '+a.color, html:a.icon }) : h('div',{ class:'ic', style:'background:'+(a.icone||{}).couleur+';font-weight:700' },(a.icone||{}).glyphe||'?'));
+  return h('div',{ class:'note' }, ic, h('b',{},n.title), h('time',{},fmtAgo(n.t)), h('p',{},n.body)); }
+function openCenter(){ closeSheets(); const c=$('#center'); c.hidden=false; c.classList.remove('enter'); void c.offsetWidth; c.classList.add('enter'); renderCenter(); bus.emit('center:open'); }
 function closeCenter(){ $('#center').hidden=true; }
 function renderCenter(){ const box=$('#centerList'), list=notify.list(); box.innerHTML=''; if(!list.length) box.append(h('p',{ class:'muted' },t('noNotifs'))); list.forEach(n=>box.append(noteCard(n))); $('#centerClear').hidden=!list.length; }
-$('#sbBell').addEventListener('click',openCenter); $('#centerClose').addEventListener('click',closeCenter); swipeUp($('#centerZone'),closeCenter);
-$('#centerZone').addEventListener('click',closeCenter);
+$('#sbBell').addEventListener('click',openCenter); $('#centerClose').addEventListener('click',closeCenter);
+homeBar($('#centerZone'),closeCenter,closeCenter);
 $('#centerClear').addEventListener('click',()=>{ notify.clear(); renderCenter(); });
-bus.on('notify',()=>{ renderBadge(); if(!$('#lock').hidden) renderLock(); });
+$('#swClose').addEventListener('click',closeSwitcher); $('#swClear').addEventListener('click',()=>{ recents.clear(); renderSwitcher(); });
+bus.on('notify',n=>{ renderBadge(); if(!$('#lock').hidden) renderLock(); if(n&&n.app!=='aypona'&&current) island((apps.get(n.app)||{}).nom+' : '+n.title); });
 bus.on('notify:clear',()=>{ renderBadge(); renderLock(); });
 
 /* ---------- Écran verrouillé ---------- */
 function renderLock(){ const box=$('#lkNotes'); box.innerHTML=''; notify.list().slice(0,3).forEach(n=>box.append(noteCard(n))); }
-function lockNow(){ closeSpot(); closeCenter(); if(current){ $('#win').hidden=true; current=null; device.classList.remove('dim'); } setEditing(false); renderLock(); const l=$('#lock'); l.hidden=false; l.classList.remove('gone'); $('#home').hidden=true; bus.emit('lock'); }
-function unlock(){ const l=$('#lock'); l.classList.add('gone'); $('#home').hidden=false; renderHome(); bus.emit('unlock'); setTimeout(()=>{ l.hidden=true; },480); }
+function lockNow(){ closeSheets(); if(current){ $('#win').hidden=true; current=null; host.frame=null; host.app=null; $('#winBody').innerHTML=''; device.classList.remove('dim'); } setEditing(false); renderLock(); const l=$('#lock'); l.hidden=false; l.classList.remove('gone'); $('#home').hidden=true; bus.emit('lock'); }
+function unlock(){ const l=$('#lock'); if(l.classList.contains('gone')) return; l.classList.add('gone'); $('#home').hidden=false; renderHome(); bus.emit('unlock'); setTimeout(()=>{ l.hidden=true; },480); }
 $('#unlockBtn').addEventListener('click',unlock);
 (function lockSwipe(){ let y0=null; const l=$('#lock'); l.addEventListener('pointerdown',e=>{ y0=e.clientY; }); l.addEventListener('pointerup',e=>{ if(y0!=null&&y0-e.clientY>60) unlock(); y0=null; }); })();
 
-/* Clavier (ordinateur) */
+/* Clavier */
 addEventListener('keydown',e=>{
   if(!$('#dlg').hidden){ if(e.key==='Escape') $('#dlgNo').click(); return; }
-  if(e.key==='Escape'){ if(!$('#spot').hidden) closeSpot(); else if(!$('#center').hidden) closeCenter(); else if(current) closeApp(); else if(editing) setEditing(false); return; }
+  if(e.key==='Escape'){ if(!$('#switcher').hidden) closeSwitcher(); else if(!$('#spot').hidden) closeSpot(); else if(!$('#center').hidden) closeCenter(); else if(current) closeApp(); else if(editing) setEditing(false); return; }
   if(!$('#lock').hidden){ if(e.key==='Enter'||e.key===' '||e.key==='ArrowUp'){ e.preventDefault(); unlock(); } return; }
-  if(e.target.tagName==='INPUT') return;
+  if(/^(INPUT|TEXTAREA)$/.test(e.target.tagName)) return;
   if(e.key==='/'||((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='k')){ e.preventDefault(); openSpot(); }
+  if((e.ctrlKey||e.altKey)&&e.key==='ArrowUp'){ e.preventDefault(); current? closeApp(openSwitcher) : openSwitcher(); }
 });
 
 /* =====================================================================
@@ -606,51 +889,118 @@ addEventListener('keydown',e=>{
    ===================================================================== */
 function nav(title,backTo){ return h('div',{ class:'nav' }, backTo? h('button',{ class:'back', onclick:backTo.fn, html:SVG.back+'<span>'+backTo.label+'</span>' }) : h('span'), h('h1',{},title), h('span')); }
 function row(o){ const tag=o.onclick?'button':'div';
-  return h(tag,{ class:'row'+(o.cls?' '+o.cls:''), onclick:o.onclick, role:o.role, 'aria-checked':o.checked, id:o.id },
-    o.icon? h('span',{ class:'ri '+o.color, html:o.icon }) : null, h('span',{ class:'rl' },o.label,o.sub? h('small',{},o.sub):null), o.value!=null? h('span',{ class:'rv' },o.value):null, o.toggle||null, o.onclick&&!o.toggle&&!o.cls? h('span',{ html:SVG.chev }):null); }
+  return h(tag,{ class:'row'+(o.cls?' '+o.cls:''), onclick:o.onclick, role:o.role, id:o.id },
+    o.icon? h('span',{ class:'ri '+(o.color||''), html:o.icon }) : (o.iconEl||null), h('span',{ class:'rl' },o.label,o.sub? h('small',{},o.sub):null), o.value!=null? h('span',{ class:'rv' },o.value):null, o.toggle||null, o.onclick&&!o.toggle&&!o.cls? h('span',{ html:SVG.chev }):null); }
 function sec(title,kids,foot){ return h('div',{ class:'sec' }, title? h('h2',{},title):null, h('div',{ class:'list' },kids), foot? h('p',{ class:'foot' },foot):null); }
+const toggleEl=on=>h('span',{ class:'switch', role:'switch', 'aria-checked':String(!!on) });
+function msgs(v){ return h('ul',{ class:'msgs' }, v.ok? h('li',{ class:'ok' },'Manifeste valide : '+v.manifeste.nom+' '+v.manifeste.version+' ('+DOMICILES[v.manifeste.domicile].nom+').') : v.errors.map(e=>h('li',{},e))); }
 
-/* Réglages (navigation interne) */
+/* Réglages */
 let settingsGo=()=>{};
 function Settings(body){
-  const go=page=>{ body.innerHTML=''; body.scrollTop=0; body.append(PAGES[page]()); i18n.apply(body); const f=body.querySelector('.back,.row'); if(f) f.focus({ preventScroll:true }); };
+  const go=page=>{ body.innerHTML=''; body.scrollTop=0; body.append(page.startsWith('app:')? PAGES.appPage(page.slice(4)) : (PAGES[page]||PAGES.root)()); i18n.apply(body); const f=body.querySelector('.back,.row'); if(f) f.focus({ preventScroll:true }); };
   settingsGo=go;
   const backRoot={ label:t('reglages'), fn:()=>go('root') };
-  const toggle=(key)=>{ const s=h('span',{ class:'switch', role:'switch', 'aria-checked':String(!!settings.get(key)) }); return s; };
   const PAGES={
     root:()=>h('div',{}, nav(''), h('div',{ class:'view' }, h('div',{ class:'big' },t('reglages')),
       h('div',{ class:'list' }, row({ icon:SVG.aypona, color:'c-aypona', label:'Aypona OS', sub:'v'+VERSION+' · '+t('build')+' '+BUILD, onclick:()=>go('about') })),
-      sec(null,[ row({ icon:SVG.image, color:'c-bleu', label:t('wallpaper'), onclick:()=>go('wallpaper') }), row({ icon:SVG.reglages, color:'c-gris', label:t('general'), onclick:()=>go('general') }) ]),
+      sec(null,[ row({ icon:SVG.image, color:'c-bleu', label:t('wallpaper'), onclick:()=>go('wallpaper') }), row({ icon:SVG.widgets, color:'c-violet', label:t('widgets'), onclick:()=>go('widgets') }),
+        row({ icon:SVG.bell, color:'c-rouge', label:t('notifs'), onclick:()=>go('notifs') }), row({ icon:SVG.reglages, color:'c-gris', label:t('general'), onclick:()=>go('general') }) ]),
+      sec(null,[ row({ icon:SVG.grid, color:'c-orange', label:t('apps'), value:String(apps.installed().length), onclick:()=>go('apps') }), row({ icon:SVG.code, color:'c-gris', label:t('dev'), onclick:()=>go('dev') }) ]),
       sec(null,[ row({ icon:SVG.lock, color:'c-violet', label:t('lockNow'), onclick:()=>{ closeApp(); setTimeout(lockNow,300); } }) ]))),
     wallpaper:()=>{ const cur=settings.get('wallpaper'), names={ aube:'Aube', ville:'Aypona City', spatial:'Spatial', emeraude:'Émeraude', or:'Or Aypona' };
       return h('div',{}, nav(t('wallpaper'),backRoot), h('div',{ class:'view' }, h('div',{ class:'wps' }, Object.keys(names).map(k=>h('button',{ class:'wp', 'aria-pressed':String(k===cur), onclick:()=>{ settings.set('wallpaper',k); go('wallpaper'); } }, h('span',{ class:'sw' },h('span',{ class:'wall', 'data-wp':k })), names[k]))))); },
+    widgets:()=>{ const cur=settings.get('widgets')||[], names={ horloge:['Horloge','Heure et date'], systeme:['Système','Version, tests, stockage, réseau'], notifs:['Notifications','Nombre et dernières alertes'], fichiers:['Fichiers','Derniers fichiers modifiés'] };
+      return h('div',{}, nav(t('widgets'),backRoot), h('div',{ class:'view' },
+        sec(null,WIDGETS.map(w=>row({ label:names[w][0], sub:names[w][1], toggle:toggleEl(cur.includes(w)), onclick:()=>{ const c=settings.get('widgets')||[]; settings.set('widgets',c.includes(w)? c.filter(x=>x!==w) : [...c,w]); go('widgets'); } })),'Les widgets s’affichent en haut de la première page, dans l’ordre où tu les actives. Quatre au maximum.'))); },
+    notifs:()=>{ const inst=apps.installed(), allow=settings.get('notifApps')||{};
+      return h('div',{}, nav(t('notifs'),backRoot), h('div',{ class:'view' },
+        inst.length? sec('Autoriser par app',inst.map(m=>row({ iconEl:iconEl(m), label:m.nom, sub:(m.permissions||[]).includes('notifications')?'Demande à envoyer des notifications':'Ne demande pas de notifications', toggle:toggleEl(allow[m.id]!==false), onclick:()=>{ const n={ ...(settings.get('notifApps')||{}) }; n[m.id]=n[m.id]===false; settings.set('notifApps',n); go('notifs'); } }))) : h('div',{ class:'prose' },h('p',{},'Aucune app installée. Les notifications du système sont toujours affichées.')),
+        sec(null,[ row({ label:t('clear')+' '+t('notifs').toLowerCase(), cls:'danger', onclick:()=>{ notify.clear(); island(t('noNotifs')); } }) ]))); },
+    apps:()=>{ const inst=apps.installed();
+      return h('div',{}, nav(t('apps'),backRoot), h('div',{ class:'view' },
+        inst.length? sec(t('installed'),inst.map(m=>row({ iconEl:iconEl(m), label:m.nom, sub:m.studio+' · v'+m.version+' · '+(m.source==='ville'?'App Store':'installée à la main'), value:domBadge(m.domicile), onclick:()=>go('app:'+m.id) }))) : h('div',{ class:'prose' },h('b',{},t('noApps')),h('p',{},t('noAppsTxt'))),
+        h('div',{ class:'sec' },h('h2',{},'Domiciles'),h('div',{ class:'prose' },h('div',{ class:'legend' },Object.keys(DOMICILES).map(domBadge)),
+          h('p',{},'Privé : sur ton ordinateur ou ton cloud, l’adresse ne quitte pas l’appareil. Service : une app avec serveur, sur Netlify. Public : ouverte à tous, sur GitHub ou publiée avec le système.'))))); },
+    dev:()=>{ const ta=h('textarea',{ id:'devManifest', class:'code', spellcheck:'false' }); ta.value=JSON.stringify(manifest.exemple(),null,2); const out=h('div');
+      const check=()=>{ let m=null; try{ m=JSON.parse(ta.value); }catch(e){ out.replaceChildren(h('ul',{ class:'msgs' },h('li',{},'JSON illisible : '+e.message))); return null; } const v=manifest.validate(m); out.replaceChildren(msgs(v)); return v; };
+      return h('div',{}, nav(t('dev'),backRoot), h('div',{ class:'view' },
+        h('div',{ class:'prose' },h('b',{},'Installer depuis un manifeste'),h('p',{},'Pour tester une app avant sa publication. Elle s’installe sur ce navigateur seulement, sans l’audit de 12 h de l’App Store de la ville.')),
+        h('div',{ class:'fld' },h('label',{ for:'devManifest' },'Manifeste (JSON)'),ta), out,
+        h('div',{ class:'btnrow' },h('button',{ class:'ghostbtn', onclick:check },'Vérifier'),h('button',{ class:'bluebtn', onclick:()=>{ const v=check(); if(v&&v.ok){ apps.install(v.manifeste,'local'); island(v.manifeste.nom+' installée'); } } },t('install'))),
+        h('div',{ class:'sec' },h('h2',{},'Format du manifeste'),h('div',{ class:'prose' },
+          h('p',{},'id, nom, studio ('+STUDIOS.join(', ')+'), version (1.0.0), domicile (prive, service, public), entree, icone { couleur, glyphe }, permissions ('+Object.keys(PERMISSIONS).join(', ')+'), description.'),
+          h('p',{},'Une app publiée avec le système (apps/<id>/…html) s’ouvre dans une fenêtre isolée et parle au système par messages : hello, notify, fichiers.liste, fichiers.lire, fichiers.ecrire, fichiers.supprimer.')))));
+    },
     general:()=>h('div',{}, nav(t('general'),backRoot), h('div',{ class:'view' },
       sec(t('language'),[ ['fr','Français'],['en','English'] ].map(([k,n])=>row({ label:n, value:settings.get('lang')===k?'✓':'', onclick:()=>{ settings.set('lang',k); go('general'); }, cls:'opt' }))),
-      sec(null,[ row({ icon:SVG.motion, color:'c-vert', label:t('motion'), toggle:toggle('reduceMotion'), onclick:()=>{ settings.set('reduceMotion',!settings.get('reduceMotion')); go('general'); } }) ]),
-      sec(null,[ row({ label:t('reset'), cls:'danger', onclick:async()=>{ if(await confirmDlg(t('resetQ'),t('resetP'),t('resetYes'))){ storage.wipe(); cfg={ ...DEFAULTS }; storage.set('schema',SCHEMA); closeApp(); applySettings(); renderHome(); island(t('resetDone')); } } }) ]))),
+      sec(null,[ row({ icon:SVG.motion, color:'c-vert', label:t('motion'), toggle:toggleEl(settings.get('reduceMotion')), onclick:()=>{ settings.set('reduceMotion',!settings.get('reduceMotion')); go('general'); } }) ]),
+      sec(null,[ row({ label:t('reset'), cls:'danger', onclick:async()=>{ if(await confirmDlg(t('resetQ'),t('resetP'),t('resetYes'))){ storage.wipe(); cfg={ ...DEFAULTS }; migrate(); closeApp(); applySettings(); island(t('resetDone')); } } }) ]))),
     about:()=>{ const pass=tests.filter(x=>x.pass).length;
       return h('div',{}, nav(t('about'),backRoot), h('div',{ class:'view' },
         sec(null,[ row({ label:t('version'), value:VERSION }), row({ label:t('build'), value:BUILD }), row({ label:'Schéma de données', value:String(SCHEMA) }), row({ label:t('tests'), value:pass+'/'+tests.length }),
-          row({ label:t('storage'), value:storage.persistent? (storage.usage()/1024).toFixed(1)+' Ko' : t('notSaved') }), row({ label:t('installed'), value:String(Object.values(apps.all()).filter(a=>!a.system).length) }) ]),
+          row({ label:t('storage'), value:storage.persistent? fmtSize(storage.usage()) : t('notSaved') }), row({ label:t('installed'), value:String(apps.installed().length) }), row({ label:t('fichiers'), value:files.all().length+' · '+fmtSize(files.usage()) }) ]),
         h('div',{ class:'sec' }, h('h2',{},'Bureau 102'), h('div',{ class:'prose' }, h('p',{},'Aypona OS est construit au bureau 102 d’Aypona City par Polaris, Architecte d’Aypona OS (AYP-102-2610-0013).'),
-          h('p',{},'Cette version repart de l’ancienne base v0.6.0 : la coquille et son esthétique sont gardées, les comptes, licences et codes vérifiés dans le navigateur sont retirés, et tout ce qui demandait un serveur attend son retour.'))),
+          h('p',{},'Le catalogue est recréé de zéro : chaque app arrive avec un manifeste et un domicile (privé, service ou public). Les anciennes apps et l’univers lore sont aux archives de la ville.'))),
         sec(null,[ h('a',{ class:'row link', href:'../index.html' },t('city')) ]))); },
   };
+  PAGES.appPage=id=>{ const m=apps.installed().find(x=>x.id===id); if(!m) return PAGES.apps();
+    const back={ label:t('apps'), fn:()=>go('apps') };
+    return h('div',{}, nav(m.nom,back), h('div',{ class:'view' },
+      h('div',{ class:'extcard', style:'padding:8px' },iconEl(m),h('h2',{},m.nom),domBadge(m.domicile),h('p',{},m.description||'')),
+      sec(null,[ row({ label:'Studio', value:m.studio }), row({ label:t('version'), value:m.version }), row({ label:'Source', value:m.source==='ville'?'App Store de la ville':'Installée à la main' }),
+        row({ label:'Adresse', value:m.domicile==='prive'? (apps.privateEntry(m.id)? 'réglée sur cet appareil' : 'à régler') : m.entree }),
+        row({ label:'Permissions', value:(m.permissions||[]).length? m.permissions.map(p=>PERMISSIONS[p]).join(' · ') : 'aucune' }), row({ label:t('fichiers'), value:String(files.list(m.id).length) }) ]),
+      sec(null,[ row({ label:t('open')+' '+m.nom, cls:'link', onclick:()=>{ closeApp(()=>openApp(m.id)); } }),
+        row({ label:t('uninstall'), cls:'danger', onclick:async()=>{ if(await confirmDlg(t('uninstall')+' '+m.nom+' ?','L’app, son adresse privée éventuelle et ses fichiers seront retirés de ce navigateur.',t('uninstall'))){ apps.uninstall(m.id); island(m.nom+' désinstallée'); go('apps'); } } }) ]))); };
   go('root');
 }
 
-/* App Store (vitrine du système, le magasin appartient au chantier B03) */
+/* App Store : apps publiées dans la ville, installation par manifeste */
 function StoreApp(body){
-  body.append(nav(t('store')), h('div',{ class:'view' }, h('div',{ class:'big' },t('store')),
-    h('div',{ class:'prose' }, h('b',{},t('storeTitle')), h('p',{},t('storeP'))),
-    sec(null,[ row({ label:t('installed'), value:String(Object.values(apps.all()).filter(a=>!a.system).length) }) ])));
+  const draw=()=>{ body.innerHTML='';
+    const inst=new Set(apps.installed().map(m=>m.id));
+    const rows=city.apps.map(a=>{ const v=manifest.validate(a.manifeste), st=city.status(a); if(!v.ok) return null; const m=v.manifeste;
+      return h('div',{ class:'storeapp' }, iconEl(m), h('b',{},m.nom), h('small',{},m.studio+' · v'+m.version+' · ',domBadge(m.domicile)),
+        h('div',{ class:'act' }, st!=='publiée'? h('span',{ class:'dom' },'en audit') : inst.has(m.id)? h('button',{ class:'ghostbtn', onclick:()=>{ closeApp(()=>openApp(m.id)); } },t('open')) : h('button',{ class:'bluebtn', onclick:()=>{ apps.install(m,'ville'); island(m.nom+' installée'); draw(); } },t('install')))); }).filter(Boolean);
+    body.append(nav(t('store')), h('div',{ class:'view' }, h('div',{ class:'big' },t('store')),
+      h('div',{ class:'prose' }, h('b',{},'Catalogue neuf'), h('p',{},'Chaque app est publiée par l’App Store de la ville, une à la fois, après 12 h d’audit de la Sécurité. Elle arrive avec son manifeste et son domicile.'), h('div',{ class:'legend' },Object.keys(DOMICILES).map(domBadge))),
+      rows.length? sec('Apps de la ville',rows) : h('div',{ class:'prose' }, h('b',{},city.ok? 'Aucune app publiée pour l’instant' : city.tried? 'Catalogue de la ville injoignable depuis cette page' : 'Connexion au catalogue…'),
+        h('p',{},city.ok? 'Les premières apps arriveront à l’ouverture de l’App Store de la ville.' : 'Ouvre Aypona OS depuis le bureau 102 d’Aypona City, ou installe une app à la main dans Réglages, Développeur.')),
+      sec(null,[ row({ label:t('installed'), value:String(inst.size), onclick:()=>{ closeApp(()=>{ openApp('reglages'); settingsGo('apps'); }); } }) ])));
+  };
+  draw(); const off=bus.on('city',()=>{ if(current&&current.id==='store') draw(); else off(); });
 }
 
-/* Moniteur : santé du noyau */
+/* Fichiers */
+let filesGo=()=>{};
+function FilesApp(body){
+  const list=()=>{ body.innerHTML=''; const fs=files.list('fichiers');
+    const imp=h('input',{ id:'fileImport', type:'file', accept:'.txt,.md,.json,.csv,.html,.css,.js,text/*', hidden:true, onchange:e=>{ const f=e.target.files[0]; if(!f) return; if(f.size>FILE_MAX){ island('Fichier trop gros : 200 Ko au maximum'); return; }
+      const rd=new FileReader(); rd.onload=()=>{ const r=files.save({ nom:f.name, contenu:String(rd.result), app:'fichiers' }); island(r.ok? f.name+' importé' : r.error); list(); }; rd.readAsText(f); } });
+    body.append(nav(t('fichiers')), h('div',{ class:'view' }, h('div',{ class:'big' },t('fichiers')),
+      h('div',{ class:'btnrow' }, h('button',{ class:'bluebtn', onclick:()=>edit(null) },'Nouveau fichier'), h('button',{ class:'ghostbtn', onclick:()=>imp.click() },'Importer'), imp),
+      fs.length? sec(fs.length+' fichier'+(fs.length>1?'s':''),fs.map(f=>row({ icon:SVG.fichiers, color:'c-fichiers', label:f.nom, sub:fmtSize(f.taille||0)+' · '+fmtAgo(f.modifie), onclick:()=>edit(f.id) })),'Stockés dans ce navigateur : '+fmtSize(files.usage())+' sur 1 Mo.')
+        : h('div',{ class:'prose' },h('b',{},'Aucun fichier'),h('p',{},'Crée une note ou importe un fichier texte. Les apps avec la permission « fichiers » ont chacune leur propre dossier, invisible des autres.')))); };
+  const edit=id=>{ body.innerHTML=''; const f=id? files.get(id,'fichiers') : null;
+    const nom=h('input',{ id:'fileName', type:'text', maxlength:'60', autocomplete:'off' }); nom.value=f? f.nom : 'Note '+new Date().toLocaleDateString(loc(),{ day:'numeric', month:'short' }).replace(/\.$/,'')+'.txt';
+    const txt=h('textarea',{ id:'fileBody', spellcheck:'true' }); txt.value=f? f.contenu : '';
+    body.append(nav(f? f.nom : 'Nouveau fichier',{ label:t('fichiers'), fn:list }), h('div',{ class:'view' },
+      h('div',{ class:'fld' },h('label',{ for:'fileName' },'Nom'),nom), h('div',{ class:'fld' },h('label',{ for:'fileBody' },'Contenu'),txt),
+      f? h('p',{ class:'filemeta' },'Créé le '+new Date(f.cree).toLocaleString(loc())+' · modifié '+fmtAgo(f.modifie)+' · '+fmtSize(f.taille||0)) : null,
+      h('div',{ class:'btnrow' }, h('button',{ class:'bluebtn', onclick:()=>{ const r=files.save({ id:f&&f.id, nom:nom.value, contenu:txt.value, app:'fichiers' }); island(r.ok? 'Enregistré' : r.error); if(r.ok) list(); } },'Enregistrer'),
+        f? h('button',{ class:'ghostbtn', style:'color:var(--bad)', onclick:async()=>{ if(await confirmDlg('Supprimer '+f.nom+' ?','Le fichier sera effacé de ce navigateur.','Supprimer')){ files.remove(f.id,'fichiers'); island('Fichier supprimé'); list(); } } },'Supprimer') : null)));
+    (f? txt : nom).focus({ preventScroll:true }); };
+  filesGo=id=>edit(id);
+  list();
+}
+
+/* Moniteur */
 function Monitor(body){
   const draw=()=>{ body.innerHTML=''; const pass=tests.filter(x=>x.pass).length;
-    const mods=[ ['Bus d’événements','bus',true], ['Stockage local','storage',storage.persistent], ['Migrations','v'+(migration?migration.from:0)+' → v'+SCHEMA,true], ['Réglages','settings',true], ['Langues','FR · EN',true], ['Notifications','notify',true], ['Registre des apps',Object.keys(apps.all()).length+' apps',true], ['Disposition de l’accueil','layout',true],
-      ['Comptes et synchronisation','en attente d’un serveur',null], ['Notifications push','en attente d’un serveur',null] ];
+    const mods=[ ['Bus d’événements','bus',true], ['Stockage local','storage',storage.persistent], ['Migrations','v'+(migration?migration.from:0)+' → v'+SCHEMA,true], ['Réglages et widgets','settings',true], ['Langues','FR · EN',true], ['Notifications','notify',true],
+      ['Manifeste d’app','v1',true], ['Registre des apps',Object.keys(apps.all()).length+' apps',true], ['Hôte d’apps','cadre isolé',true], ['Fichiers',files.all().length+' · '+fmtSize(files.usage()),true], ['Sélecteur d’apps',recents.list().length+' récentes',true],
+      ['Catalogue de la ville',city.ok? city.apps.length+' apps' : 'non joignable',city.ok?true:null], ['Comptes et synchronisation','en attente d’un serveur',null], ['Notifications push','en attente d’un serveur',null] ];
     body.append(nav(t('moniteur')), h('div',{ class:'view' }, h('div',{ class:'big' },t('moniteur')),
       h('div',{ class:'sec' }, h('h2',{},t('modules')), h('div',{ class:'list' }, mods.map(([n,v,st])=>row({ label:h('span',{ style:'display:flex;gap:8px;align-items:center' },h('i',{ class:'dot'+(st===null?' warn':st?'':' bad') }),n), value:h('span',{ class:'mono' },v) })))),
       h('div',{ class:'sec' }, h('h2',{},t('tests')+' · '+pass+'/'+tests.length), h('div',{ class:'list' }, tests.map(x=>row({ label:h('span',{ style:'display:flex;gap:8px;align-items:center' },h('i',{ class:'dot'+(x.pass?'':' bad') }),x.name), value:x.pass?'OK':'Échec' })))),
@@ -659,14 +1009,17 @@ function Monitor(body){
   draw();
 }
 
-/* Astuces : les gestes du système */
+/* Astuces */
 function Tips(body){
   storage.set('tipsSeen',true);
-  const tips=[ ['Ouvrir une app','Touche son icône. Pour revenir à l’accueil, glisse vers le haut sur la barre du bas, ou appuie sur Échap.'],
-    ['Réorganiser l’accueil','Appui long sur une icône : elles se mettent à trembler. Glisse une icône sur une autre pour les échanger, même entre la grille et le dock, puis touche OK.'],
-    ['Rechercher','Touche « Rechercher » au-dessus du dock, glisse vers le bas au milieu de l’écran, ou tape / sur un clavier. Les apps et les réglages sont trouvés.'],
-    ['Notifications','Touche la cloche en haut à droite, ou glisse vers le bas depuis le haut de l’écran.'],
-    ['Verrouiller','Réglages, puis Verrouiller l’écran. Glisse vers le haut ou appuie sur Entrée pour revenir.'] ];
+  const tips=[ ['Ouvrir une app','Touche son icône. Pour revenir à l’accueil, touche la barre du bas ou appuie sur Échap.'],
+    ['Apps ouvertes','Glisse vers le haut sur la barre du bas, ou appuie longuement dessus : les apps récentes s’affichent en cartes. Glisse une carte vers le haut pour la fermer. Au clavier : Ctrl + flèche du haut.'],
+    ['Installer une app','Ouvre l’App Store : les apps publiées par la ville s’installent d’un toucher. Chacune affiche son domicile : privé, service ou public.'],
+    ['Fichiers','L’app Fichiers garde tes notes et fichiers texte dans ce navigateur. Chaque app a son propre dossier, invisible des autres.'],
+    ['Widgets','Réglages, puis Widgets : choisis jusqu’à quatre widgets pour la première page.'],
+    ['Réorganiser l’accueil','Appui long sur une icône : elles se mettent à trembler. Glisse une icône sur une autre pour les échanger, puis touche OK.'],
+    ['Rechercher','Touche « Rechercher », glisse vers le bas au milieu de l’écran, ou tape / sur un clavier. Apps, réglages et fichiers sont trouvés.'],
+    ['Notifications','Touche la cloche en haut à droite, ou glisse vers le bas depuis le haut de l’écran.'] ];
   body.append(nav(t('astuces')), h('div',{ class:'view' }, h('div',{ class:'big' },t('astuces')), ...tips.map(([a,b])=>h('div',{ class:'prose' },h('b',{},a),h('p',{},b)))));
 }
 
@@ -676,18 +1029,19 @@ function Tips(body){
 function boot(){
   const fill=$('#bootFill'), log=$('#bootLog'), steps=[];
   const step=(txt,fn)=>steps.push([txt,fn]);
-  step('Migrations du stockage',()=>{ migration=migrate(); });
+  step('Migrations du stockage',()=>{ migration=migrate(); cfg={ ...DEFAULTS, ...(storage.get('settings',{})||{}) }; });
   step('Réglages et langue',()=>{ applySettings(); });
   step('Registre des apps',()=>{ layout.set(layout.repair()); });
   step('Tests du noyau',()=>{ tests=runTests(); Aypona.tests=tests; });
   step('Écran d’accueil',()=>{ renderHome(); tick(); netState(); });
+  step('Catalogue de la ville',()=>{ city.connect(); });
   const reduced=settings.get('reduceMotion')||matchMedia('(prefers-reduced-motion: reduce)').matches;
-  let k=0; const next=()=>{ if(k>=steps.length){ finish(); return; } const [txt,fn]=steps[k]; log.textContent=txt+'…'; try{ fn(); }catch(e){ console.error(e); } k++; fill.style.width=(k/steps.length*100)+'%'; setTimeout(next,reduced?0:170); };
+  let k=0; const next=()=>{ if(k>=steps.length){ finish(); return; } const [txt,fn]=steps[k]; log.textContent=txt+'…'; try{ fn(); }catch(e){ console.error(e); } k++; fill.style.width=(k/steps.length*100)+'%'; setTimeout(next,reduced?0:150); };
   const finish=()=>{ const n=(storage.get('boots',0)||0)+1; storage.set('boots',n);
-    if(n===1) notify.add({ title:t('welcomeT'), body:t('welcomeP') }); else notify.add({ title:t('rebootT'), body:t('rebootP',{ n }) });
+    if(n===1) notify.add({ title:t('welcomeT'), body:t('welcomeP') }); else if(migration&&migration.from===1) notify.add({ title:t('updT'), body:t('updP') }); else notify.add({ title:t('rebootT'), body:t('rebootP',{ n }) });
     bus.emit('boot',{ version:VERSION, tests:tests.filter(x=>x.pass).length+'/'+tests.length });
     renderLock(); $('#lock').hidden=false; setTimeout(()=>{ $('#boot').classList.add('out'); setTimeout(()=>{ $('#boot').hidden=true; },460); },reduced?0:260); };
-  setTimeout(next,reduced?0:500);
+  setTimeout(next,reduced?0:450);
 }
 boot();
 })();

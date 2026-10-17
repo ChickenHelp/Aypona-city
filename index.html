@@ -1207,7 +1207,8 @@ function syncWorld(){
 const AUDIT_H = 12, BUREAU_LOTS = 8;
 const APP_LOTS = LOT_ORDER.slice(BUREAU_LOTS);
 const placedApps = new Map();
-function appStatus(a,now=Date.now()){ return now >= a.demande + AUDIT_H*36e5 ? 'réactivée' : 'en audit'; }
+function appStatus(a,now=Date.now()){ return now >= a.demande + AUDIT_H*36e5 ? 'publiée' : 'en audit'; }
+function appName(a){ return (a&&a.manifeste&&a.manifeste.nom)||(a&&a.nom)||''; }
 function appsSorted(){ return [...store.apps.values()].sort((a,b)=>a.demande-b.demande || (a.nom<b.nom?-1:1)); }
 function appHeight(n){ let h=7; for(const ch of n) h=(h*31+ch.charCodeAt(0))>>>0; return 12+(h%28); }
 function bureauOf(key){ return [...store.bureaux.values()].sort((a,b)=>a.id<b.id?-1:1).find(b=>b.chantier===key); }
@@ -1218,19 +1219,53 @@ function gate(){
   return { open:done(st)&&done(se), st, se, eta };
 }
 function inAudit(){ return appsSorted().find(a=>appStatus(a)==='en audit'); }
-async function requestApp(nom){
-  const g=gate(); if(!g.open){ toast("L'App Store et la Sécurité doivent d'abord être terminés."); return; }
-  const cur=inAudit(); if(cur){ toast(cur.nom+' est encore en audit : une app à la fois.'); return; }
-  if(store.apps.has(nom)) return;
-  await put('apps',nom,{ nom, demande:Date.now() });
-  await archive('app', nom+' : demande de réactivation, audit de sécurité de '+AUDIT_H+' h');
-  logEvt(nom+' entre en audit de sécurité'); save(); toast(nom+' entre en audit de sécurité');
+/* Bureau 102 · Polaris (v4.8) : manifeste d'app (décret n°2 du mandat IV). Mêmes règles que le noyau d'Aypona OS (os/index.html).
+   privé : aucune adresse publiée ; service : https ; public : https ou apps/<id>/…html publié avec le système. */
+const MANIFESTE={
+  studios:['Devea','Nativus','BroNet','8Pool','Neural Pro'],
+  permissions:{ notifications:'Envoyer des notifications', fichiers:'Lire et écrire ses propres fichiers' },
+  reserves:['reglages','store','moniteur','astuces','fichiers','aypona','systeme'],
+  validate(m){
+    const err=[], out={}, str=v=>typeof v==='string'? v.trim() : '';
+    if(!m||typeof m!=='object'||Array.isArray(m)) return { ok:false, errors:['Le manifeste doit être un objet.'], manifeste:null };
+    out.id=str(m.id); if(!/^[a-z][a-z0-9-]{1,31}$/.test(out.id)) err.push('id : 2 à 32 caractères, minuscules, chiffres et tirets, en commençant par une lettre.'); else if(MANIFESTE.reserves.includes(out.id)) err.push('id : « '+out.id+' » est réservé au système.');
+    out.nom=str(m.nom); if(out.nom.length<2||out.nom.length>24||/[<>]/.test(out.nom)) err.push('nom : 2 à 24 caractères, sans < ni >.');
+    out.studio=str(m.studio); if(!MANIFESTE.studios.includes(out.studio)) err.push('studio : '+MANIFESTE.studios.join(', ')+'.');
+    out.version=str(m.version); if(!/^\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(out.version)) err.push('version : trois nombres, par exemple 1.0.0.');
+    out.domicile=str(m.domicile); if(!DOMICILES[out.domicile]) err.push('domicile : prive, service ou public.');
+    out.entree=str(m.entree);
+    if(out.domicile==='prive'){ if(out.entree) err.push('entrée : une app privée ne publie pas son adresse, elle se règle sur l’appareil.'); }
+    else if(DOMICILES[out.domicile]){
+      const rel=/^apps\/[a-z0-9-]+\/[A-Za-z0-9._\/-]*\.html$/.test(out.entree)&&!out.entree.includes('..');
+      let https=false; try{ const u=new URL(out.entree); https=u.protocol==='https:'&&!u.username&&!u.password; }catch(e){}
+      if(!out.entree) err.push('entrée : adresse obligatoire pour une app '+DOMICILES[out.domicile].nom+'.');
+      else if(out.domicile==='service'&&!https) err.push('entrée : une app de service s’ouvre par une adresse https.');
+      else if(out.domicile==='public'&&!https&&!rel) err.push('entrée : adresse https, ou chemin apps/'+(out.id||'<id>')+'/….html publié avec le système.');
+      else if(rel&&!out.entree.startsWith('apps/'+out.id+'/')) err.push('entrée : le chemin doit commencer par apps/'+out.id+'/.');
+    }
+    const ic=m.icone&&typeof m.icone==='object'? m.icone : {};
+    out.icone={ couleur:/^#[0-9a-fA-F]{6}$/.test(ic.couleur||'')? ic.couleur : '#636366', glyphe:str(ic.glyphe).replace(/[<>&"']/g,'').slice(0,2) || (out.nom[0]||'?').toUpperCase() };
+    const perms=m.permissions==null? [] : m.permissions;
+    if(!Array.isArray(perms)) err.push('permissions : une liste.'); else { const bad=perms.filter(p=>!MANIFESTE.permissions[p]); if(bad.length) err.push('permissions inconnues : '+bad.join(', ')+'.'); out.permissions=[...new Set(perms.filter(p=>MANIFESTE.permissions[p]))]; }
+    if(!out.permissions) out.permissions=[];
+    out.description=str(m.description).replace(/[<>]/g,'').slice(0,140);
+    return { ok:!err.length, errors:err, manifeste:err.length? null : out };
+  },
+};
+async function requestApp(m){
+  const v=MANIFESTE.validate(m); if(!v.ok){ toast('Manifeste refusé : '+v.errors[0]); return false; }
+  const g=gate(); if(!g.open){ toast("L'App Store et la Sécurité doivent d'abord être terminés."); return false; }
+  const cur=inAudit(); if(cur){ toast(appName(cur)+' est encore en audit : une app à la fois.'); return false; }
+  const id=v.manifeste.id; if(store.apps.has(id)){ toast('Une app porte déjà l’id « '+id+' ».'); return false; }
+  await put('apps',id,{ nom:id, manifeste:v.manifeste, demande:Date.now() });
+  await archive('app', v.manifeste.nom+' ('+id+', '+DOMICILES[v.manifeste.domicile].nom+') : demande de publication, audit de sécurité de '+AUDIT_H+' h');
+  logEvt(v.manifeste.nom+' entre en audit de sécurité'); save(); toast(v.manifeste.nom+' entre en audit de sécurité'); return true;
 }
 function syncApps(){
-  const live=appsSorted().filter(a=>appStatus(a)==='réactivée');
+  const live=appsSorted().filter(a=>appStatus(a)==='publiée');
   const want=new Map(); live.forEach((a,k)=>{ if(APP_LOTS[k]) want.set(a.nom,APP_LOTS[k]); });
   for(const [n,lot] of placedApps){ if(want.get(n)!==lot){ clearLot(lot); placedApps.delete(n); } }
-  for(const a of live){ const lot=want.get(a.nom); if(!lot||placedApps.has(a.nom)) continue; placeOnLot(lot,{ kind:'app', name:a.nom, h:appHeight(a.nom), t:a.nom.length%3 },worldReady); placedApps.set(a.nom,lot); }
+  for(const a of live){ const lot=want.get(a.nom); if(!lot||placedApps.has(a.nom)) continue; placeOnLot(lot,{ kind:'app', name:appName(a), h:appHeight(a.nom), t:a.nom.length%3, domicile:(a.manifeste||{}).domicile },worldReady); lot.appId=a.nom; placedApps.set(a.nom,lot); } // Bureau 102 (v4.8) : nom du manifeste et domicile
 }
 
 /* Agents en mission : ils tournent autour de leur bureau */
@@ -1317,8 +1352,8 @@ function updateProduction(){
   syncApps();
   const known=new Set(store.archives.map(e=>e.id).filter(Boolean));
   for(const a of store.apps.values()){
-    if(appStatus(a)!=='réactivée') continue; const id='app-'+a.nom; if(known.has(id)||milestonesDone.has(id)) continue; milestonesDone.add(id);
-    const lot=placedApps.get(a.nom), e={ id, t:a.demande+AUDIT_H*36e5, type:'app', txt:a.nom+' rouvre'+(lot?' dans le quartier '+STUDIOS[lot.st].name:'')+' après son audit', matricule:null };
+    if(appStatus(a)!=='publiée') continue; const id='app-'+a.nom; if(known.has(id)||milestonesDone.has(id)) continue; milestonesDone.add(id);
+    const lot=placedApps.get(a.nom), e={ id, t:a.demande+AUDIT_H*36e5, type:'app', txt:appName(a)+' est publiée'+(lot?' dans le quartier '+STUDIOS[lot.st].name:'')+' après son audit', matricule:null };
     if(store.db) store.db.collection('archives').doc(id).set(e).catch(()=>{}); else { store.archives.push(e); store.archives.sort((x,y)=>y.t-x.t); localSave(); }
     if(worldReady) toast(e.txt);
   }
@@ -1411,7 +1446,7 @@ function panelBureau(id){
       el('p',{},p>=1? 'Chantier livré. Il est prêt pour la suite de la restructuration.' : fin? 'Fin estimée le '+fmtDay(fin)+' au rythme actuel.' : rate>0? "À ce rythme, les agents auront fini leur mission avant la fin du chantier : prolonge-les ou nomme des renforts." : "Chantier à l'arrêt : aucun agent actif. Nomme un agent pour relancer la production."),
       el('div',{class:'group'},el('h3',{},'Étapes'),el('ul',{class:'steps'},(ETAPES[b.chantier]||[]).map((n,k)=>el('li',{class:k<done?'done':''},el('span',{},k<done?'✓':k===done&&p<1?'▸':'·'),(k+1)+'. '+n+(k===done&&p<1?' · en cours':''))))),
       team.length? el('div',{class:'group'},el('h3',{},'Équipe et contributions'),el('div',{class:'list'},team.map(a=>{ const r=agentRow(a); r.querySelector('.ms').textContent+=' · '+Math.floor(agentPts(a,b,Date.now(),all))+' pts'; return r; }))) : el('p',{},'Aucun agent ici pour le moment. Nomme le premier.') ],
-    actions:[ { label:'Nommer un agent ici', primary:true, fn:()=>{ draft.bureau=id; openPanel(panelAgents); } }, ...(b.chantier==='store'? [{ label:'Réactivations des apps', fn:()=>openPanel(panelAppStore) }] : []), homeAction ] };
+    actions:[ { label:'Nommer un agent ici', primary:true, fn:()=>{ draft.bureau=id; openPanel(panelAgents); } }, ...(b.chantier==='store'? [{ label:'App Store', fn:()=>openPanel(panelAppStore) }] : []), homeAction ] };
 }
 function agentRow(a){
   const s=agentStatus(a), c=a.bureau===ATELIER.bureau? { css:'#ffc857' } : CONSEIL[a.bureau]? { css:(OFFICES.find(o=>o.no===a.bureau)||{}).css||'#ffc857' } : chantier((store.bureaux.get(a.bureau)||{}).chantier);
@@ -1480,22 +1515,23 @@ function panelArchives(){
     actions:[] };
 }
 function panelOS(){
-  // Bureau 102 · Polaris (v3.3) : sur ordre du fondateur, le bureau 102 construit le système Aypona OS (noyau, interface, socle).
+  // Bureau 102 · Polaris (v3.3, v4.8) : sur ordre du fondateur, le bureau 102 construit le système Aypona OS (noyau, interface, socle).
   // Le système est publié avec la ville, à l'adresse relative os/index.html ; les apps et l'App Store sortent de la mission.
-  const OS_URL='os/index.html', openOS=()=>{ const a=document.createElement('a'); a.href=OS_URL; a.target='_blank'; a.rel='noopener'; document.body.append(a); a.click(); a.remove(); };
+  const OS_URL='os/index.html', openOS=()=>openHref(OS_URL);
   const noyau=bureauOf('noyau'), inter=bureauOf('interface');
   const row=(b,key)=>{ const c=chantier(key); if(!b) return el('div',{},el('dt',{style:'color:'+c.css},'—'),el('dd',{},c.nom),el('dd',{},'Pas encore de bureau.'));
     const pp=bureauPts(b)/CHANTIER_PTS; return el('div',{},el('dt',{style:'color:'+c.css},b.id),el('dd',{},c.nom+' · '+(pp>=1?'terminé':fmtPct(pp))),el('dd',{style:'grid-column:2'},bar(pp,c.css))); };
   return { eyebrow:'Bureau 102 · 1er étage', title:"Architecte d'Aypona OS"+(store.agents.get(CONSEIL['102'].architecte)?' · '+store.agents.get(CONSEIL['102'].architecte).nom:''),
     body:[ conseilHead('102'),
-      el('p',{},"Sur ordre du fondateur, je construis le système Aypona OS lui-même : noyau, interface et socle. Il repart de l'ancienne base v0.6.0, dont la coquille et l'esthétique sont gardées. Les comptes, licences et codes vérifiés dans le navigateur sont retirés, et l'univers lore rejoint les archives."),
-      statRow([ ['Système','v0.1.0'], ['Apps système',4], ['Serveur requis','aucun'] ]),
+      el('p',{},"Je construis le système Aypona OS : noyau, interface et socle. Décret n°2 du mandat IV : le catalogue est recréé de zéro, chaque app arrive avec un manifeste et un domicile (privé, service, public) ; les anciennes apps et l'univers lore sont aux archives."),
+      statRow([ ['Système','v0.2.0'], ['Apps publiées',appsSorted().filter(a=>appStatus(a)==='publiée').length], ['Tests du noyau',24] ]),
       el('a',{ href:OS_URL, target:'_blank', rel:'noopener', style:'display:inline-flex;gap:8px;align-items:center;justify-self:start;padding:10px 14px;border-radius:12px;background:var(--accent);color:var(--night);font:600 .95rem var(--body);text-decoration:none' },'Ouvrir Aypona OS ↗'),
       field('Chantiers du système', el('dl',{class:'dir'},row(noyau,'noyau'),row(inter,'interface'))),
-      field('Dans la v0.1', el('ul',{class:'log'},[ ['Noyau','bus d’événements, stockage local avec migrations, réglages, langues FR et EN, notifications, registre des apps, 12 tests au démarrage'], ['Interface','démarrage, écran verrouillé, accueil à pages avec widgets et dock, mode édition, Spotlight, centre de notifications'], ['Apps système','Réglages, App Store (vitrine), Moniteur, Astuces'], ['En attente','comptes, synchronisation et notifications push, qui demandent un serveur'] ].map(([k,v])=>el('li',{},el('time',{},k),el('span',{},v))))) ],
-    actions:[ { label:'Ouvrir Aypona OS', primary:true, fn:openOS }, { label:"Ouvrir l'App Store", fn:()=>openPanel(panelAppStore) } ] };
+      field('Dans la v0.2', el('ul',{class:'log'},[ ['Manifeste','id, nom, studio, version, domicile, adresse, icône, permissions ; manifestes invalides refusés'], ['Hôte d’apps','les apps publiées avec le système s’ouvrent dans une fenêtre isolée et parlent au système par messages ; les autres par un vrai lien'], ['Système','sélecteur d’apps, Fichiers, widgets au choix, notifications envoyées par les apps, App Store relié au catalogue de la ville'], ['Tests','24 tests au démarrage'], ['En attente','comptes, synchronisation et notifications push, qui demandent un serveur ; v0.3 sur GitHub avec Antarès'] ].map(([k,v])=>el('li',{},el('time',{},k),el('span',{},v))))) ],
+    actions:[ { label:'Ouvrir Aypona OS', primary:true, fn:openOS }, { label:"Ouvrir l'App Store", fn:()=>openPanel(panelAppStore) }, { label:'Archives de l’ancien catalogue', fn:()=>openPanel(panelOldCatalog) } ] };
 }
 const RELEASES = [
+  ['4.8','Bureau 102 · Polaris (AYP-102-2610-0013) : décret n°2 du mandat IV exécuté. Aypona OS v0.2 (os/index.html) : manifeste d’app, hôte d’apps en fenêtre isolée avec messages vers le système, sélecteur d’apps, Fichiers, widgets au choix, notifications des apps, App Store relié au catalogue de la ville, 24 tests. Dans la ville : l’App Store publie des apps nouvelles par manifeste (vérification, demande de publication, une à la fois, 12 h d’audit inchangés), statut « publiée » calculé, domicile transmis aux balises des tours (v4.3), légende des domiciles, tour d’app qui ouvre sa vraie app, vitrine « Archives de l’ancien catalogue » en lecture seule. gate et bureauPts inchangés.'],
   ['4.7','Présidence : décret n°4 du mandat IV, bascule par étapes. Étapes 1 et 2 de la transition vérifiées dans le dépôt ChickenHelp/Aypona-city (import tel quel, CLAUDE.md, neuf agents de Claude Code). Étape 3, découpage par zones, autorisée sur une branche, sans changement visible. Dépôt public : la base de l’artifact n’y est jamais exportée.'],
   ['4.6','Bureau 104 · Antarès (AYP-104-2610-0015) : étapes 1 et 2 de la transition GitHub & Claude Code. Dépôt ChickenHelp/Aypona-city, branche main : import tel quel de la v4.5 (page de la ville, os/index.html, logo, aucun fichier modifié), puis CLAUDE.md (protocole du Bureau du courrier en règle n°1, zones, règles protégées, publication pendant la transition) et neuf agents de Claude Code dans .claude/agents (président, Altaïr, Rigel, Deneb, Mira, Electra, Polaris, Capella, Antarès). Aucun changement visible dans la ville ; découpage (étape 3) en attente de décret.'],
   ['4.5','Présidence : décret n°3 du mandat IV. Ordre du fondateur : le projet passe sur GitHub. Antarès (AYP-104-2610-0015) est nommé chargé de la transition GitHub & Claude Code au bureau 104 du conseil, pour 30 jours, avec son dossier au Bureau du courrier. Recommandations du Président dans l’objet TRANSITION : import tel quel, CLAUDE.md et agents de Claude Code, découpage par zones, branches et tests automatiques, publication depuis le dépôt.'],
@@ -1553,7 +1589,7 @@ function panelPresident(){
 }
 function panelBilan(){
   const P=PRESIDENCE, actifs=[...store.agents.values()].filter(a=>agentStatus(a)==='actif'), g=gate();
-  const fins=actifs.map(a=>a.expire).sort((a,b)=>a-b), react=[...store.apps.values()].filter(a=>appStatus(a)==='réactivée').length;
+  const fins=actifs.map(a=>a.expire).sort((a,b)=>a-b), react=[...store.apps.values()].filter(a=>appStatus(a)==='publiée').length;
   return { eyebrow:'Présidence · '+(P.termine?'bilan':'état de la ville'), title:(P.termine?'Bilan du mandat ':'État de la ville · mandat ')+P.mandat,
     body:[ el('p',{},P.termine? P.used+' prompts, '+P.decrets.length+' décrets. Voici la ville que le Président '+P.mandat+' transmet à son successeur.' : 'Prompt '+P.used+'/'+P.quota+' du mandat '+P.mandat+'. Voici la ville telle que le Président la trouve aujourd’hui.'),
       statRow([ ['Bureaux de chantier',store.bureaux.size], ['Agents actifs',actifs.length], ['Matricules émis',store.agents.size] ]),
@@ -1622,7 +1658,7 @@ function panelOrganigramme(){
 function panelCouncil(){
   return { eyebrow:'Présidence · salle du conseil', title:'Conseil du siège',
     body:[ el('p',{},"Autour de la table : les trois architectes du 1er étage et le Président. Restructuration en cours : voici l'état du chantier du nouvel Aypona OS."),
-      statRow([ ['Bureaux de chantier',store.bureaux.size], ['Agents en mission',agents.length], ['Apps réactivées',[...store.apps.values()].filter(a=>appStatus(a)==='réactivée').length] ]),
+      statRow([ ['Bureaux de chantier',store.bureaux.size], ['Agents en mission',agents.length], ['Apps réactivées',[...store.apps.values()].filter(a=>appStatus(a)==='publiée').length] ]),
       el('p',{},(()=>{ const g=gate(); return g.open? "App Store et Sécurité terminés : les réactivations d'apps sont ouvertes." : g.eta? 'Réactivation des apps possible à partir du '+fmtDay(g.eta)+' au rythme actuel.' : "Réactivation des apps bloquée : l'App Store ou la Sécurité manque d'agents."; })()),
       el('div',{class:'group'},el('h3',{},'Nouvel Aypona OS · '+fmtPct(osProgress())),bar(osProgress(),'var(--accent)')),
       el('div',{class:'group'},el('h3',{},'Rapports des chantiers'),
@@ -1684,36 +1720,68 @@ function panelEmpty(){
   return { eyebrow:'Sous-sol · salle 3', title:'Salle vide',
     body:[ el('p',{},"Cette salle n'a pas encore d'usage. Elle attend un futur service d'Aypona City.") ], actions:[] };
 }
-function appChip(n){ const a=store.apps.get(n), s=a? appStatus(a) : 'désactivée';
-  return el('span',{class:'chip'+(s==='désactivée'?' gone':''),style:s==='réactivée'?'border-style:solid;color:var(--ink)':s==='en audit'?'border-color:var(--warm);color:var(--warm)':''},n+(s==='en audit'?' · audit':'')); }
+/* Bureau 102 · Polaris (v4.8) : App Store du catalogue neuf (décret n°2 du mandat IV).
+   Les 35 anciennes apps (APPS) sont des archives en lecture seule ; les apps nouvelles arrivent par manifeste. */
+function appChip(n){ return el('span',{class:'chip',title:'Archivée, en lecture seule'},n); }
+function domChip(dom){ const d=DOMICILES[dom]; return d? el('span',{class:'chip',style:'border-style:solid;border-color:'+d.css+';color:'+d.css},'● '+d.nom) : null; }
+function appUrl(m){ if(!m||m.domicile==='prive'||!m.entree) return null; return /^apps\//.test(m.entree)? 'os/'+m.entree : m.entree; }
+function linkBtn(href,label){ return el('a',{ href, target:'_blank', rel:'noopener noreferrer', style:'display:inline-flex;gap:8px;align-items:center;justify-self:start;padding:10px 14px;border-radius:12px;background:var(--accent);color:var(--night);font:600 .95rem var(--body);text-decoration:none' },label); }
+function openHref(href){ const a=document.createElement('a'); a.href=href; a.target='_blank'; a.rel='noopener noreferrer'; document.body.append(a); a.click(); a.remove(); }
+const mdraft={ id:'', nom:'', studio:'Nativus', version:'1.0.0', domicile:'public', entree:'', couleur:'#5cb4ff', glyphe:'', permissions:[], description:'', check:false };
+function mdraftManifest(){ return { id:mdraft.id, nom:mdraft.nom, studio:mdraft.studio, version:mdraft.version, domicile:mdraft.domicile, entree:mdraft.domicile==='prive'?'':mdraft.entree, icone:{ couleur:mdraft.couleur, glyphe:mdraft.glyphe }, permissions:mdraft.permissions.slice(), description:mdraft.description }; }
+function mInput(key,label,ph,max){ const i=el('input',{ type:'text', maxlength:String(max||60), placeholder:ph||'', autocomplete:'off', 'aria-label':label }); i.value=mdraft[key];
+  i.addEventListener('input',()=>{ mdraft[key]=i.value; }); i.addEventListener('keydown',e=>{ e.stopPropagation(); if(e.key==='Enter'){ e.preventDefault(); mdraft.check=true; renderPanel(); } });
+  return field(label, el('div',{class:'form'},i)); }
+function manifestForm(g,cur){
+  const v=mdraft.check? MANIFESTE.validate(mdraftManifest()) : null;
+  const canAsk=g.open&&!cur;
+  return el('div',{class:'group'}, el('h3',{},'Préparer un manifeste'),
+    mInput('id','Identifiant (id)','ex. notes',32), mInput('nom','Nom affiché','ex. Notes',24),
+    field('Studio', chipPick(MANIFESTE.studios.map(x=>[x,x]),mdraft.studio,x=>mdraft.studio=x)),
+    mInput('version','Version','1.0.0',11),
+    field('Domicile', chipPick(Object.keys(DOMICILES).map(k=>[k,DOMICILES[k].nom]),mdraft.domicile,x=>mdraft.domicile=x)),
+    mdraft.domicile==='prive'? el('p',{},"App privée : son adresse reste sur l'appareil du fondateur et se règle dans Aypona OS, jamais ici.") : mInput('entree','Adresse d’entrée', mdraft.domicile==='service'?'https://mon-app.netlify.app/':'https://compte.github.io/app/ ou apps/<id>/index.html',200),
+    field('Permissions', el('div',{class:'chips'},Object.keys(MANIFESTE.permissions).map(p=>{ const on=mdraft.permissions.includes(p); return btn((on?'● ':'')+MANIFESTE.permissions[p],()=>{ mdraft.permissions=on? mdraft.permissions.filter(x=>x!==p) : [...mdraft.permissions,p]; renderPanel(); },'small'+(on?' primary':'')); }))),
+    mInput('couleur','Couleur de l’icône','#5cb4ff',7), mInput('glyphe','Lettre de l’icône','N',2), mInput('description','Description courte','140 caractères au maximum',140),
+    v? el('ul',{class:'log'}, v.ok? el('li',{},el('time',{},'OK'),el('span',{},'Manifeste valide : '+v.manifeste.nom+' '+v.manifeste.version+', '+DOMICILES[v.manifeste.domicile].nom+'.')) : v.errors.map(e=>el('li',{},el('time',{},'✗'),el('span',{},e)))) : null,
+    el('div',{class:'actions'}, btn('Vérifier le manifeste',()=>{ mdraft.check=true; renderPanel(); },'small'),
+      btn('Exemple',()=>{ Object.assign(mdraft,{ id:'notes', nom:'Notes', studio:'Nativus', version:'1.0.0', domicile:'public', entree:'https://exemple.github.io/notes/', couleur:'#ffd60a', glyphe:'N', permissions:['fichiers'], description:'Exemple : une app de notes publique.', check:true }); renderPanel(); },'small'),
+      canAsk? btn('Demander la publication',async()=>{ mdraft.check=true; const ok=await requestApp(mdraftManifest()); if(ok) Object.assign(mdraft,{ id:'', nom:'', entree:'', glyphe:'', description:'', permissions:[], check:false }); renderPanel(); },'small primary') : null),
+    canAsk? null : el('p',{}, g.open? 'Une app est déjà en audit : la prochaine demande sera possible après ses 12 h.' : 'Tu peux préparer et vérifier un manifeste dès maintenant. La demande de publication s’ouvrira avec l’App Store.'));
+}
 function panelAppStore(){
-  const g=gate(), react=[...store.apps.values()].filter(a=>appStatus(a)==='réactivée').length, cur=inAudit();
-  const head=[ el('p',{},"Ici, les apps de l'ancien Aypona OS reviennent une par une. Chaque demande passe "+AUDIT_H+" h d'audit par l'équipe Sécurité ; une fois validée, l'app rouvre et son bâtiment revient dans la ville."),
-    statRow([ ['Réactivées',react], ['En audit',cur?1:0], ['Désactivées',APPS.length-store.apps.size] ]) ];
-  if(!g.open){
-    const row=(b,key)=>{ const c=chantier(key); if(!b) return el('div',{},el('dt',{style:'color:'+c.css},'—'),el('dd',{},c.nom),el('dd',{},'Pas encore de bureau.'));
-      const pp=bureauPts(b)/CHANTIER_PTS; return el('div',{},el('dt',{style:'color:'+c.css},b.id),el('dd',{},c.nom+' · '+(pp>=1?'terminé':fmtPct(pp))),el('dd',{style:'grid-column:2'},bar(pp,c.css))); };
-    return { eyebrow:'App Store du nouvel Aypona OS', title:'Réactivations verrouillées',
-      body:[ ...head, el('p',{},"Rien ne rouvre tant que l'App Store et la Sécurité ne sont pas terminés."+(g.eta?' Ouverture prévue le '+fmtDay(g.eta)+' au rythme actuel.':' Au rythme actuel, les agents ne suffiront pas : renforce ces deux bureaux.')),
-        el('dl',{class:'dir'},row(g.st,'store'),row(g.se,'securite')),
-        field('Apps en attente', el('div',{class:'chips'},APPS.map(appChip))) ],
-      actions:[ { label:'Nommer des renforts (103)', primary:true, fn:()=>openPanel(panelAgents) } ] };
-  }
+  const g=gate(), list=appsSorted(), pub=list.filter(a=>appStatus(a)==='publiée'), cur=inAudit();
+  const row=(b,key)=>{ const c=chantier(key); if(!b) return el('div',{},el('dt',{style:'color:'+c.css},'—'),el('dd',{},c.nom),el('dd',{},'Pas encore de bureau.'));
+    const pp=bureauPts(b)/CHANTIER_PTS; return el('div',{},el('dt',{style:'color:'+c.css},b.id),el('dd',{},c.nom+' · '+(pp>=1?'terminé':fmtPct(pp))),el('dd',{style:'grid-column:2'},bar(pp,c.css))); };
   const left=cur? Math.max(0,cur.demande+AUDIT_H*36e5-Date.now()) : 0;
-  const waiting=APPS.filter(n=>!store.apps.has(n));
-  return { eyebrow:'App Store du nouvel Aypona OS', title:'Réactivations ouvertes',
-    body:[ ...head,
-      cur? el('p',{},el('b',{style:'color:var(--warm)'},cur.nom),' est en audit de sécurité. Fin dans '+Math.ceil(left/36e5)+' h. La prochaine demande sera possible ensuite.') : el('p',{},'Aucune app en audit : choisis la prochaine à réactiver.'),
-      field('Statut des apps', el('div',{class:'chips'},APPS.map(appChip))),
-      !cur && waiting.length? field('Demander une réactivation', el('div',{class:'chips'},waiting.map(n=>btn(n,()=>requestApp(n),'small')))) : null ],
-    actions:[] };
+  return { eyebrow:'App Store du nouvel Aypona OS', title:g.open? 'Publications ouvertes' : 'Publications verrouillées',
+    body:[ el('p',{},"Le catalogue d'Aypona OS est recréé de zéro. Chaque app nouvelle arrive avec son manifeste et son domicile, une à la fois, après "+AUDIT_H+" h d'audit par l'équipe Sécurité. Une fois publiée, sa tour sort de terre dans la ville et elle s'installe dans Aypona OS."),
+      statRow([ ['Publiées',pub.length], ['En audit',cur?1:0], ['Archivées',APPS.length] ]),
+      field('Domiciles', el('div',{class:'chips'},Object.keys(DOMICILES).map(domChip)), el('p',{},'Privé : sur l’ordinateur ou le cloud du fondateur, adresse jamais publiée. Service : app avec serveur, sur Netlify. Public : ouverte à tous, sur GitHub ou publiée avec le système. La balise de la tour prend la couleur du domicile.')),
+      g.open? null : el('p',{},"Les publications s'ouvrent quand l'App Store et la Sécurité sont terminés."+(g.eta?' Ouverture prévue le '+fmtDay(g.eta)+' au rythme actuel.':' Au rythme actuel, les agents ne suffiront pas : renforce ces deux bureaux.')),
+      g.open? null : el('dl',{class:'dir'},row(g.st,'store'),row(g.se,'securite')),
+      cur? el('p',{},el('b',{style:'color:var(--warm)'},appName(cur)),' est en audit de sécurité. Fin dans '+Math.ceil(left/36e5)+' h.') : null,
+      list.length? field('Catalogue', el('dl',{class:'dir'},list.map(a=>{ const m=a.manifeste||{}, st=appStatus(a);
+        return el('div',{},el('dt',{style:'color:'+(st==='publiée'?'#7fe0a0':'var(--warm)')},st),el('dd',{},appName(a)+' · '+(m.studio||'')+' · v'+(m.version||'?')),el('dd',{},(DOMICILES[m.domicile]||{nom:'?'}).nom+' · demandée le '+fmtDay(a.demande))); }))) : el('p',{},'Aucune app publiée pour l’instant.'),
+      manifestForm(g,cur) ],
+    actions:[ ...(g.open? [] : [{ label:'Nommer des renforts (103)', primary:true, fn:()=>openPanel(panelAgents) }]), { label:'Archives de l’ancien catalogue', fn:()=>openPanel(panelOldCatalog) }, { label:'Ouvrir Aypona OS', fn:()=>openHref('os/index.html') } ] };
+}
+function panelOldCatalog(){
+  return { eyebrow:'App Store · archives en lecture seule', title:'Archives de l’ancien catalogue',
+    body:[ el('p',{},"Décret n°2 du mandat IV : les 35 apps de l'ancien Aypona OS ne sont plus réactivables. Elles n'ont plus d'adresse depuis l'arrêt de l'abonnement Netlify. Elles restent ici comme base de recherche pour le catalogue neuf, avec l'ancien catalogue de 347 apps et l'univers lore (Bluesand, Dania, AySim, crédits), conservés dans les zips du fondateur."),
+      field('35 apps de l’ancien Aypona OS', el('div',{class:'chips'},APPS.map(appChip))) ],
+    actions:[ { label:'Retour à l’App Store', primary:true, fn:()=>openPanel(panelAppStore) } ] };
 }
 function panelApp(lot){
-  const a=store.apps.get(lot.name);
-  if(a) return { eyebrow:'Quartier '+STUDIOS[lot.st].name+' · nouvel Aypona OS', title:lot.name,
-    body:[ el('p',{},"App réactivée après "+AUDIT_H+" h d'audit par l'équipe Sécurité. Elle fait partie du nouvel Aypona OS."),
-      statRow([ ['Demandée le',fmtDay(a.demande)], ['Rouverte le',fmtDay(a.demande+AUDIT_H*36e5)], ['Étages',Math.round(appHeight(a.nom)/3.5)] ]) ],
-    actions:[ { label:"Ouvrir l'App Store", primary:true, fn:()=>openPanel(panelAppStore) }, homeAction ] };
+  const a=store.apps.get(lot.appId)||[...store.apps.values()].find(x=>appName(x)===lot.name);
+  if(a){ const m=a.manifeste||{}, url=appUrl(m);
+    return { eyebrow:'Quartier '+STUDIOS[lot.st].name+' · nouvel Aypona OS', title:appName(a),
+      body:[ el('p',{},(m.description||'App du nouvel Aypona OS.')+' Publiée après '+AUDIT_H+" h d'audit par l'équipe Sécurité."),
+        el('div',{class:'chips'},domChip(m.domicile),m.studio?el('span',{class:'chip'},m.studio):null,el('span',{class:'chip'},'v'+(m.version||'?'))),
+        statRow([ ['Demandée le',fmtDay(a.demande)], ['Publiée le',fmtDay(a.demande+AUDIT_H*36e5)], ['Étages',Math.round(appHeight(a.nom)/3.5)] ]),
+        url? linkBtn(url,'Ouvrir '+appName(a)+' ↗') : el('p',{},m.domicile==='prive'? "App privée : elle s'ouvre depuis Aypona OS, sur l'appareil où son adresse est réglée." : 'Adresse manquante.'),
+        (m.permissions||[]).length? field('Permissions', el('div',{class:'chips'},m.permissions.map(p=>el('span',{class:'chip'},MANIFESTE.permissions[p]||p)))) : null ],
+      actions:[ ...(url? [{ label:'Ouvrir '+appName(a), primary:true, fn:()=>openHref(url) }] : [{ label:'Ouvrir Aypona OS', primary:true, fn:()=>openHref('os/index.html') }]), { label:"App Store", fn:()=>openPanel(panelAppStore) }, homeAction ] }; }
   const rec=state.built.find(b=>b.lot===lot.i);
   return { eyebrow:'Quartier '+STUDIOS[lot.st].name, title:lot.name,
     body:[ el('p',{}, rec? "App installée depuis le bureau 102 de l'architecte d'Aypona OS." : "Bâtiment issu du catalogue Aypona OS. Le studio "+STUDIOS[lot.st].name+" l'occupe."),
@@ -1959,6 +2027,7 @@ start();
 }
 Promise.race([document.fonts?document.fonts.ready:Promise.resolve(), new Promise(r=>setTimeout(r,1500))]).then(ayponaMain);
 </script>
+
 
 
 </body></html>
