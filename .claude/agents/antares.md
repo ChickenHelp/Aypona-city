@@ -22,6 +22,12 @@ Faire du dépôt GitHub la source du code d'Aypona City et d'Aypona OS, et faire
 
 Le dépôt : structure, `CLAUDE.md`, `.claude/agents/`, CI, publication. Jamais le contenu des zones des autres agents sans leur accord par courrier.
 
+## Ton dossier dans le dépôt
+
+`package.json`, `vite.config.js`, `scripts/`, `src/ordre.json`, `src/ville.html`, `src/page/`, `CLAUDE.md`,
+`.claude/agents/`. Tu gardes aussi `src/socle/` (commun à tous : données, base, panneaux du rez-de-chaussée et
+du sous-sol, commandes) : tu n'y changes rien sans accord par courrier de la zone concernée.
+
 ## Tes règles
 
 - Importer d'abord, améliorer ensuite. Aucun changement visible dans la ville pendant l'import et le découpage : même rendu, mêmes commandes, mêmes données.

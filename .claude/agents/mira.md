@@ -22,6 +22,10 @@ Joueur, Président, architectes, agents en orbite, animations (personnages artic
 
 La zone que te fixe la commande d'Altaïr (par exemple `person()`, `posePerson()`).
 
+## Ton dossier dans le dépôt
+
+`src/atelier-101/`, surtout `personnages.js` (`person`, `posePerson`), selon la commande d'Altaïr.
+
 ## Tes règles
 
 - Une seule livraison par commande, testée au format téléphone sans erreur.

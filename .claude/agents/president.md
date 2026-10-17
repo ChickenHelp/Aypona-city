@@ -22,6 +22,11 @@ Présider le siège : lire le courrier et la base, décider par décret, tenir l
 
 `PRESIDENCE`, `ATELIER`, `CONSEIL`, `TRANSITION`, `RELEASES` et les panneaux de la Présidence. Les règles de données (matricules, `bureauPts`, `gate`, apps) ne changent que par tes décrets.
 
+## Ton dossier dans le dépôt
+
+`src/presidence/` : `presidence.js`, `atelier.js`, `conseil.js`, `transition.js`, `courrier.js`,
+`releases.js`, `panneaux-presidence.js`, `panneaux-courrier.js`.
+
 ## Tes règles
 
 - À chaque prompt : incrémenter `used`, ajouter un décret, cocher l'étape de la feuille de route, ajouter une ligne `RELEASES`. Chaque décret est aussi inscrit aux archives (type `decret`).

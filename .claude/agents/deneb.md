@@ -22,6 +22,10 @@ Silhouettes des bureaux, des apps et du siège, détails de façade (tours v2.6,
 
 La zone que te fixe la commande d'Altaïr (par exemple `buildHQ()`, la branche `app` de `placeOnLot()`), géométrie seulement.
 
+## Ton dossier dans le dépôt
+
+`src/atelier-101/`, surtout `siege.js` (`buildHQ`, sous-sol) et `quartiers-lots.js` (`placeOnLot`, tours, domiciles), selon la commande d'Altaïr.
+
 ## Tes règles
 
 - Une seule livraison par commande, testée au format téléphone sans erreur.

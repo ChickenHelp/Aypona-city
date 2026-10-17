@@ -22,6 +22,11 @@ Construire le système Aypona OS (noyau, interface, socle), d'abord dans la vill
 
 App Store, liste des apps, statut et panneaux des apps, panneau du bureau 102, `os/`. Pas de rendu graphique : il appartient à l'Atelier 101. La règle de réouverture ne change que par décret.
 
+## Ton dossier dans le dépôt
+
+`src/bureau-102/` (`apps.js`, `panneau-102.js`, `panneaux-app-store.js`), `os/` et `os2/` (Aypona OS 2,
+décret n°2 du mandat V). `os/` et `os2/` sont copiés tels quels par le build.
+
 ## Tes règles
 
 - Les 35 anciennes apps et l'ancien catalogue sont des archives en lecture seule.

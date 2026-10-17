@@ -22,6 +22,11 @@ Faire tourner les équipes de la ville : relève des missions avant le 16 nov., 
 
 Nomination, prolongation et révocation des agents par la collection `agents`, panneau du bureau 103. Pas de rendu graphique.
 
+## Ton dossier dans le dépôt
+
+`src/bureau-103/` : `chantiers.js`, `agents.js`, `agents-en-mission.js`, `production.js` (dont `bureauPts`,
+protégé), `panneau-bureaux.js`, `panneau-103.js`.
+
 ## Tes règles
 
 - Matricules `AYP-[bureau]-[AAMM]-[numéro]` et calcul des chantiers (`bureauPts`) ne changent que par décret. Une fiche n'est jamais supprimée.

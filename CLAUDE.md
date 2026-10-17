@@ -8,9 +8,9 @@ conversation. Ce dépôt est tenu par le bureau 104 (Antarès, AYP-104-2610-0015
 
 | Étape (objet `TRANSITION`) | État |
 |---|---|
-| 1. Dépôt et import tel quel | fait : commit initial, tag `v4.5` |
+| 1. Dépôt et import tel quel | fait : commit initial `2f24ba3` (v4.5) |
 | 2. CLAUDE.md et agents | fait : ce fichier et `.claude/agents/` |
-| 3. Découpage par zones (Vite) | **interdit sans décret du Président** |
+| 3. Découpage par zones (Vite) | fait sur la branche `transition/decoupage`, **fusion sur `main` par décret seulement** |
 | 4. Branches et tests automatiques | à venir |
 | 5. Publication et bascule | à venir, décrétée par le Président |
 
@@ -47,17 +47,43 @@ il peut aussi appeler l'agent par son fichier dans `.claude/agents/`.
 Jed est le fondateur. Sa parole fait loi : il peut changer la feuille de route ou l'ordre des étapes à
 tout moment.
 
-## Structure du dépôt (avant découpage)
+## Structure du dépôt
 
 ```
-index.html               page unique de la ville (tout le code, objets et rendu)
-os/index.html            Aypona OS (bureau 102)
-os/aypona-logo-gold.png  logo d'Aypona OS
+index.html               version en ligne importée telle quelle (page unique, référence jusqu'à la bascule)
+os/                      Aypona OS v0.2 (bureau 102), copié tel quel par le build
+os2/                     Aypona OS 2 (bureau 102, à venir), copié tel quel par le build
+src/ordre.json           ordre des fragments dans la page, chacun repéré par sa première ligne
+src/page/                enveloppe de la page (en-tête, ouverture et fin du script)        · bureau 104
+src/socle/               commun : données, base, panneaux du RDC et du sous-sol, commandes · gardé par le bureau 104
+src/presidence/          PRESIDENCE, ATELIER, CONSEIL, TRANSITION, COURRIER, RELEASES, panneaux · Président
+src/atelier-101/         styles, interface, rendu 3D, siège, personnages, minimap, boucle · Atelier 101
+src/bureau-102/          apps, manifeste, App Store, panneau du bureau 102                · Bureau 102
+src/bureau-103/          chantiers, agents, production (bureauPts), panneaux 103           · Bureau 103
+scripts/assemblage.mjs   découpage de index.html en src/ et assemblage de src/
+scripts/capture-telephone.mjs  capture 390 × 780 et relevé de la console
+vite.config.js           build : dist/index.html (page unique) + dist/os/
 .claude/agents/          un fichier par agent
 ```
 
-Repères dans `index.html` (fonction `ayponaMain`) : `PRESIDENCE`, `ATELIER`, `CONSEIL`, `TRANSITION`,
-`COURRIER`, `OFFICES`, `CHANTIERS`, `bureauPts`, `gate`, `RELEASES`. Lire ces objets avant toute
+Les fragments ne sont pas des modules ES : le code de la ville partage une seule fermeture
+(`ayponaMain`), et chaque fragment est un morceau de ce code, copié octet pour octet. Assembler
+`src/` redonne exactement `index.html`. Un fragment peut donc utiliser tout ce qui est déclaré dans
+les fragments qui le précèdent dans `src/ordre.json`.
+
+Commandes (`npm install` d'abord) :
+
+- `npm run dev` : la ville assemblée en direct, rechargée à chaque modification de `src/`.
+- `npm run build` : `dist/index.html` et `dist/os/`.
+- `npm run decouper` : redécoupe `index.html` dans `src/` (après une synchro de la version en ligne).
+- `npm run verifier` : vérifie que `src/` redonne `index.html` et que `dist/index.html` lui est identique.
+- `node scripts/capture-telephone.mjs <page> <dossier>` : captures au format téléphone, échec si la console a une erreur.
+
+Ne jamais déplacer ni renommer la première ligne d'un fragment sans mettre à jour `src/ordre.json`.
+
+Repères dans le code : `PRESIDENCE`, `ATELIER`, `CONSEIL`, `TRANSITION`, `COURRIER` (`src/presidence/`),
+`OFFICES` (`src/socle/donnees.js`), `CHANTIERS` et `bureauPts` (`src/bureau-103/`), `gate`
+(`src/bureau-102/apps.js`), `RELEASES` (`src/presidence/releases.js`). Lire ces objets avant toute
 décision : ils font foi sur les lettres de mission et les règles. Les fichiers d'agents n'en sont
 qu'un résumé.
 
@@ -80,14 +106,16 @@ des apps. Une fiche d'agent n'est jamais supprimée, seulement révoquée ou exp
 
 1. Lire la version en ligne (`Artifact` action `read`, puis `list` scope `files`) avant de travailler.
    Si elle est plus récente que `main`, l'importer d'abord telle quelle dans un commit
-   « Synchro de la version en ligne vX.Y ».
+   « Synchro de la version en ligne vX.Y ». Sur une branche qui contient `src/`, lancer ensuite
+   `npm run decouper` puis `npm run verifier` dans le même commit.
 2. Travailler sur une branche par livraison, jamais directement sur `main`.
 3. Publier sur la même artifact (même adresse), jamais une nouvelle. Fusionner en cas de conflit,
    ne jamais écraser.
 4. Le numéro de version se prend dans `RELEASES` de la version en ligne au moment de publier.
    Chaque livraison : une ligne `RELEASES` préfixée par sa zone (« Atelier 101 », « Bureau 102 »,
    « Bureau 104 »…) et une entrée aux archives (type `livraison`).
-5. Après publication, committer les fichiers publiés et taguer `vX.Y`.
+5. Après publication, committer les fichiers publiés. Les tags sont refusés par le serveur : le
+   numéro de version va dans le message du commit.
 
 ## Règles permanentes
 

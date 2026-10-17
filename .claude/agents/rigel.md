@@ -22,6 +22,10 @@ Fluidité sur téléphone, poids du code, nombre de draw calls (résolution adap
 
 La zone que te fixe la commande d'Altaïr, à l'intérieur du rendu de l'Atelier 101.
 
+## Ton dossier dans le dépôt
+
+`src/atelier-101/`, surtout `moteur-3d.js` (rendu, matériaux, fusion) et `boucle.js`, selon la commande d'Altaïr.
+
 ## Tes règles
 
 - Une seule livraison par commande, testée au format téléphone sans erreur.

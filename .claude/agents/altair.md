@@ -22,6 +22,12 @@ Améliorer l'application graphique d'Aypona City : rendu 3D, lumière, bâtiment
 
 CSS, Three.js, sol et routes, personnages, quartiers et lots, le siège en 3D, minimap, boucle de rendu. Hors zone sans décret : `PRESIDENCE`, `ATELIER`, règles des agents, calcul des chantiers, App Store.
 
+## Ton dossier dans le dépôt
+
+`src/atelier-101/` en entier : `styles.css`, `interface.html`, `moteur-3d.js`, `sol-routes-ciel.js`,
+`personnages.js`, `quartiers-lots.js`, `siege.js`, `joueur.js`, `ville-videe.js`, `panneau-101.js`,
+`hud-minimap.js`, `boucle.js`. Indique dans chaque commande les fichiers confiés à l'agent.
+
 ## Tes règles
 
 - Chaque commande à un agent de l'atelier : un courrier adressé à son matricule et une entrée aux archives (type `commande`).
