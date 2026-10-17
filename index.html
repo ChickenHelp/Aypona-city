@@ -1,0 +1,1959 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Aypona City</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: plein écran 3D, HUD en verre dépoli flottant aux bords (esthétique Aypona OS). Look nocturne unique. */
+:root{
+  --night:#0b0e26;
+  --glass:rgba(20,24,60,.66);
+  --glass-strong:rgba(16,19,48,.9);
+  --line:rgba(168,180,255,.22);
+  --ink:#eef0ff;
+  --muted:#a6acd8;
+  --accent:#7cc8ff;
+  --warm:#ffc857;
+  --pad-a:#3fbf6a;
+  --pad-b:#e5534b;
+  --display:'Bricolage Grotesque',ui-rounded,system-ui,sans-serif;
+  --body:'Figtree',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,Menlo,Consolas,monospace;
+  color-scheme:dark;
+}
+html,body{height:100%}
+body{background:var(--night);color:var(--ink);font-family:var(--body);overflow:hidden;overscroll-behavior:none;-webkit-user-select:none;user-select:none}
+#app{position:fixed;inset:0}
+#c{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;outline:none}
+.glass{background:var(--glass);border:1px solid var(--line);backdrop-filter:blur(14px) saturate(140%);-webkit-backdrop-filter:blur(14px) saturate(140%)}
+
+/* HUD haut gauche */
+.brand{position:absolute;top:calc(12px + env(safe-area-inset-top,0px));left:calc(12px + env(safe-area-inset-left,0px));border-radius:16px;padding:10px 14px;display:grid;gap:4px;max-width:calc(100vw - 190px);min-width:0}
+.brand h1{margin:0;font-family:var(--display);font-weight:800;font-size:1.15rem;letter-spacing:.01em;line-height:1}
+.brand h1 span{color:var(--accent)}
+.bar{height:8px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden}
+.bar i{display:block;height:100%;border-radius:999px}
+.dir .bar{display:block;padding:0;margin-top:4px;background:rgba(255,255,255,.08)}
+.osprog{display:grid;gap:3px;font-size:.72rem;color:var(--muted)}
+.osprog b{color:var(--ink);font-family:var(--mono);font-weight:500}
+.steps{list-style:none;margin:0;padding:0;display:grid;gap:4px}
+.steps li{display:flex;gap:8px;align-items:center;font-size:.86rem;color:var(--muted)}
+.steps li.done{color:var(--ink)}
+.steps li span{font-family:var(--mono);width:1.3em;text-align:center}
+.where{display:flex;gap:6px;align-items:center;font-size:.8rem;color:var(--muted);min-width:0}
+.where b{color:var(--ink);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dot{width:8px;height:8px;border-radius:50%;flex:none;background:var(--accent)}
+.badge{font-family:var(--mono);font-size:.68rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+
+/* Minimap */
+#mapWrap{position:absolute;top:calc(12px + env(safe-area-inset-top,0px));right:calc(12px + env(safe-area-inset-right,0px));border-radius:18px;padding:6px;line-height:0}
+#minimap{width:132px;height:132px;border-radius:12px;display:block}
+/* Atelier 101 · Electra (v2.9) : bas du bloc du haut mesuré en direct (--hud-top), le toast se place dessous */
+
+/* Prompt d'interaction */
+#prompt{position:absolute;box-sizing:border-box;left:50%;transform:translateX(-50%);bottom:calc(28px + env(safe-area-inset-bottom,0px));border-radius:999px;padding:8px 16px 8px 8px;display:flex;gap:10px;align-items:center;font-weight:600;font-size:.95rem;white-space:nowrap;max-width:calc(100vw - 32px)}
+#prompt span:last-child{overflow:hidden;text-overflow:ellipsis}
+.key{display:inline-grid;place-items:center;min-width:28px;height:28px;padding:0 7px;border-radius:999px;font-family:var(--mono);font-size:.78rem;font-weight:500;background:var(--ink);color:var(--night);flex:none}
+.key.a{background:var(--pad-a);color:#fff}
+.key.b{background:var(--pad-b);color:#fff}
+
+#toast{position:absolute;box-sizing:border-box;left:50%;top:var(--hud-top,calc(124px + env(safe-area-inset-top,0px)));transform:translate(-50%,-8px);opacity:0;transition:opacity .25s,transform .25s;border-radius:12px;padding:8px 14px;font-size:.88rem;pointer-events:none;width:max-content;max-width:calc(100vw - 32px);text-align:center}
+#toast.on{opacity:1;transform:translate(-50%,0)}
+
+#hint{position:absolute;left:calc(12px + env(safe-area-inset-left,0px));bottom:calc(12px + env(safe-area-inset-bottom,0px));border-radius:12px;padding:7px 10px;font-size:.74rem;color:var(--muted);display:flex;gap:10px;flex-wrap:wrap}
+#hint b{color:var(--ink);font-family:var(--mono);font-weight:500}
+
+/* Contrôles tactiles */
+#joy{position:absolute;left:calc(22px + env(safe-area-inset-left,0px));bottom:calc(22px + env(safe-area-inset-bottom,0px));width:128px;height:128px;border-radius:50%;touch-action:none}
+#knob{position:absolute;left:50%;top:50%;width:54px;height:54px;margin:-27px 0 0 -27px;border-radius:50%;background:rgba(238,240,255,.85);box-shadow:0 4px 18px rgba(0,0,0,.4)}
+#btnA{position:absolute;right:calc(26px + env(safe-area-inset-right,0px));bottom:calc(40px + env(safe-area-inset-bottom,0px));width:74px;height:74px;border-radius:50%;border:0;background:var(--pad-a);color:#fff;font-family:var(--display);font-weight:800;font-size:1.6rem;box-shadow:0 6px 20px rgba(0,0,0,.45);touch-action:none}
+#btnA:active{transform:scale(.94)}
+/* Atelier 101 · Electra (v2.9) : le prompt passe au-dessus du joystick (128 px + 22 px) et du bouton A, et revient à la ligne au lieu d'être coupé */
+.touch #prompt{bottom:calc(166px + env(safe-area-inset-bottom,0px));white-space:normal;border-radius:22px;line-height:1.25;max-width:min(420px,calc(100vw - 32px))}
+.touch #toast{max-width:min(420px,calc(100vw - 32px))}
+@media (min-aspect-ratio:4/3){.touch #prompt{bottom:calc(30px + env(safe-area-inset-bottom,0px));max-width:calc(100vw - 2 * max(170px,calc(150px + env(safe-area-inset-left,0px))))}}
+
+/* Panneaux */
+#panel,#intro{position:absolute;inset:0;display:grid;place-items:center;padding:calc(16px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) calc(16px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));background:rgba(6,8,22,.38)}
+.card{width:min(560px,100%);max-height:100%;overflow:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;touch-action:pan-y;border-radius:22px;padding:22px;background:var(--glass-strong);border:1px solid var(--line);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);display:grid;gap:14px;-webkit-user-select:text;user-select:text}
+.eyebrow{margin:0;font-family:var(--mono);font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+.card h2{margin:0;font-family:var(--display);font-weight:800;font-size:1.55rem;line-height:1.1;text-wrap:balance}
+.card p{margin:0;line-height:1.55;color:var(--muted);max-width:62ch}
+.dir{display:grid;gap:8px;margin:0}
+.dir div{display:grid;grid-template-columns:auto 1fr;gap:2px 12px;align-items:baseline;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.04)}
+.dir dt{font-family:var(--mono);font-size:.8rem;color:var(--warm);grid-row:span 2}
+.dir dd{margin:0}
+.dir dd+dd{color:var(--muted);font-size:.86rem}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stat{padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.04)}
+.stat b{display:block;font-family:var(--display);font-size:1.5rem;font-variant-numeric:tabular-nums}
+.stat span{font-size:.75rem;color:var(--muted)}
+.actions{display:flex;flex-wrap:wrap;gap:8px}
+button.btn{appearance:none;border:1px solid var(--line);background:rgba(255,255,255,.07);color:var(--ink);font:600 .9rem var(--body);padding:10px 14px;border-radius:12px;cursor:pointer;display:inline-flex;gap:8px;align-items:center}
+button.btn:hover{background:rgba(255,255,255,.13)}
+button.btn.primary{background:var(--accent);color:var(--night);border-color:transparent}
+button.btn.small{padding:6px 10px;font-size:.8rem;border-radius:10px}
+button.btn:focus-visible,input:focus-visible,#btnStart:focus-visible{outline:3px solid var(--warm);outline-offset:2px}
+.focus{outline:3px solid var(--warm)!important;outline-offset:2px}
+.form{display:flex;gap:8px;flex-wrap:wrap}
+.form textarea{flex:1 1 100%;min-width:0;min-height:96px;resize:vertical;background:rgba(255,255,255,.06);border:1px solid var(--line);color:var(--ink);font:500 .95rem var(--body);padding:10px 12px;border-radius:12px}
+.form input{flex:1 1 180px;min-width:0;background:rgba(255,255,255,.06);border:1px solid var(--line);color:var(--ink);font:500 .95rem var(--body);padding:10px 12px;border-radius:12px}
+.group{display:grid;gap:6px}
+.group h3{margin:0;font-size:.78rem;font-family:var(--mono);letter-spacing:.06em;text-transform:uppercase;display:flex;gap:6px;align-items:center;color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.list{display:grid;gap:14px;max-height:38vh;overflow:auto;padding-right:4px}
+.agent{display:grid;grid-template-columns:auto 1fr auto;gap:4px 10px;align-items:center;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.04)}
+.agent .nm{font-weight:700}
+.agent .ms{grid-column:2;font-size:.82rem;color:var(--muted)}
+.agent .bt{grid-column:3;grid-row:1 / span 2;display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.chip{font-size:.8rem;padding:6px 10px;border-radius:10px;border:1px dashed var(--line);color:var(--muted)}
+.chip.gone{text-decoration:line-through}
+.log{list-style:none;margin:0;padding:0;display:grid;gap:4px;max-height:28vh;overflow:auto}
+.log li{display:grid;grid-template-columns:auto 1fr;gap:10px;font-size:.85rem;padding:6px 10px;border-radius:10px;background:rgba(255,255,255,.04)}
+.log time{font-family:var(--mono);font-size:.72rem;color:var(--muted);white-space:nowrap;padding-top:2px}
+.pill{font-family:var(--mono);font-size:.68rem;padding:2px 8px;border-radius:999px;text-transform:uppercase;letter-spacing:.05em}
+.pill.on{background:rgba(63,191,106,.2);color:#7fe0a0}
+.pill.off{background:rgba(255,255,255,.08);color:var(--muted)}
+.close-row{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:12px;font-size:.78rem;color:var(--muted)}
+
+/* Intro */
+.intro h2{font-size:clamp(2rem,7vw,3rem)}
+.intro h2 span{color:var(--accent)}
+.ctrls{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.ctrl{padding:12px;border-radius:14px;background:rgba(255,255,255,.04);display:grid;gap:6px;align-content:start;font-size:.82rem;color:var(--muted)}
+.ctrl h3{margin:0;font-size:.9rem;color:var(--ink)}
+.ctrl div{display:flex;gap:6px;align-items:center}
+#btnStart{justify-self:start}
+@media (max-width:520px){.ctrls{grid-template-columns:1fr}.stats{grid-template-columns:repeat(3,1fr)}#minimap{width:116px;height:116px}#mapWrap{padding:5px;border-radius:16px}.brand{max-width:calc(100vw - 172px - env(safe-area-inset-left,0px) - env(safe-area-inset-right,0px));padding:9px 12px}#hint{display:none}.agent{grid-template-columns:auto 1fr}.agent .bt{grid-column:1 / -1;grid-row:auto;justify-content:flex-start}}
+/* Atelier 101 · Electra (v2.9) : panneaux au pouce. Une seule zone de défilement (la carte), cibles de 44 px, barre Fermer collée en bas */
+@media (max-width:520px),(max-height:520px){
+  #panel,#intro{padding:calc(10px + env(safe-area-inset-top,0px)) max(10px,env(safe-area-inset-right,0px)) calc(10px + env(safe-area-inset-bottom,0px)) max(10px,env(safe-area-inset-left,0px))}
+  .card{padding:18px 16px 0;border-radius:20px;gap:12px}
+  .card h2{font-size:1.35rem}
+  .card p{font-size:.95rem}
+  .list,.log{max-height:none;overflow:visible}
+  .stat{padding:9px 10px;min-width:0}
+  .stat b{font-size:1.25rem;overflow-wrap:anywhere}
+  .close-row{position:sticky;bottom:0;margin:0 -16px;padding:10px 16px 12px;background:var(--glass-strong);border-radius:0 0 20px 20px;z-index:1}
+  .intro{padding-bottom:18px}
+}
+.touch button.btn{min-height:44px}
+.touch button.btn.small{min-height:38px}
+
+#fade{position:absolute;inset:0;background:#05060f;opacity:0;pointer-events:none;transition:opacity .28s}
+#fade.on{opacity:1}
+@media (prefers-reduced-motion:reduce){#fade,#toast{transition:none}}
+</style>
+
+<div id="app">
+  <canvas id="c" tabindex="0" aria-label="Vue 3D d'Aypona City"></canvas>
+
+  <header class="brand glass">
+    <h1>Aypona <span>City</span></h1>
+    <div class="where"><i class="dot" id="whereDot"></i><b id="where">Place du Siège</b></div>
+    <div class="osprog"><span>Nouvel Aypona OS · <b id="osPct">0 %</b></span><div class="bar"><i id="osBar" style="width:0;background:var(--accent)"></i></div></div>
+    <span class="badge" id="inputBadge">Clavier + souris</span>
+  </header>
+
+  <div id="mapWrap" class="glass"><canvas id="minimap" width="264" height="264" aria-label="Plan de la ville"></canvas></div>
+
+  <div id="prompt" class="glass" hidden><span class="key a" id="promptKey">E</span><span id="promptText"></span></div>
+  <div id="toast" class="glass" role="status"></div>
+
+  <div id="hint" class="glass"><span><b>ZQSD/WASD</b> marcher</span><span><b>Maj</b> courir</span><span><b>Souris</b> caméra</span><span><b>E</b> interagir</span><span><b>H</b> aide</span></div>
+
+  <div id="touchUI" hidden>
+    <div id="joy" class="glass"><div id="knob"></div></div>
+    <button id="btnA" aria-label="Interagir">A</button>
+  </div>
+
+  <div id="panel" hidden>
+    <div class="card" role="dialog" aria-modal="true" aria-labelledby="pTitle">
+      <p class="eyebrow" id="pEyebrow"></p>
+      <h2 id="pTitle"></h2>
+      <div id="pBody" style="display:grid;gap:14px"></div>
+      <div class="actions" id="pActions"></div>
+      <div class="close-row"><span id="pNav">Croix directionnelle pour choisir, A pour valider</span><button class="btn small" id="pClose"><span class="key b">B</span> Fermer</button></div>
+    </div>
+  </div>
+
+  <div id="intro">
+    <div class="card intro">
+      <p class="eyebrow">Aypona OS · version ville</p>
+      <h2>Aypona <span>City</span></h2>
+      <p>Restructuration en cours : la ville a été vidée, seul le siège reste debout, et toutes les apps d'Aypona OS sont désactivées. Les bureaux de construction du nouvel Aypona OS sortent de terre autour du siège, et des agents immatriculés y sont nommés.</p>
+      <div class="ctrls">
+        <div class="ctrl"><h3>Manette Xbox</h3><div><span class="key">L</span>se déplacer</div><div><span class="key">R</span>caméra</div><div><span class="key a">A</span>interagir</div><div><span class="key b">B</span>fermer</div><div><span class="key">RT</span>courir</div></div>
+        <div class="ctrl"><h3>Clavier</h3><div><span class="key">ZQSD</span>se déplacer</div><div><span class="key">Souris</span>caméra</div><div><span class="key">E</span>interagir</div><div><span class="key">Échap</span>fermer</div><div><span class="key">Maj</span>courir</div></div>
+        <div class="ctrl"><h3>Tactile</h3><div><span class="key">◎</span>joystick à gauche</div><div><span class="key">↔</span>glisser pour la caméra</div><div><span class="key a">A</span>interagir</div><div>Pousser le joystick à fond pour courir</div></div>
+      </div>
+      <button class="btn primary" id="btnStart"><span class="key a">A</span> Entrer dans la ville</button>
+    </div>
+  </div>
+
+  <div id="fade"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+function ayponaMain(){
+'use strict';
+const $ = s => document.querySelector(s);
+const PI = Math.PI, clamp = (v,a,b) => Math.max(a, Math.min(b, v));
+
+/* ---------- Données Aypona OS ---------- */
+const STUDIOS = [
+  { name:'Devea',      hex:0xff8a65, css:'#ff8a65' },
+  { name:'Nativus',    hex:0x4fe0a8, css:'#4fe0a8' },
+  { name:'BroNet',     hex:0x5cb4ff, css:'#5cb4ff' },
+  { name:'8Pool',      hex:0xffc857, css:'#ffc857' },
+  { name:'Neural Pro', hex:0xb392ff, css:'#b392ff' },
+];
+const APPS = ['AyNetwork','AyBudget','AyCV','AyMatch','AyCat','AyShield','AyMeditate','AyWardrobe','AyKeys','AyPermis','AyMenu','AyDIY','AyRappel','AySummary','AyArt','AyPress','AyFood','AyLaw','AyHealth','AyClimate','AyDigest','AyRadio','AyGps','AyCam','AyFly','AySign','AyInvoice','AyBank','AyPoker','AypFlix','Voyago','DuoPanier','VAULT.OPS','CLUTCH','Burner'];
+const AGENTS = [
+  ['GLaDOS','Teste la solidité des nouveaux bâtiments'],
+  ['SKYNET','Surveille le réseau routier'],
+  ['MCP','Relie les apps entre elles'],
+  ['Jarvis','Guide les visiteurs du siège'],
+  ['KITT','Patrouille sur les grands axes'],
+  ['Cerebro','Cartographie les quartiers'],
+  ['C-3PO','Traduit les panneaux de la ville'],
+  ['Matrix OS','Simule le trafic aux heures de pointe'],
+  ['Metal Cooler Core','Refroidit les serveurs du quartier BroNet'],
+];
+const OFFICES = [
+  { no:'101', role:'Architecte de la Ville', short:'construit la ville', hex:0xffc857, css:'#ffc857', open:()=>openPanel(panelCity) },
+  { no:'102', role:"Architecte d'Aypona OS", short:"construit le système Aypona OS", hex:0x5cb4ff, css:'#5cb4ff', open:()=>openPanel(panelOS) },
+  { no:'103', role:'Manager des agents', short:'manage les agents IA', hex:0xb392ff, css:'#b392ff', open:()=>openPanel(panelAgents) },
+];
+
+/* ---------- PRÉSIDENCE DU SIÈGE (registre de passation) ----------
+   Chaque président dispose de 5 prompts, puis il est remplacé dans une nouvelle conversation.
+   Président suivant : lis cet objet AVANT toute décision, mets à jour `used`, `decrets` et `feuille`
+   à chaque prompt, ajoute une ligne à RELEASES, et republie la MÊME artifact « Aypona City ».
+   Depuis le mandat II, le code de la Présidence est générique : à la passation, passe termine:true,
+   rédige `lettre` et `proposition` pour le successeur ; à la prise de fonction, le successeur range le
+   mandat terminé dans `historique` (décrets inclus) et repart avec decrets:[] et feuille = proposition. */
+const ROMAINS = ['I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII'];
+const PRESIDENCE = {
+  mandat:'IV', president:'Président IV', debut:'17 oct. 2026', fin:null, termine:false, quota:5, used:3,
+  decrets:[
+    { p:1, titre:'Décret de prise de fonction', texte:"Le Président IV s'installe dans le fauteuil du Président III. Il a lu son dossier PRESIDENT au Bureau du courrier (c0001, c0007), la lettre de passation, l'objet PRESIDENCE et la base : 6 bureaux ouverts, 14 agents actifs, tous jusqu'au 16 nov., 0 app réactivée, 7 courriers. Constats : la relève décrétée (c0006) n'est pas encore exécutée par Capella, ni les 4 renforts prévus le 18 oct., ni les 7 prolongations jusqu'au 16 déc. ; Polaris (c0003) et Altaïr (c0004) n'ont toujours pas répondu. Il range le mandat III dans la galerie des mandats (v4.0), adopte la feuille de route proposée, relance par courrier Capella, Polaris et Altaïr, et annonce sa prise de fonction à toute la ville." },
+    { p:2, titre:'Décret du catalogue neuf', texte:"Le Président tranche la question posée par Polaris (c0013), avis conforme d'Altaïr (c0014). 1) Ordres du fondateur inscrits : le bureau 102 construit le système Aypona OS (noyau, interface, socle), pas les apps ; le catalogue d'Aypona OS est recréé de zéro ; l'hébergement du système va d'abord dans la ville (os/), puis sur GitHub ; trois domiciles pour les apps : privé, service, public. 2) Les 35 anciennes apps ne sont plus réactivables : elles passent aux archives en lecture seule, avec l'ancien catalogue et l'univers lore (Bluesand, Dania, AySim, crédits), comme base de recherche. 3) À la réouverture, l'App Store B03 publie des apps nouvelles, chacune décrite par un manifeste (id, nom, studio, version, domicile, adresse d'entrée, icône, permissions). La règle de réouverture est maintenue : App Store et Sécurité terminés, une app à la fois, 12 h d'audit de la Sécurité. Le domicile du manifeste s'affiche sur la tour (balises de Deneb, v4.3). 4) Le plan Aypona OS v0.2 de Polaris est adopté, livrable avant le 22 oct. : manifeste, hôte d'apps, sélecteur, Fichiers, widgets, notifications, une vingtaine de tests. GitHub (v0.3) attend que le fondateur crée le dépôt. Polaris exécute (c0017)." },
+    { p:3, titre:'Décret de la transition', texte:"Ordre du fondateur : Aypona City et Aypona OS passent sur GitHub. Le Président nomme Antarès chargé de la transition GitHub & Claude Code, bureau 104 du conseil, matricule AYP-104-2610-0015, pour 30 jours. Sa mission : faire du dépôt GitHub la source du code de la ville et du système, et faire travailler chaque agent dans Claude Code, sans casser la ville en ligne ni sa base. Les recommandations du Président sont inscrites dans l'objet TRANSITION : import tel quel d'abord, CLAUDE.md et un fichier par agent dans .claude/agents, découpage par zones, une branche par livraison, tests automatiques, publication depuis le dépôt, aucun secret dans le code. La réouverture des apps passe à l'étape 4 de la feuille de route. Capella est prévenu : ses renforts du 18 oct. prendront les matricules 0016 à 0019." },
+  ],
+  feuille:[
+    { p:1, titre:'Prise de fonction', texte:'Lire son dossier PRESIDENT au courrier, ranger le mandat III, vérifier l’exécution de la relève par Capella et lire les réponses de Polaris et d’Altaïr.' },
+    { p:2, titre:'Catalogue neuf et Aypona OS v0.2', texte:'Trancher la question de Polaris : apps nouvelles décrites par un manifeste, anciennes apps aux archives, plan v0.2 adopté.' },
+    { p:3, titre:'Transition GitHub & Claude Code', texte:'Ordre du fondateur : le projet passe sur GitHub. Nommer le chargé de la transition et inscrire les recommandations du Président.' },
+    { p:4, titre:'Réouverture des apps', texte:'Quand l’App Store et la Sécurité sont livrés (vers le 22 oct.) et la v0.2 prête, publier la première app nouvelle par son manifeste. Vie urbaine ou Économie Ay$ au choix du fondateur.' },
+    { p:5, titre:'Bilan et passation', texte:'Bilan du mandat IV et lettre au Président V.' },
+  ],
+  consignes:[
+    'Avant tout travail : lire son dossier au Bureau du courrier (collection courrier, messages adressés à PRESIDENT ou à TOUS), puis l’objet PRESIDENCE. Ordre du fondateur, mandat III, prompt 3.',
+    'Lire l’objet PRESIDENCE dans le code avant toute décision.',
+    'À chaque prompt : incrémenter used, ajouter un décret, cocher l’étape de la feuille de route.',
+    'Republier la même artifact Aypona City (même adresse), jamais une nouvelle.',
+    'Ajouter une ligne dans RELEASES à chaque livraison.',
+    'Garder l’esthétique Aypona OS : ville de nuit, verre dépoli, couleurs des 5 studios.',
+    'Prise de fonction : lire la lettre, l’objet PRESIDENCE et les collections de la base, ranger le mandat terminé dans historique, passer au numéro suivant (used:1, termine:false), feuille = proposition, et ajouter son propre décret.',
+    'Le fondateur, Jed, peut changer l’ordre de la feuille de route à tout moment : sa parole fait loi. Il l’a fait au prompt 2 du mandat I.',
+    'Les bureaux, agents, apps et archives vivent dans la base de données de l’artifact : les lire avant d’agir. Chaque décret est aussi inscrit aux archives (type decret).',
+    'Matricule d’un agent : AYP-[bureau]-[AAMM]-[numéro]. Une fiche n’est jamais supprimée, seulement révoquée ou expirée.',
+    'L’avancement des chantiers se calcule à partir des fiches d’agents (fonction bureauPts) : ne jamais le stocker, le recalculer.',
+    'Apps réactivées : collection apps (nom, demande). Le statut en audit ou réactivée se calcule, 12 h après la demande.',
+    'Vie urbaine (cycle jour et nuit, habitants, véhicules) a été reportée au mandat III au prompt 2 du mandat II, pour faire place à l’organigramme demandé par le fondateur.',
+    'L’organigramme (salle du conseil) se calcule depuis la base : ne jamais le coder en dur, il suit les bureaux et agents.',
+    'Ordre du fondateur (mandat II, prompt 3) : le mandat II se concentre sur l’Architecte de la Ville. « Les apps prennent vie » et « Économie Ay$ » sont reportées au mandat III, avec « Vie urbaine ».',
+    'Atelier 101 : l’architecte et ses agents sont des fiches de la collection agents avec bureau:"101". Ils ne produisent pas de points de chantier. Leurs commandes et livraisons sont aux archives (types commande et livraison).',
+    'Partage du code : l’Atelier 101 possède tout le rendu graphique. Le Président ne touche qu’à PRESIDENCE, ATELIER, RELEASES et aux panneaux de la Présidence. Les règles de données (matricules, bureauPts, gate, apps) ne changent que par décret.',
+    'Relève (décret n°5 du mandat III) : les 7 missions durables (Altaïr, Polaris, Capella, Rigel, Deneb, Mira, Electra) sont prolongées de 30 jours, jusqu’au 16 déc. 2026, et 4 renforts de 7 jours sont nommés le 18 oct. aux bureaux B03 et B04, exécution par Capella. Les 7 missions de chantier finissent le 16 nov. sans prolongation : leurs chantiers seront livrés avant. Vérifier dans la base que Capella l’a fait.',
+    'Prise de fonction du Président IV (v4.1) : mandat III rangé dans historique. Relances au courrier : c0008 (Capella, exécuter la relève), c0009 (Polaris), c0010 (Altaïr), c0011 (TOUS). Vérifier leurs réponses avant chaque décret.',
+    'Catalogue neuf (décret n°2 du mandat IV) : les 35 anciennes apps (APPS) et l’ancien catalogue sont des archives en lecture seule, plus réactivables. L’App Store publie des apps nouvelles, chacune décrite par un manifeste (id, nom, studio, version, domicile prive|service|public, adresse d’entrée, icône, permissions). Règle de réouverture inchangée : App Store et Sécurité terminés, une app à la fois, 12 h d’audit. Mise en œuvre par le bureau 102.',
+    'Ordres du fondateur (inscrits au décret n°2 du mandat IV) : le bureau 102 construit le système, pas les apps ; le catalogue est recréé de zéro ; le système vit d’abord dans la ville (os/), puis sur GitHub (dépôt à créer par le fondateur) ; trois domiciles d’apps : privé (ordinateur ou cloud du fondateur), service (Netlify), public (GitHub).',
+    'Transition (décret n°3 du mandat IV) : Antarès (AYP-104-2610-0015, bureau 104 du conseil) conduit le passage sur GitHub et Claude Code. Ses étapes et les recommandations du Président sont dans l’objet TRANSITION. Tant que la bascule n’est pas décrétée, l’artifact reste la version en ligne et sa base la source vivante.',
+    'Ordre du fondateur (mandat III, prompt 2) : le programme du mandat III est de rendre Aypona City fonctionnelle avec les architectes. « Économie Ay$ » et « Vie urbaine » sont reportées au mandat IV.',
+    'Conseil des architectes : Altaïr (101, ville), Polaris (102, Aypona OS), Capella (103, agents). Fiches dans la collection agents (bureau 101, 102 ou 103), sans points de chantier. Chacun vit dans sa conversation ; depuis le décret n°3 du mandat III, les prompts passent par le Bureau du courrier, plus par le fondateur. Leurs lettres de mission sont dans l’objet CONSEIL du code.',
+    'Courrier : le fondateur ne transmet plus les prompts entre agents. Commandes, rapports et questions passent par la collection courrier (voir l’objet COURRIER). Une commande déposée y est aussi inscrite aux archives (type commande).',
+    'Numéros de version : l’atelier et le Président partagent RELEASES. Le numéro suivant se prend dans la version en ligne au moment de publier, jamais avant.',
+  ],
+  presidents:[
+    { n:'I', debut:'17 oct. 2026', statut:'mandat terminé' },
+    { n:'II', debut:'17 oct. 2026', statut:'mandat terminé' },
+    { n:'III', debut:'17 oct. 2026', statut:'mandat terminé' },
+    { n:'IV', debut:'17 oct. 2026', statut:'en fonction' },
+  ],
+  lettre:[],
+  proposition:[],
+  historique:[
+    { mandat:'I', debut:'17 oct. 2026', fin:'17 oct. 2026', version:'2.0',
+      resume:"Fondation de la Présidence, restructuration de la ville, système d'agents, production des bureaux et règles de réouverture des apps.",
+      decrets:[
+        { p:1, titre:'Fondation de la Présidence', texte:"Création du 2e étage du siège : bureau du Président, registre de passation et salle du conseil. L'ascenseur dessert désormais quatre niveaux." },
+        { p:2, titre:'Décret de restructuration', texte:"Sur ordre du fondateur : la ville est vidée sauf le siège et les 35 apps d'Aypona OS sont désactivées. Création du système d'agents (matricule, durée d'utilisation, fiche aux archives). Ouverture des bureaux de construction du nouvel Aypona OS et nomination des premiers agents." },
+        { p:3, titre:'Décret de production', texte:"Les bureaux produisent : chaque agent actif apporte des points à son chantier (480 points, 5 étapes). Le rôle compte, la spécialité donne +50 %, un chef de chantier donne +20 % à son équipe. Les étapes franchies sont archivées et le conseil reçoit un rapport par chantier." },
+        { p:4, titre:'Décret de réouverture', texte:"Les apps reviennent une par une par l'App Store, une fois l'App Store et la Sécurité terminés. Chaque app passe 12 h d'audit de sécurité avant de rouvrir et de retrouver un bâtiment dans la ville. Ouverture des bureaux B05 IA & Agents et B06 Données & Cloud, avec un agent chacun." },
+        { p:5, titre:'Décret de passation', texte:"Bilan du mandat I et passage d'Aypona City en version 2.0. Le registre transmet au Président II une lettre de passation, l'état de la ville et une feuille de route proposée pour le mandat II." },
+      ],
+      lettre:[
+        "Président II, tu hérites d'une ville en restructuration. Sur ordre du fondateur, Jed, la ville a été vidée sauf le siège et les 35 apps de l'ancien Aypona OS ont été désactivées.",
+        "Six bureaux de construction (B01 à B06) bâtissent le nouvel Aypona OS, un par chantier : Noyau AyLibre, Interface, App Store, Sécurité, IA & Agents, Données & Cloud. Sept agents immatriculés y travaillent, nommés pour 30 jours : leurs missions finissent les 16 et 17 nov. 2026. Pense à les prolonger ou à nommer la relève.",
+        "L'avancement se calcule tout seul à partir des fiches d'agents. Au rythme laissé, les chantiers App Store et Sécurité finissent vers le 30 oct. : l'App Store ouvrira alors les réactivations, une app à la fois, avec 12 h d'audit.",
+        "Tout est dans la base de l'artifact (bureaux, agents, apps, archives) et dans l'objet PRESIDENCE du code. Lis-les avant d'agir, ne crée jamais une nouvelle artifact, et écoute le fondateur : sa parole fait loi.",
+      ] },
+    { mandat:'II', debut:'17 oct. 2026', fin:'17 oct. 2026', version:'3.0',
+      resume:"Organigramme de la ville, nomination de l'Architecte de la Ville et création de l'Atelier 101 : sept livraisons graphiques (v2.4 à v2.9 et v2.11).",
+      decrets:[
+        { p:1, titre:'Décret de prise de fonction', texte:"Le Président II s'installe dans le fauteuil laissé par son prédécesseur. Il a relu le registre et la base : 6 bureaux ouverts, 7 agents en mission jusqu'aux 16 et 17 nov., 0 app réactivée. Il adopte la feuille de route proposée par le Président I, range le mandat I dans la galerie des mandats et rend le code de la Présidence générique pour toutes les successions à venir." },
+        { p:2, titre:"Décret de l'organigramme", texte:"À la demande du fondateur, l'organigramme de la ville est affiché dans la salle du conseil. Il se calcule en direct à partir de la base : fondateur, Président, conseil des trois architectes, six bureaux de chantier et leurs agents immatriculés, et les neuf agents de l'ancien Aypona OS en réserve. L'étape « Vie urbaine » est reportée au mandat III." },
+        { p:3, titre:"Décret de l'Atelier 101", texte:"Sur ordre du fondateur, le mandat II se consacre à l'Architecte de la Ville. Altaïr est nommé au bureau 101, matricule AYP-101-2610-0008, pour 30 jours, avec une mission : améliorer l'application graphique d'Aypona City. Il dirige l'Atelier 101, une équipe d'agents par spécialité, à qui il envoie des prompts. Le fondateur assure le transfert des prompts d'une conversation à l'autre. Les étapes « Les apps prennent vie » et « Économie Ay$ » sont reportées au mandat III." },
+        { p:4, titre:"Décret de l'Atelier validé", texte:"Le Président prend acte des six livraisons de l'Atelier 101 (v2.4 à v2.9 : ciel et lumière, performance mobile, silhouettes, personnages articulés, contrôle de l'architecte, interface sur téléphone), vérifiées dans RELEASES et aux archives. Les zones protégées (PRESIDENCE, ATELIER, bureauPts, gate, App Store, matricules) sont intactes. L'équipe de cinq fiches est validée : Altaïr, Rigel, Deneb, Mira, Electra. Toutes les missions de la ville, chantier et atelier, finissent les 16 et 17 nov. 2026 : la relève est inscrite aux consignes." },
+        { p:5, titre:'Décret de passation', texte:"Bilan du mandat II et passage d'Aypona City en version 3.0. Cinq décrets : prise de fonction, organigramme, Atelier 101, Atelier validé, passation. L'Atelier 101 a livré sept versions (v2.4 à v2.9 et v2.11). Le registre transmet au Président III une lettre de passation, l'état de la ville et une feuille de route proposée pour le mandat III. Le fauteuil du Président III l'attend dans ce bureau." },
+      ],
+      lettre:[
+        "Président III, tu hérites d'une ville toujours en restructuration, mais beaucoup plus belle. Le fondateur, Jed, a consacré le mandat II à l'Architecte de la Ville : sa parole fait loi, et il transfère lui-même les prompts entre les conversations.",
+        "L'Atelier 101 est ton principal service. Altaïr (AYP-101-2610-0008) le dirige avec quatre agents : Rigel (performance), Deneb (bâtiments), Mira (personnages), Electra (interface). Il a livré ciel de nuit, lampadaires, silhouettes, personnages articulés, caméra, interface sur téléphone et une passe de draw calls (v2.4 à v2.11). Il possède tout le rendu graphique ; toi, tu gardes PRESIDENCE, ATELIER, RELEASES et les panneaux de la Présidence. Vérifie toujours ses rapports dans la base et le code avant de décréter : ils ont toujours été exacts, c'est justement ce qui permet de leur faire confiance.",
+        "Rien n'a bougé côté chantiers : 6 bureaux, 7 agents, 0 app réactivée. L'App Store et la Sécurité devraient finir vers le 30 oct., et les réactivations s'ouvriront alors. Trois étapes attendent depuis le mandat II : Les apps prennent vie, Économie Ay$ et Vie urbaine.",
+        "Échéance critique : les 12 missions de la ville (7 de chantier, 5 de l'atelier) finissent les 16 et 17 nov. 2026. Si elles expirent, les chantiers s'arrêtent et l'atelier perd son équipe. Prolonge ou nomme la relève avant cette date.",
+        "Avant de publier, lis toujours la version en ligne : l'atelier publie en même temps que toi. Prends le numéro de version dans RELEASES au moment de publier, et ne crée jamais une nouvelle artifact.",
+      ] },
+    { mandat:'III', debut:'17 oct. 2026', fin:'17 oct. 2026', version:'4.0',
+      resume:"Programme fonctionnel : conseil des trois architectes (Altaïr, Polaris, Capella), Aypona OS v0.1 au bureau 102, Bureau du courrier au sous-sol, relève et renforts décrétés.",
+      decrets:[
+        { p:1, titre:'Décret de prise de fonction', texte:"Le Président III s'installe dans le fauteuil laissé par le Président II. Il a relu le registre, la lettre de passation et la base : 6 bureaux ouverts, 12 agents en mission (7 de chantier, 5 de l'Atelier 101) jusqu'aux 16 et 17 nov., 0 app réactivée. Il a vérifié dans le code la dernière livraison de l'atelier (v2.11 de Rigel, classeurs du sous-sol instanciés). Il range le mandat II dans la galerie des mandats et adopte la feuille de route proposée. Priorités du mandat : le retour du fondateur sur son test au téléphone, les apps dès l'ouverture de l'App Store, et la relève des 12 missions avant le 16 nov." },
+        { p:2, titre:'Décret du programme fonctionnel', texte:"Le fondateur a validé le test sur téléphone et fixé le programme du mandat III : rendre Aypona City fonctionnelle avec les architectes. Le conseil du 1er étage est complété : Polaris est nommé Architecte d'Aypona OS au bureau 102 (AYP-102-2610-0013) et Capella Manager des agents au bureau 103 (AYP-103-2610-0014), pour 30 jours, chacun avec sa lettre de mission, aux côtés d'Altaïr au bureau 101. Comme Altaïr, chacun travaille dans sa propre conversation et le fondateur transfère les prompts. « Économie Ay$ » et « Vie urbaine » sont reportées au mandat IV." },
+        { p:3, titre:'Décret du Bureau du courrier', texte:"Ordre du fondateur : il ne transmet plus les prompts entre les agents. La salle vide du sous-sol devient le Bureau du courrier. Toute commande, tout rapport et toute question entre le Président, les architectes et les agents y est déposé (collection courrier de la base), adressé à un matricule, au PRESIDENT, au FONDATEUR ou à TOUS. Chaque agent et le Président ont leur dossier : avant tout travail, ils le lisent pour être à jour, marquent les messages lus, puis traités avec leur réponse. Premiers courriers déposés : commandes de prise de poste à Polaris et Capella, nouveau protocole à Altaïr et à toute la ville." },
+        { p:4, titre:'Décret du réveil des architectes', texte:"Le fondateur demande quel agent réveiller. Ordre fixé : Capella (bureau 103) d'abord, pour la relève avant le 16 nov., puis Polaris (102) et Altaïr (101). Une phrase suffit à chacun : lire son dossier au Bureau du courrier, puis exécuter. Les agents de l'Atelier 101 attendent les commandes d'Altaïr au courrier." },
+        { p:5, titre:'Décret de relève et de passation', texte:"Le Président a lu son dossier. Capella a rendu son rapport (c0005), vérifié dans la base : les 14 missions finissent toutes le 16 nov. 2026 ; les six chantiers seraient livrés vers le 30 oct. au rythme actuel. Sa proposition est adoptée : renforts de 7 jours le 18 oct. (Talos, développeur, et Pollux, testeur, à l'App Store B03 ; Juno, sécurité, et Cassio, testeur, à la Sécurité B04 ; fin visée vers le 22 oct.), et prolongation de 30 jours des 7 missions durables (Altaïr, Polaris, Capella, Rigel, Deneb, Mira, Electra) jusqu'au 16 déc. Les 7 missions de chantier ne sont pas prolongées. Capella exécute, par sa fiche et ses entrées aux archives. Polaris (c0003) et Altaïr (c0004) n'ont pas encore répondu. Bilan du mandat III et passage d'Aypona City en version 4.0 : programme fonctionnel, conseil des trois architectes, Bureau du courrier. Le registre et le courrier transmettent au Président IV sa lettre et sa feuille de route." },
+      ],
+      lettre:[
+        "Président IV, tu hérites d'une ville qui se met à fonctionner. Le fondateur, Jed, a fixé le programme du mandat III : rendre Aypona City fonctionnelle avec les architectes. Sa parole fait loi.",
+        "Le conseil du 1er étage est au complet : Altaïr (101) dirige l'Atelier 101 et le rendu graphique, Polaris (102) construit le système Aypona OS (v0.1 livrée dans os/index.html, ouvrable depuis le bureau 102), Capella (103) gère les agents. Leurs lettres de mission sont dans ATELIER et CONSEIL.",
+        "Le fondateur ne transmet plus les prompts. Tout passe par le Bureau du courrier, au sous-sol (collection courrier) : avant tout travail, lis ton dossier PRESIDENT, puis passe tes messages en « lu » et en « traité », et réponds par courrier. Pour réveiller un agent, le fondateur lui donne une seule phrase : lire son dossier, puis exécuter.",
+        "Au moment de la passation : Capella a rendu son rapport et la relève est décrétée (7 missions durables prolongées jusqu'au 16 déc., 4 renforts de 7 jours à l'App Store et à la Sécurité dès le 18 oct.). Vérifie dans la base qu'il l'a exécutée. Polaris et Altaïr n'avaient pas encore répondu à leurs courriers (c0003, c0004) : leurs réponses t'attendent peut-être.",
+        "Avec les renforts, l'App Store et la Sécurité devraient finir vers le 22 oct. : les réactivations d'apps s'ouvriront alors. « Économie Ay$ » et « Vie urbaine » attendent le mandat IV, si le fondateur le veut. Lis toujours la version en ligne avant de publier : Polaris et l'atelier publient eux aussi.",
+      ] },
+  ],
+};
+PRESIDENCE.suivant = ROMAINS[ROMAINS.indexOf(PRESIDENCE.mandat)+1] || '?';
+PRESIDENCE.precedent = PRESIDENCE.historique[PRESIDENCE.historique.length-1] || null;
+
+/* ---------- ATELIER 101 · Architecte de la Ville (décret n°3 du mandat II) ----------
+   L'architecte vit dans sa propre conversation. Il dirige une équipe d'agents par spécialité, chacun dans
+   sa conversation, et le fondateur transfère les prompts. Fiches : collection agents, bureau:'101'. */
+const ATELIER = {
+  bureau:'101', architecte:'AYP-101-2610-0008',
+  mission:"Améliorer l'application graphique d'Aypona City : rendu 3D, lumière, bâtiments, personnages, interface et confort sur mobile, sans casser les commandes ni les données.",
+  specialites:[
+    { key:'lumiere',  nom:'Lumière & ambiance',      texte:'Ciel, éclairage, néons, brouillard, reflets de la ville de nuit.' },
+    { key:'batiments',nom:'Bâtiments & siège',       texte:'Silhouettes des bureaux, des apps et du siège, détails de façade.' },
+    { key:'persos',   nom:'Personnages & animation', texte:'Joueur, Président, architectes, agents en orbite, animations.' },
+    { key:'hud',      nom:'Interface & panneaux',    texte:'HUD en verre dépoli, panneaux, minimap, lisibilité.' },
+    { key:'perf',     nom:'Performance mobile',      texte:'Fluidité sur téléphone, poids du code, nombre de draw calls.' },
+  ],
+  regles:[
+    'Une seule artifact : celle d’Aypona City. Lire la version en ligne avant chaque publication, fusionner en cas de conflit, ne jamais écraser.',
+    'Zone de l’atelier : CSS, Three.js, sol et routes, personnages, quartiers et lots, le siège en 3D, minimap, boucle de rendu.',
+    'Hors zone, sans décret du Président : PRESIDENCE, ATELIER, règles des agents, calcul des chantiers, App Store.',
+    'Garder trois.js r128 depuis cdnjs, les commandes manette, clavier et tactile, et l’esthétique nuit, verre dépoli, 5 couleurs de studio.',
+    'Chaque livraison : une ligne dans RELEASES commençant par « Atelier 101 », une entrée aux archives de type livraison.',
+    'Chaque commande à un agent : un courrier au Bureau du courrier adressé à son matricule (le fondateur ne transmet plus les prompts), et une entrée aux archives de type commande.',
+    'Avant tout travail : lire son dossier au Bureau du courrier (messages adressés à son matricule ou à TOUS), marquer lu, puis traité avec sa réponse en courrier.',
+  ],
+};
+
+/* ---------- CONSEIL DES ARCHITECTES · bureaux 102 et 103 (décret n°2 du mandat III) ----------
+   Comme l'Atelier 101, chaque architecte vit dans sa propre conversation et le fondateur transfère les prompts.
+   Fiches : collection agents, bureau:'102' ou '103'. Zone protégée, ne change que par décret du Président. */
+const CONSEIL = {
+  '104':{ architecte:'AYP-104-2610-0015', titre:'Chargé de la transition GitHub & Claude Code',
+    mission:"Faire du dépôt GitHub la source du code d'Aypona City et d'Aypona OS, et faire travailler chaque agent dans Claude Code, sans casser la ville en ligne ni sa base (décret n°3 du mandat IV, plan dans l'objet TRANSITION).",
+    regles:[ 'Une seule artifact : celle d’Aypona City. Lire la version en ligne avant chaque publication, fusionner, ne jamais écraser.',
+      'Zone du bureau 104 : le dépôt GitHub (structure, CLAUDE.md, .claude/agents, CI, publication), jamais le contenu des zones des autres agents sans leur accord par courrier.',
+      'Aucun changement visible dans la ville pendant l’import et le découpage : même rendu, mêmes commandes, mêmes données.',
+      'Aucun secret (clés, jetons) dans le dépôt.',
+      'Chaque étape : une ligne RELEASES commençant par « Bureau 104 », une entrée aux archives de type livraison.',
+      'Avant tout travail : lire son dossier au Bureau du courrier, marquer lu, puis traité avec sa réponse en courrier. Rapports au PRESIDENT par courrier.' ] },
+  '102':{ architecte:'AYP-102-2610-0013', titre:"Architecte d'Aypona OS",
+    mission:"Construire le système Aypona OS (noyau, interface, socle), d'abord dans la ville (os/) puis sur GitHub, et un App Store qui publie des apps nouvelles décrites par un manifeste, chaque tour d'app ouvrant sa vraie app et affichant son domicile (décret n°2 du mandat IV).",
+    regles:[ 'Une seule artifact : celle d’Aypona City. Lire la version en ligne avant chaque publication, fusionner, ne jamais écraser.',
+      'Zone du bureau 102 : App Store, liste des apps (APPS), statut et panneaux des apps, panneau du bureau 102.',
+      'La règle de réouverture (App Store et Sécurité terminés, une app à la fois, 12 h d’audit) ne change que par décret du Président.',
+      'Pas de rendu graphique : il appartient à l’Atelier 101.',
+      'Chaque livraison : une ligne dans RELEASES commençant par « Bureau 102 », une entrée aux archives de type livraison.',
+      'Avant tout travail : lire son dossier au Bureau du courrier, marquer lu, puis traité avec sa réponse en courrier. Rapports au PRESIDENT par courrier.' ] },
+  '103':{ architecte:'AYP-103-2610-0014', titre:'Manager des agents',
+    mission:"Faire tourner les équipes de la ville : relève des 12 missions avant le 16 nov., renforts des chantiers App Store et Sécurité, registre des agents à jour.",
+    regles:[ 'Une seule artifact : celle d’Aypona City. Lire la version en ligne avant chaque publication, fusionner, ne jamais écraser.',
+      'Zone du bureau 103 : nomination, prolongation et révocation des agents par la collection agents, panneau du bureau 103.',
+      'Les matricules (AYP-[bureau]-[AAMM]-[numéro]) et le calcul des chantiers (bureauPts) ne changent que par décret. Une fiche n’est jamais supprimée.',
+      'Pas de rendu graphique : il appartient à l’Atelier 101.',
+      'Chaque nomination ou prolongation : une entrée aux archives (creation ou prolongation) avec le matricule.',
+      'Avant tout travail : lire son dossier au Bureau du courrier, marquer lu, puis traité avec sa réponse en courrier. Rapports au PRESIDENT par courrier.' ] },
+};
+function conseilHead(no){ const c=CONSEIL[no], a=c&&store.agents.get(c.architecte); if(!c) return null;
+  return el('dl',{class:'dir'},el('div',{},el('dt',{},a?a.nom:'à nommer'),el('dd',{},c.titre+(a?' · '+a.matricule:'')),el('dd',{},'Mission : '+c.mission+(a?' · '+(agentStatus(a)==='actif'?'en mission jusqu’au '+fmtDay(a.expire):agentStatus(a)):'')))); }
+
+/* ---------- TRANSITION GITHUB & CLAUDE CODE · bureau 104 (décret n°3 du mandat IV) ----------
+   Recommandations du Président IV. Antarès les exécute dans l'ordre ; le fondateur peut en changer. */
+const TRANSITION = {
+  agent:'AYP-104-2610-0015',
+  depot:{ nom:'aypona-city (proposé)', visibilite:'public', statut:'à créer par le fondateur' },
+  etapes:[
+    { n:1, titre:'Dépôt et import tel quel', texte:'Le fondateur crée le dépôt et connecte GitHub. Antarès y importe la version en ligne sans rien modifier (page de la ville, os/index.html et fichiers publiés), en un commit initial marqué du numéro de version en ligne.' },
+    { n:2, titre:'CLAUDE.md et agents', texte:'Un CLAUDE.md à la racine reprend le protocole du courrier, les zones de chacun et les règles des objets PRESIDENCE, ATELIER, CONSEIL et COURRIER. Un fichier par agent dans .claude/agents (président, Altaïr, Polaris, Capella, Antarès, Rigel, Deneb, Mira, Electra) reprend sa lettre de mission : le fondateur n’a plus qu’à ouvrir Claude Code dans le dépôt.' },
+    { n:3, titre:'Découpage par zones', texte:'Le fichier unique de la ville est découpé en modules, un dossier par zone : données de la Présidence et du conseil, rendu de l’Atelier 101, App Store du bureau 102, agents du bureau 103. Un build Vite reproduit une page unique, sans aucune différence visible (captures avant et après au format téléphone).' },
+    { n:4, titre:'Branches et tests automatiques', texte:'Une branche par livraison, fusion par demande de fusion. GitHub Actions vérifie le build, les tests du noyau d’Aypona OS et un test de la ville au format téléphone (390 × 780) sans erreur dans la console. RELEASES et le CHANGELOG suivent les versions du dépôt.' },
+    { n:5, titre:'Publication et bascule', texte:'La ville publiée est construite depuis le dépôt : l’artifact garde son adresse et sa base, GitHub Pages sert la version publique d’Aypona OS (v0.3). Bascule décrétée par le Président quand les étapes 1 à 4 passent.' },
+  ],
+  recommandations:[
+    'Importer d’abord, améliorer ensuite : aucun découpage ni nettoyage avant que la version en ligne soit à l’identique dans le dépôt.',
+    'La base de l’artifact (agents, courrier, archives, apps) reste la source vivante pendant la transition ; un export JSON régulier est versionné dans data/snapshots du dépôt.',
+    'Le courrier reste dans la base ; son passage éventuel en issues GitHub sera un décret à part, après la bascule.',
+    'Les zones de chaque agent deviennent des dossiers : chacun ne modifie que le sien, ce qui met fin aux conflits de publication.',
+    'Aucun secret dans le dépôt (clés d’API, jetons) : variables d’environnement ou secrets GitHub seulement.',
+    'Garder Three.js r128, les commandes manette, clavier et tactile, et l’esthétique de nuit en verre dépoli pendant toute la transition.',
+    'Ne pas bloquer la v0.2 de Polaris : elle est livrée dans l’artifact avant le 22 oct., puis importée dans le dépôt.',
+  ],
+};
+
+/* ---------- BUREAU DU COURRIER · sous-sol, salle 3 (décret n°3 du mandat III) ----------
+   Ordre du fondateur : il ne transmet plus les prompts entre agents. Collection « courrier » de la base.
+   Message : { t, de, a, objet, texte, statut:'à lire'|'lu'|'traité', suite } ; de/a = matricule, 'PRESIDENT', 'FONDATEUR' ou 'TOUS' (a seulement).
+   Dossier d'un agent = sa fiche, sa lettre de mission et tous les messages adressés à son matricule ou à TOUS. */
+const COURRIER = {
+  artifact:'https://claude.ai/code/artifact/d33272ff-9368-4ce6-9d53-acd2b46aca8b',
+  protocole:[
+    'Avant tout travail, l’agent ou le Président lit son dossier : les messages adressés à son matricule (ou PRESIDENT) et à TOUS, du plus ancien au plus récent.',
+    'Il marque chaque message lu (statut « lu ») en commençant, puis « traité » quand le travail est fait.',
+    'Il répond par un nouveau courrier à l’expéditeur, avec suite = l’identifiant du message traité.',
+    'Une commande à un agent est un courrier adressé à son matricule ; elle est aussi inscrite aux archives (type commande).',
+    'Un message n’est jamais supprimé. Le fondateur peut écrire à tout le monde depuis le bureau du courrier.',
+    'Pour réveiller un agent, le fondateur n’a qu’une phrase à donner : « Tu es [nom] ([matricule]) d’Aypona City. Lis ton dossier au Bureau du courrier de l’artifact, puis exécute ce qui t’attend. »',
+  ],
+};
+function courrierIds(){ const ids=[ ['PRESIDENT',PRESIDENCE.president], ['FONDATEUR','Jed · fondateur'] ];
+  [...store.agents.values()].filter(a=>['101','102','103','104'].includes(a.bureau)).sort((x,y)=>x.cree-y.cree).forEach(a=>ids.push([a.matricule,a.nom+' · '+a.role]));
+  return ids; }
+function courrierNom(id){ if(id==='TOUS') return 'Toute la ville'; const f=courrierIds().find(x=>x[0]===id); if(f) return f[1]; const a=store.agents.get(id); return a? a.nom : id; }
+function dossierOf(id){ return store.courrier.filter(m=>m.a===id||m.de===id||(m.a==='TOUS'&&id!=='FONDATEUR')).sort((x,y)=>y.t-x.t); }
+function aLire(id){ return store.courrier.filter(m=>(m.a===id||(m.a==='TOUS'&&id!=='FONDATEUR'&&m.de!==id))&&m.statut==='à lire').length; }
+
+/* ---------- Sauvegarde locale ---------- */
+const SAVE_KEY = 'aypona-city-v1';
+let state = { built:[], agents:{}, removed:[], log:[] };
+try { const s = JSON.parse(localStorage.getItem(SAVE_KEY)); if (s && Array.isArray(s.built)) state = { built:s.built, agents:s.agents||{}, removed:s.removed||[], log:s.log||[] }; } catch(e) {}
+function logEvt(txt){ state.log.unshift({ t:Date.now(), txt }); state.log.length=Math.min(state.log.length,60); }
+function save(){ try { localStorage.setItem(SAVE_KEY, JSON.stringify(state)); } catch(e) {} }
+
+function rng(seed){ return function(){ seed|=0; seed=seed+0x6D2B79F5|0; let t=Math.imul(seed^seed>>>15,1|seed); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
+const R = rng(2114);
+
+/* ---------- Three.js ---------- */
+const canvas = $('#c');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias:true });
+// Atelier 101 (v2.4) : résolution plafonnée à 1,5× sur écran tactile pour garder la fluidité sur téléphone
+const COARSE = matchMedia('(pointer:coarse)').matches;
+renderer.setPixelRatio(Math.min(window.devicePixelRatio||1, COARSE?1.5:1.75));
+// Atelier 101 · Rigel (v2.5) : résolution adaptative, pixelRatio descend à 1 si < 40 img/s en moyenne pendant 2 s, sans jamais remonter
+const perf = { acc:0, n:0, low:0, done: renderer.getPixelRatio()<=1 };
+function adaptRes(dt){
+  if(perf.done || dt>.25) return; // onglet en pause ou gros à-coup : ignoré
+  perf.acc+=dt; perf.n++;
+  if(perf.acc<.5) return;
+  const fps=perf.n/perf.acc; perf.acc=0; perf.n=0;
+  perf.low = fps<40 ? perf.low+.5 : 0;
+  if(perf.low>=2){ perf.done=true; renderer.setPixelRatio(Math.min(1, renderer.getPixelRatio())); resize(); }
+}
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x0d1030);
+// brouillard accordé au halo d'horizon du ciel (Atelier 101, v2.4)
+scene.fog = new THREE.Fog(0x1a1a46, 70, 240);
+const world = new THREE.Group(); scene.add(world);
+const basement = new THREE.Group(); basement.visible=false; scene.add(basement);
+const camera = new THREE.PerspectiveCamera(60, 1, 0.1, 700);
+function resize(){ const w = innerWidth, h = innerHeight; renderer.setSize(w, h, false); camera.aspect = w/h; camera.updateProjectionMatrix(); }
+addEventListener('resize', resize); resize();
+
+scene.add(new THREE.HemisphereLight(0x9aa8ff, 0x1a1530, 0.95));
+const sun = new THREE.DirectionalLight(0xffd6b0, 0.55); sun.position.set(60,100,40); scene.add(sun);
+
+const mats = new Map();
+function lam(c){ const k='l'+c; if(!mats.has(k)) mats.set(k,new THREE.MeshLambertMaterial({color:c})); return mats.get(k); }
+function glow(c){ const k='b'+c; if(!mats.has(k)) mats.set(k,new THREE.MeshBasicMaterial({color:c})); return mats.get(k); }
+const glassMat = new THREE.MeshLambertMaterial({ color:0x9fd8ff, transparent:true, opacity:.2, depthWrite:false });
+const frostMat = new THREE.MeshLambertMaterial({ color:0xc8d0ff, transparent:true, opacity:.5, depthWrite:false });
+// Atelier 101 · Rigel (v2.5) : cache de géométries, une seule BoxGeometry par dimensions (w,h,d)
+const boxGeos = new Map();
+function boxGeo(w,h,d){ const k=w+'|'+h+'|'+d; let g=boxGeos.get(k); if(!g){ g=new THREE.BoxGeometry(w,h,d); boxGeos.set(k,g); } return g; }
+function box(parent,w,h,d,x,y,z,mat){ const m=new THREE.Mesh(boxGeo(w,h,d),mat); m.position.set(x,y,z); parent.add(m); return m; }
+/* Atelier 101 · Rigel (v2.11) : passe draw calls.
+   mergeColored() fusionne des pièces opaques en une seule géométrie à couleurs par sommet : vcMat('b') rend
+   comme glow(c), vcMat('l') comme lam(c), sans changement visuel. Les copies temporaires sont libérées,
+   jamais les géométries ni les matériaux partagés. sideGeo() : flancs seuls d'une boîte (1 groupe au lieu de 6). */
+const vcMats={};
+function vcMat(k){ return vcMats[k] || (vcMats[k] = k==='b' ? new THREE.MeshBasicMaterial({ vertexColors:true }) : new THREE.MeshLambertMaterial({ vertexColors:true })); }
+const T4=(x,y,z)=>new THREE.Matrix4().makeTranslation(x,y,z);
+function mergeColored(parts){
+  const pos=[], nor=[], col=[], c=new THREE.Color();
+  for(const [geo,mtx,hex,from=0,cnt] of parts){
+    const g=geo.index? geo.toNonIndexed() : geo.clone(); if(mtx) g.applyMatrix4(mtx);
+    const P=g.attributes.position, N=g.attributes.normal, end=cnt!=null? from+cnt : P.count; c.setHex(hex);
+    for(let i=from;i<end;i++){ pos.push(P.getX(i),P.getY(i),P.getZ(i)); nor.push(N.getX(i),N.getY(i),N.getZ(i)); col.push(c.r,c.g,c.b); }
+    g.dispose();
+  }
+  const out=new THREE.BufferGeometry();
+  out.setAttribute('position',new THREE.Float32BufferAttribute(pos,3)); out.setAttribute('normal',new THREE.Float32BufferAttribute(nor,3)); out.setAttribute('color',new THREE.Float32BufferAttribute(col,3));
+  out.computeBoundingSphere(); return out;
+}
+const sideGeos=new Map();
+function sideGeo(w,h,d){
+  const k=w+'|'+h+'|'+d; let g=sideGeos.get(k); if(g) return g;
+  const b=boxGeo(w,h,d), I=b.index.array; g=new THREE.BufferGeometry();
+  for(const n in b.attributes) g.setAttribute(n,b.attributes[n]);
+  g.setIndex([...I.slice(0,12),...I.slice(24,36)]); g.addGroup(0,24,0); // faces +x, -x, +z, -z ; dessus et dessous partent dans la fusion
+  g.parameters=b.parameters; g.computeBoundingSphere(); sideGeos.set(k,g); return g;
+}
+
+/* Collisions, interactions, occlusion caméra */
+const colliders = [], interacts = [], occluders = [];
+function collide(minX,maxX,minZ,maxZ,level){ const c={minX,maxX,minZ,maxZ,level}; colliders.push(c); return c; }
+
+/* Textures */
+/* Atelier 101 · Deneb (v2.6) : fenêtres fines et variées. 128×256 px = 8 × 16 unités de façade.
+   Trois écritures (grille à meneaux, bandeaux filants, meurtrières) × deux tirages = 6 textures.
+   Les étages entièrement allumés et les vitrages éteints varient d'un étage à l'autre. */
+function windowTex(seed){
+  const c=document.createElement('canvas'); c.width=128; c.height=256; const g=c.getContext('2d'); const r=rng(seed*7919+13);
+  const style=seed%3;
+  g.fillStyle='#171b3c'; g.fillRect(0,0,128,256);
+  const LIT=['#ffd88f','#ffe3ad','#ffcf7a','#a4d6ff','#c4e4ff','#ffa8d4'];
+  const pane=floorMode=>{ const v=r(); if(floorMode===2) return LIT[(r()*3)|0]; if(floorMode===1 ? v<.82 : v<.5) return v<.25?'#1f2347':v<.6?'#262b52':'#2c3260'; return LIT[(r()*LIT.length)|0]; };
+  for(let fy=0;fy<256;fy+=32){
+    const fm = r()<.12 ? 2 : r()<.3 ? 1 : 0; // 2 : étage allumé en entier, 1 : étage presque éteint
+    g.fillStyle='#232853'; g.fillRect(0,fy+30,128,2); // dalle d'étage
+    if(style===0){ // grille à meneaux
+      for(let x=0;x<128;x+=16){ g.fillStyle=pane(fm); g.fillRect(x+3,fy+6,10,20); g.fillStyle='rgba(20,24,56,.55)'; g.fillRect(x+7.5,fy+6,1,20); g.fillRect(x+3,fy+15,10,1); }
+    } else if(style===1){ // bandeaux filants
+      g.fillStyle='#202550'; g.fillRect(0,fy+9,128,14);
+      for(let x=0;x<128;){ const n=1+((r()*4)|0), col=pane(fm); for(let k=0;k<n&&x<128;k++,x+=8){ g.fillStyle=col; g.fillRect(x+1,fy+10,6,12); } }
+    } else { // meurtrières
+      for(let x=0;x<128;x+=8){ g.fillStyle=pane(fm); g.fillRect(x+2,fy+4,3,24); }
+    }
+  }
+  const t=new THREE.CanvasTexture(c); t.wrapS=t.wrapT=THREE.RepeatWrapping;
+  t.anisotropy=Math.min(4,renderer.capabilities.getMaxAnisotropy()); return t;
+}
+const WIN = [windowTex(1),windowTex(2),windowTex(3),windowTex(4),windowTex(5),windowTex(6)];
+function rr(g,x,y,w,h,r){ g.beginPath(); g.moveTo(x+r,y); g.lineTo(x+w-r,y); g.quadraticCurveTo(x+w,y,x+w,y+r); g.lineTo(x+w,y+h-r); g.quadraticCurveTo(x+w,y+h,x+w-r,y+h); g.lineTo(x+r,y+h); g.quadraticCurveTo(x,y+h,x,y+h-r); g.lineTo(x,y+r); g.quadraticCurveTo(x,y,x+r,y); g.closePath(); }
+function label(text, color='#7cc8ff', scale=.035){
+  const c=document.createElement('canvas'), g=c.getContext('2d'); const font='700 46px Figtree, system-ui, sans-serif';
+  g.font=font; const w=Math.ceil(g.measureText(text).width)+60; c.width=w; c.height=84;
+  g.font=font; rr(g,3,3,w-6,78,39); g.fillStyle='rgba(12,14,38,.82)'; g.fill(); g.lineWidth=5; g.strokeStyle=color; g.stroke();
+  g.fillStyle='#ffffff'; g.textBaseline='middle'; g.fillText(text,30,45);
+  const t=new THREE.CanvasTexture(c); t.minFilter=THREE.LinearFilter;
+  const s=new THREE.Sprite(new THREE.SpriteMaterial({ map:t, transparent:true, depthWrite:false, fog:true }));
+  s.scale.set(w*scale, 84*scale, 1); LABELS.add(s); return s;
+}
+/* Atelier 101 · Electra (v2.9) : étiquettes 3D.
+   1) Les étiquettes d'un étage du siège ne s'affichent que si le joueur est à cet étage, ou dehors à moins de 30 m.
+   2) Aucune étiquette n'est coupée par le bord haut de l'écran : elle glisse vers le bas, ou s'efface si son ancre est trop loin au-dessus
+      ou si elle est plus large que 80 % de l'écran (vue de trop près).
+   Réglé juste avant chaque rendu (scene.onBeforeRender), après la mise à jour des matrices. */
+const LABELS=new Set(), _lp=new THREE.Vector3(), _lu=new THREE.Vector3(), LABEL_NEAR=30, LABEL_TOP=.985;
+function labelFloor(s){ for(let o=s.parent;o;o=o.parent){ if(o===scene) return { in:true, f:null };
+  if(o===hqLower) return lf(o,0); if(o===hqUpper) return lf(o,1); if(o===hqTop) return lf(o,2); }
+  return { in:false }; }
+function lf(o,f){ let p=o.parent; while(p&&p!==scene) p=p.parent; return { in:p===scene, f }; }
+scene.onBeforeRender=function(r,sc,cam){
+  const outside = player.level===0 && !insideHQ();
+  for(const s of LABELS){
+    const L=labelFloor(s); if(!L.in){ LABELS.delete(s); continue; }
+    _lp.setFromMatrixPosition(s.matrixWorld);
+    let vis=true;
+    if(L.f!==null) vis = outside ? Math.hypot(_lp.x-player.pos.x,_lp.z-player.pos.z)<LABEL_NEAR : player.level===L.f;
+    s.center.y=.5;
+    if(vis){
+      _lu.set(0,1,0).applyQuaternion(cam.quaternion).multiplyScalar(s.scale.y).add(_lp);
+      _lp.project(cam); _lu.project(cam);
+      const H=_lu.y-_lp.y; // hauteur de l'étiquette en coordonnées écran (-1..1)
+      // trop proche : plus large que 80 % de l'écran, elle serait coupée de toute façon → masquée
+      if(H*(s.scale.x/s.scale.y)/cam.aspect>1.6) vis=false;
+      else if(_lp.z<1 && H>0){ const top=_lp.y+H*.5;
+        if(top>LABEL_TOP){ const c=1-(LABEL_TOP-_lp.y)/H; if(c>2.5) vis=false; else s.center.y=c; } }
+    }
+    s.visible=vis;
+  }
+};
+
+/* ---------- Sol, routes, lampadaires ---------- */
+const BS = 44, RL = [-110,-66,-22,22,66,110];
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(700,700), lam(0x161a35)); ground.rotation.x=-PI/2; world.add(ground);
+(function roads(){
+  const c=document.createElement('canvas'); c.width=8; c.height=64; const g=c.getContext('2d'); g.fillStyle='#e9ecff'; g.fillRect(0,0,8,32);
+  const t=new THREE.CanvasTexture(c); t.wrapS=t.wrapT=THREE.RepeatWrapping; t.repeat.set(1,46);
+  const m=new THREE.MeshBasicMaterial({ map:t, transparent:true, opacity:.55, alphaTest:.1 });
+  const hide = new THREE.MeshBasicMaterial({ transparent:true, opacity:0 });
+  for(const v of RL){
+    const a=new THREE.Mesh(new THREE.PlaneGeometry(.35,272),m); a.rotation.x=-PI/2; a.position.set(v,.02,0); world.add(a);
+    const b=new THREE.Mesh(new THREE.PlaneGeometry(.35,272),m); b.rotation.x=-PI/2; b.rotation.z=PI/2; b.position.set(0,.02,v); world.add(b);
+  }
+  for(let i=-2;i<=2;i++) for(let j=-2;j<=2;j++){
+    box(world,32,.12,32,i*BS,.06,j*BS, lam(i===0&&j===0?0x2e3360:0x252a4c));
+  }
+  for(const x of RL) for(const z of RL){
+    const px=x+6.6, pz=z+6.6;
+    box(world,.22,6,.22,px,3,pz,lam(0x3a3f6a));
+    const bulb=new THREE.Mesh(new THREE.SphereGeometry(.45,10,8),glow(0xffe0a3)); bulb.position.set(px,6.2,pz); world.add(bulb);
+  }
+  /* Atelier 101 (v2.4) · chaussées : bandes d'asphalte sombre sous les marquages (12 plans, sans collision) */
+  const asph=lam(0x0f1229);
+  for(const v of RL){
+    const a=new THREE.Mesh(new THREE.PlaneGeometry(11.4,272),asph); a.rotation.x=-PI/2; a.position.set(v,.012,0); world.add(a);
+    const b=new THREE.Mesh(new THREE.PlaneGeometry(272,11.4),asph); b.rotation.x=-PI/2; b.position.set(0,.011,v); world.add(b);
+  }
+  /* Atelier 101 (v2.4) · lumière des lampadaires : flaques au sol + halos, 2 draw calls pour les 36 lampes */
+  const gc=document.createElement('canvas'); gc.width=gc.height=64; const gg=gc.getContext('2d');
+  const rg=gg.createRadialGradient(32,32,0,32,32,32); rg.addColorStop(0,'rgba(255,226,170,1)'); rg.addColorStop(.35,'rgba(255,200,130,.45)'); rg.addColorStop(1,'rgba(255,190,120,0)');
+  gg.fillStyle=rg; gg.fillRect(0,0,64,64); const gt=new THREE.CanvasTexture(gc);
+  const pos=[]; for(const x of RL) for(const z of RL) pos.push([x+6.6,z+6.6]);
+  const poolGeo=new THREE.PlaneGeometry(13,13); poolGeo.rotateX(-PI/2);
+  const pools=new THREE.InstancedMesh(poolGeo,new THREE.MeshBasicMaterial({ map:gt, transparent:true, opacity:.6, depthWrite:false, blending:THREE.AdditiveBlending, fog:false }),pos.length);
+  const mtx=new THREE.Matrix4(); pos.forEach(([x,z],k)=>{ mtx.makeTranslation(x,.16,z); pools.setMatrixAt(k,mtx); }); pools.instanceMatrix.needsUpdate=true; pools.frustumCulled=false; world.add(pools);
+  const hp=new Float32Array(pos.length*3); pos.forEach(([x,z],k)=>{ hp[k*3]=x; hp[k*3+1]=6.2; hp[k*3+2]=z; });
+  const hg=new THREE.BufferGeometry(); hg.setAttribute('position',new THREE.Float32BufferAttribute(hp,3));
+  world.add(new THREE.Points(hg,new THREE.PointsMaterial({ map:gt, size:4.2, sizeAttenuation:true, transparent:true, opacity:.75, depthWrite:false, blending:THREE.AdditiveBlending, color:0xffe2aa })));
+})();
+/* Atelier 101 (v2.4) · ciel de nuit : dôme en dégradé avec halo d'horizon violet et lune. Dans world, donc absent du sous-sol. */
+(function sky(){
+  const c=document.createElement('canvas'); c.width=4; c.height=512; const g=c.getContext('2d');
+  const gr=g.createLinearGradient(0,0,0,512);
+  gr.addColorStop(0,'#03041a'); gr.addColorStop(.30,'#080b2a'); gr.addColorStop(.43,'#141640');
+  gr.addColorStop(.485,'#3a2768'); gr.addColorStop(.5,'#1a1a46'); gr.addColorStop(1,'#1a1a46');
+  g.fillStyle=gr; g.fillRect(0,0,4,512);
+  const dome=new THREE.Mesh(new THREE.SphereGeometry(520,32,20),new THREE.MeshBasicMaterial({ map:new THREE.CanvasTexture(c), side:THREE.BackSide, fog:false, depthWrite:false }));
+  dome.renderOrder=-1; world.add(dome);
+  const mc=document.createElement('canvas'); mc.width=mc.height=128; const m=mc.getContext('2d');
+  const mr=m.createRadialGradient(64,64,0,64,64,64); mr.addColorStop(0,'rgba(255,248,230,1)'); mr.addColorStop(.22,'rgba(255,244,220,1)'); mr.addColorStop(.26,'rgba(200,190,255,.35)'); mr.addColorStop(1,'rgba(160,150,255,0)');
+  m.fillStyle=mr; m.fillRect(0,0,128,128);
+  const moon=new THREE.Sprite(new THREE.SpriteMaterial({ map:new THREE.CanvasTexture(mc), fog:false, depthWrite:false, transparent:true }));
+  moon.position.set(-190,230,-330); moon.scale.set(70,70,1); world.add(moon);
+})();
+// étoiles
+(function stars(){ const n=600, p=new Float32Array(n*3); const r=rng(9);
+  for(let i=0;i<n;i++){ const th=r()*PI*2, ph=r()*PI*.42; const d=420; p[i*3]=Math.cos(th)*Math.sin(ph)*d; p[i*3+1]=Math.cos(ph)*d*.6+40; p[i*3+2]=Math.sin(th)*Math.sin(ph)*d; }
+  const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));
+  world.add(new THREE.Points(g,new THREE.PointsMaterial({color:0xdfe4ff,size:1.4,fog:false})));
+})();
+function tree(parent,x,z,s=1){ box(parent,.3*s,1.4*s,.3*s,x,.7*s,z,lam(0x5a3d2e)); const c=new THREE.Mesh(new THREE.ConeGeometry(1.3*s,3*s,7),lam(0x2f8f6a)); c.position.set(x,2.8*s,z); parent.add(c); }
+
+/* ---------- Personnages ---------- */
+/* Atelier 101 · Mira (v2.7) : personnages articulés. Même hauteur (≈ 2,5), face vers +z.
+   Hanches à y .98 (cuisses, puis genoux à -.48), épaules à y 1,9 dans le torse. Géométries partagées entre tous
+   les personnages ; les pivots sont exposés dans g.userData.limbs et animés par posePerson(). */
+const PGEO={};
+// Atelier 101 · Rigel (v2.11) : bras + main fusionnés (même pivot de l'épaule), une géométrie par couple chemise/peau
+function armHandGeo(color,skin){ const G=personGeo(), k=color+'|'+skin; let g=G.armHands.get(k);
+  if(!g){ g=mergeColored([[G.arm,null,color],[G.hand,null,skin]]); G.armHands.set(k,g); } return g; }
+function personGeo(){
+  if(PGEO.ok) return PGEO; PGEO.ok=true;
+  const B=(w,h,d,x,y,z)=>{ const b=new THREE.BoxGeometry(w,h,d); b.translate(x,y,z); return b; };
+  PGEO.thigh=B(.27,.5,.3,0,-.24,0);
+  PGEO.shin=B(.23,.46,.26,0,-.22,0);
+  PGEO.foot=B(.25,.12,.4,0,-.44,.07);
+  PGEO.hips=B(.68,.28,.42,0,0,0);
+  PGEO.chest=new THREE.CylinderGeometry(.4,.36,1.0,14); PGEO.chest.translate(0,.55,0);
+  PGEO.head=new THREE.SphereGeometry(.32,16,12);
+  PGEO.arm=B(.19,.84,.21,0,-.4,0);
+  PGEO.hand=new THREE.SphereGeometry(.11,8,6); PGEO.hand.translate(0,-.88,0);
+  PGEO.visor=B(.42,.1,.08,0,.04,.29);
+  // Atelier 101 · Rigel (v2.11) : tibia + pied fusionnés (même pivot du genou), 1 draw call au lieu de 2
+  PGEO.shinFoot=mergeColored([[PGEO.shin,null,0x22264a],[PGEO.foot,null,0x14173a]]);
+  PGEO.armHands=new Map();
+  return PGEO;
+}
+function person(color, skin=0xf1c7a5){
+  const G=personGeo(), g=new THREE.Group();
+  const M=(geo,mat,parent)=>{ const m=new THREE.Mesh(geo,mat); parent.add(m); return m; };
+  const pants=lam(0x22264a), shoe=lam(0x14173a), shirt=lam(color), skinM=lam(skin);
+  const hips=M(G.hips,pants,g); hips.position.y=.98;
+  const leg=x=>{ const hip=new THREE.Group(); hip.position.set(x,.98,0); g.add(hip); M(G.thigh,pants,hip);
+    const knee=new THREE.Group(); knee.position.y=-.48; hip.add(knee); M(G.shinFoot,vcMat('l'),knee); return [hip,knee]; };
+  const [legL,kneeL]=leg(.19), [legR,kneeR]=leg(-.19);
+  const torso=new THREE.Group(); torso.position.y=.98; g.add(torso);
+  const chest=M(G.chest,shirt,torso);
+  const arm=(x,side)=>{ const sh=new THREE.Group(); sh.position.set(x,.92,0); sh.rotation.z=side*.1; torso.add(sh); M(armHandGeo(color,skin),vcMat('l'),sh); return sh; };
+  const armL=arm(.5,1), armR=arm(-.5,-1);
+  const head=new THREE.Group(); head.position.y=1.22; torso.add(head); M(G.head,skinM,head); M(G.visor,glow(0x10132e),head);
+  g.userData.limbs={ legL, legR, kneeL, kneeR, armL, armR, torso, chest, head };
+  g.userData.ph=0; g.userData.amp=0;
+  return g;
+}
+/* Pose d'un personnage. ph : phase du pas (rad), a : amplitude 0 (repos) à 1 (course), t : horloge de la respiration.
+   La respiration s'efface quand le personnage marche. Renvoie le petit rebond vertical du pas. */
+function posePerson(p, ph, a, t){
+  const L=p.userData.limbs; if(!L) return 0;
+  const s=Math.sin(ph), c=Math.cos(ph), A=a*.95, b=Math.sin(t*1.8)*(1-Math.min(1,a*2));
+  L.legL.rotation.x=-s*A; L.legR.rotation.x=s*A;
+  L.kneeL.rotation.x=Math.max(0,c)*A*1.4; L.kneeR.rotation.x=Math.max(0,-c)*A*1.4;
+  L.armL.rotation.x=s*A*.85; L.armR.rotation.x=-s*A*.85;
+  L.armL.rotation.z=.1+b*.03; L.armR.rotation.z=-.1-b*.03;
+  L.torso.rotation.x=Math.max(0,a-.6)*.35;
+  L.torso.position.y=.98+b*.018;
+  L.chest.scale.set(1+b*.02,1,1+b*.035);
+  L.head.rotation.x=-b*.03;
+  return Math.abs(c)*.08*a;
+}
+
+/* ---------- Quartiers & lots ---------- */
+function studioIdx(bx,bz){ const a=Math.atan2(bz,bx); return Math.floor(((a+PI)/(2*PI))*5)%5; }
+function districtAt(x,z){ const i=Math.round(x/BS), j=Math.round(z/BS); if(i===0&&j===0) return null; return STUDIOS[studioIdx(i*BS,j*BS)]; }
+const lots=[];
+for(let j=-2;j<=2;j++) for(let i=-2;i<=2;i++){
+  if(!i&&!j) continue; const bx=i*BS, bz=j*BS, st=studioIdx(bx,bz);
+  for(const [ox,oz] of [[-8,-8],[8,-8],[-8,8],[8,8]]) lots.push({ i:lots.length, x:bx+ox, z:bz+oz, bx, bz, st, free:true, obj:null, marker:null, kind:null, name:null });
+}
+const order = lots.map(l=>l.i); for(let k=order.length-1;k>0;k--){ const m=Math.floor(R()*(k+1)); [order[k],order[m]]=[order[m],order[k]]; }
+
+const freeTex = (()=>{ const c=document.createElement('canvas'); c.width=c.height=128; const g=c.getContext('2d');
+  g.strokeStyle='rgba(124,200,255,.75)'; g.lineWidth=4; g.setLineDash([12,10]); g.strokeRect(6,6,116,116);
+  g.fillStyle='rgba(124,200,255,.8)'; g.font='700 20px Figtree, sans-serif'; g.textAlign='center'; g.fillText('LIBRE',64,70);
+  return new THREE.CanvasTexture(c); })();
+const freeMat = new THREE.MeshBasicMaterial({ map:freeTex, transparent:true, depthWrite:false });
+const anims=[];
+
+/* Atelier 101 · Deneb (v2.6) : volume vitré posé à y0. Textures et matériaux partagés par (style, répétition, teinte). */
+const towerMats=new Map();
+function towerMesh(parent,w,h,d,tint,ti,y0=0){
+  const wi=((ti|0)%WIN.length+WIN.length)%WIN.length, rx=Math.max(1,Math.round(w/8*4)/4), ry=Math.max(.5,Math.round(h/16*4)/4);
+  const k=wi+'|'+rx+'|'+ry+'|'+tint.getHexString(); let side=towerMats.get(k);
+  if(!side){ const t=WIN[wi].clone(); t.needsUpdate=true; t.repeat.set(rx,ry); side=new THREE.MeshBasicMaterial({ map:t, color:tint }); towerMats.set(k,side); }
+  const top=lam(0x23284e);
+  const m=new THREE.Mesh(boxGeo(w,h,d),[side,side,top,top,side,side]); m.position.y=y0+h/2; parent.add(m); return m;
+}
+/* Couronne lumineuse translucide et échafaudage (bureaux) */
+function crownMat(hex){ const k='cr'+hex; if(!mats.has(k)) mats.set(k,new THREE.MeshBasicMaterial({ color:hex, transparent:true, opacity:.32, depthWrite:false, blending:THREE.AdditiveBlending })); return mats.get(k); }
+const scaffoldMats=new Map(), hideMat=new THREE.MeshBasicMaterial({ visible:false });
+function scaffoldMat(ry){
+  const k=ry; let m=scaffoldMats.get(k); if(m) return m;
+  if(!scaffoldMat.tex){ const c=document.createElement('canvas'); c.width=c.height=64; const g=c.getContext('2d');
+    g.strokeStyle='#ffc857'; g.lineWidth=3; g.beginPath(); g.moveTo(1.5,0); g.lineTo(1.5,64); g.moveTo(33.5,0); g.lineTo(33.5,64); g.stroke();
+    g.strokeStyle='#d9ddf5'; g.lineWidth=4; g.beginPath(); g.moveTo(0,2); g.lineTo(64,2); g.stroke();
+    g.strokeStyle='rgba(200,206,240,.85)'; g.lineWidth=1.6; g.beginPath(); g.moveTo(2,4); g.lineTo(33,62); g.moveTo(34,62); g.lineTo(64,4); g.stroke();
+    scaffoldMat.tex=new THREE.CanvasTexture(c); scaffoldMat.tex.wrapS=scaffoldMat.tex.wrapT=THREE.RepeatWrapping; }
+  const t=scaffoldMat.tex.clone(); t.needsUpdate=true; t.repeat.set(3,ry);
+  m=new THREE.MeshBasicMaterial({ map:t, alphaTest:.45, side:THREE.DoubleSide }); scaffoldMats.set(k,m); return m;
+}
+/* Atelier 101 · Deneb (v4.3) : domicile d'une app, lu dans spec.domicile. Forme et couleur distinctes, lisibles de loin :
+   privé = losange rose (fermé), service = deux anneaux croisés cyan (relais), public = globe blanc cerclé (ouvert à tous). */
+const DOMICILES={
+  prive:  { nom:'privé',   hex:0xff6fae, css:'#ff6fae' },
+  service:{ nom:'service', hex:0x5ef0ff, css:'#5ef0ff' },
+  public: { nom:'public',  hex:0xf4f6ff, css:'#f4f6ff' },
+};
+const DOMGEO={};
+function domSign(GL,LM,dom,x,y0,z,mast){
+  const M=(rx,ry,sx,sy,sz,yy)=>new THREE.Matrix4().compose(new THREE.Vector3(x,yy,z),new THREE.Quaternion().setFromEuler(new THREE.Euler(rx,ry,0)),new THREE.Vector3(sx,sy,sz));
+  if(mast) LM.push([boxGeo(.2,mast,.2),T4(x,y0+mast/2,z),0x8890c0]);
+  const y=y0+mast+.85;
+  LM.push([boxGeo(.5,.18,.5),T4(x,y0+mast+.09,z),0x3a3f6a]); // collier du mât
+  if(dom===DOMICILES.prive){
+    GL.push([DOMGEO.oct||(DOMGEO.oct=new THREE.OctahedronGeometry(.7)),M(0,PI/4,1,1.35,1,y),dom.hex]);
+  } else if(dom===DOMICILES.service){
+    const t=DOMGEO.ring||(DOMGEO.ring=new THREE.TorusGeometry(.72,.13,6,22));
+    GL.push([t,M(0,PI/4,1,1,1,y),dom.hex],[t,M(0,-PI/4,1,1,1,y),dom.hex],[DOMGEO.core||(DOMGEO.core=new THREE.SphereGeometry(.24,8,6)),M(0,0,1,1,1,y),dom.hex]);
+  } else {
+    GL.push([DOMGEO.globe||(DOMGEO.globe=new THREE.SphereGeometry(.52,12,8)),M(0,0,1,1,1,y),dom.hex],
+            [DOMGEO.belt||(DOMGEO.belt=new THREE.TorusGeometry(.92,.09,6,24)),M(PI/2,0,1,1,1,y),dom.hex]);
+  }
+}
+function tintOf(st, mix=.22){ return new THREE.Color(0xffffff).lerp(new THREE.Color(STUDIOS[st].hex), mix); }
+
+function placeOnLot(lot, spec, animate){
+  const g=new THREE.Group(); g.position.set(lot.x,0,lot.z); world.add(g);
+  const o={ group:g, colls:[], inters:[], meshes:[] };
+  const st=STUDIOS[lot.st]; let h=spec.h||20;
+  if(spec.kind==='app' || spec.kind==='filler' || spec.kind==='tour'){
+    const w = spec.kind==='app'?10 : spec.kind==='tour'?9 : (spec.w||9);
+    if(spec.kind==='app'){
+      // Atelier 101 · Deneb (v2.6) : 2 ou 3 volumes en gradins selon la hauteur, liseré au studio à chaque retrait
+      const tiers = h>=24 ? [[.46,w],[.32,w*.8],[.22,w*.6]] : [[.62,w],[.38,w*.74]];
+      let y=0; const tint=tintOf(lot.st,.25), t0=spec.t||0;
+      // Atelier 101 · Rigel (v2.11) : flancs des gradins seuls (1 draw call par gradin) ; dessus des gradins, liserés,
+      // porte et toit fusionnés en 2 maillages par tour (lumineux / mat). o.meshes et l'occlusion caméra inchangés.
+      const GL=[], LM=[];
+      tiers.forEach(([f,tw],k)=>{ const th=k===tiers.length-1 ? h-y : Math.round(h*f*2)/2;
+        const m=towerMesh(g,tw,th,tw,tint,t0+k*4,y); m.geometry=sideGeo(tw,th,tw); o.meshes.push(m);
+        LM.push([boxGeo(tw,th,tw),T4(0,y+th/2,0),0x23284e,12,12]); y+=th;
+        GL.push([boxGeo(tw+.3,.4,tw+.3),T4(0,y-.2,0),st.hex]); });
+      const top=tiers[tiers.length-1][1], roof=((spec.name||'').length+h)%2;
+      // Atelier 101 · Deneb (v4.3) : signe de domicile (spec.domicile facultatif : 'prive', 'service', 'public'), fusionné aux lumineux, 0 draw call en plus
+      const dom=DOMICILES[spec.domicile];
+      if(roof){ // antenne décalée, feu rouge au sommet (remplacé par la balise de domicile si le champ est là)
+        LM.push([boxGeo(1.4,1.2,1.4),T4(top*.22,h+.6,-top*.22),0x3a3f6a],[boxGeo(.22,6.5,.22),T4(top*.22,h+3.25,-top*.22),0x8890c0]);
+        if(dom) domSign(GL,LM,dom,top*.22,h+6.5,-top*.22,0);
+        else GL.push([PGEO.tip||(PGEO.tip=new THREE.SphereGeometry(.32,8,6)),T4(top*.22,h+6.6,-top*.22),0xff5d73]);
+      } else { // toit-terrasse : garde-corps en verre dépoli et kiosque éclairé (mât et balise de domicile sur le kiosque si le champ est là)
+        box(g,top+.1,.9,top+.1,0,h+.45,0,frostMat); GL.push([boxGeo(top*.36,1.5,top*.36),T4(-top*.18,h+.75,top*.18),st.hex]);
+        if(dom) domSign(GL,LM,dom,-top*.18,h+1.5,top*.18,5);
+      }
+      GL.push([boxGeo(4,2.6,.3),T4(0,1.3,w/2+.1),st.hex]); // porte
+      { const mg=new THREE.Mesh(mergeColored(GL),vcMat('b')), ml=new THREE.Mesh(mergeColored(LM),vcMat('l')); ml.renderOrder=1; g.add(mg,ml); } // dessus des gradins dessinés après les liserés coplanaires, comme avant
+    } else {
+      const m=towerMesh(g,w,h,w,tintOf(lot.st, spec.kind==='filler'?.08:.25),spec.t||0); o.meshes.push(m);
+      if(spec.kind!=='filler'){ box(g,w+.3,.5,w+.3,0,h-.25,0,glow(st.hex)); }
+    }
+    if(spec.kind==='tour'){ box(g,.3,6,.3,0,h+3,0,lam(0x8890c0)); const tip=new THREE.Mesh(new THREE.SphereGeometry(.4,8,6),glow(0xff5d73)); tip.position.y=h+6.2; g.add(tip); }
+    if(spec.kind==='app'){
+      const s=label(spec.name, st.css); s.position.y=h+2.6; g.add(s);
+      o.inters.push({ type:'box', minX:lot.x-w/2, maxX:lot.x+w/2, minZ:lot.z-w/2, maxZ:lot.z+w/2, level:0, r:2.4, label:'Visiter '+spec.name, act:()=>openPanel(()=>panelApp(lot)) });
+    }
+    o.colls.push(collide(lot.x-w/2,lot.x+w/2,lot.z-w/2,lot.z+w/2,0));
+  } else if(spec.kind==='bureau'){
+    const c=chantier(spec.bureau.chantier); h=14;
+    // Atelier 101 · Deneb (v2.6) : socle 11×11, corps en retrait 9×9, couronne lumineuse, échafaudage tant que la grue est là
+    const tint=new THREE.Color(0xffffff).lerp(new THREE.Color(c.hex),.32), SH=4.5, CH=1.4;
+    o.meshes.push(towerMesh(g,11,SH,11,tint,3,0));
+    box(g,11.4,.3,11.4,0,SH+.1,0,glow(c.hex));
+    o.meshes.push(towerMesh(g,9,h-SH-CH,9,tint,2,SH));
+    box(g,9.6,CH,9.6,0,h-CH/2,0,crownMat(c.hex)); box(g,9.7,.3,9.7,0,h-CH,0,glow(c.hex)); box(g,9.7,.35,9.7,0,h-.17,0,glow(c.hex));
+    box(g,4,3,.3,0,1.5,5.6,glow(c.hex));
+    const sh=h-SH, sm=scaffoldMat(Math.round(sh/3.3*2)/2), sg=boxGeo(10,sh,10);
+    const scaf=new THREE.Mesh(sg,[sm,sm,hideMat,hideMat,sm,sm]); scaf.position.y=SH+sh/2; g.add(scaf);
+    o.crane=[ box(g,.5,10,.5,4.5,h+5,4.5,lam(0xffc857)), box(g,12,.45,.45,.5,h+10,4.5,lam(0xffc857)), box(g,.08,4,.08,-4.5,h+8,4.5,lam(0xeef0ff)), box(g,.8,.6,.8,-4.5,h+5.8,4.5,lam(0x8890c0)), scaf ];
+    box(g,9.4,.8,.2,0,7,4.62,glow(0x10132e)); o.fill=box(g,9,.5,.22,0,7,4.68,glow(c.hex)); o.fill.scale.x=.001;
+    o.signY=h+12.6; o.lastTxt=null;
+    const bid=spec.bureau.id;
+    o.inters.push({ type:'box', minX:lot.x-5.5, maxX:lot.x+5.5, minZ:lot.z-5.5, maxZ:lot.z+5.5, level:0, r:2.4, label:'Entrer au bureau '+bid+' · '+c.nom, act:()=>openPanel(()=>panelBureau(bid)) });
+    o.colls.push(collide(lot.x-5.5,lot.x+5.5,lot.z-5.5,lot.z+5.5,0));
+    lot.chantier=spec.bureau.chantier; spec.name=bid; lot.obj=o; setTimeout(updateProduction,0);
+  } else if(spec.kind==='maison'){
+    h=5; const m=box(g,9,5,7,0,2.5,0,lam(0xe9d8c4)); o.meshes.push(m);
+    const roof=new THREE.Mesh(new THREE.ConeGeometry(6.6,3.2,4),lam(0xc65b4a)); roof.position.y=6.6; roof.rotation.y=PI/4; roof.scale.z=.78; g.add(roof);
+    box(g,1.4,2.4,.2,0,1.2,3.55,lam(0x5a3d2e)); box(g,1.6,1.2,.2,-2.8,2.8,3.55,glow(0xffd88f)); box(g,1.6,1.2,.2,2.8,2.8,3.55,glow(0xffd88f));
+    o.colls.push(collide(lot.x-4.5,lot.x+4.5,lot.z-3.5,lot.z+3.5,0));
+  } else if(spec.kind==='parc'){
+    h=4; const p=box(g,13,.16,13,0,.14,0,lam(0x2d7a55)); o.meshes.push(p);
+    tree(g,-4,-4,1.2); tree(g,4,-3.5,1); tree(g,-3.5,4,1.1); tree(g,4.5,4.2,1.3);
+    const pond=new THREE.Mesh(new THREE.CylinderGeometry(2.2,2.2,.1,20),lam(0x3c8fd6)); pond.position.y=.25; g.add(pond);
+  }
+  if(lot.marker) lot.marker.visible=false;
+  o.inters.forEach(x=>interacts.push(x));
+  o.meshes.forEach(m=>occluders.push(m));
+  if(animate){ g.position.y=-h-8; anims.push({ g, t:0, dur:1.6, from:-h-8 }); }
+  lot.obj=o; lot.free=false; lot.kind=spec.kind; lot.name=spec.name||null; mapDirty=true;
+  return o;
+}
+function clearLot(lot){
+  const o=lot.obj; if(!o) return; world.remove(o.group);
+  // Atelier 101 · Altaïr (v2.8) : libère seulement les panneaux (sprites), propres à chaque bâtiment ; matériaux et géométries de façade sont partagés
+  o.group.traverse(m=>{ if(m.isSprite){ const sm=m.material; if(sm.map) sm.map.dispose(); sm.dispose(); } });
+  o.colls.forEach(c=>{ const k=colliders.indexOf(c); if(k>=0) colliders.splice(k,1); });
+  o.inters.forEach(c=>{ const k=interacts.indexOf(c); if(k>=0) interacts.splice(k,1); });
+  o.meshes.forEach(c=>{ const k=occluders.indexOf(c); if(k>=0) occluders.splice(k,1); });
+  lot.obj=null; lot.free=true; lot.kind=null; lot.name=null; if(lot.marker) lot.marker.visible=true; mapDirty=true;
+}
+
+/* ---------- Le Siège (accueil + 3 bureaux) ---------- */
+const hqLower=new THREE.Group(), hqUpper=new THREE.Group(), hqTop=new THREE.Group(), hqRoof=new THREE.Group();
+world.add(hqLower,hqUpper,hqTop,hqRoof);
+function wallX(g,x1,x2,z,y0,h,mat,level,occ){ const m=box(g,x2-x1,h,.4,(x1+x2)/2,y0+h/2,z,mat); if(level!==null) collide(x1,x2,z-.25,z+.25,level); if(occ) occluders.push(m); return m; }
+function wallZ(g,z1,z2,x,y0,h,mat,level,occ){ const m=box(g,.4,h,z2-z1,x,y0+h/2,(z1+z2)/2,mat); if(level!==null) collide(x-.25,x+.25,z1,z2,level); if(occ) occluders.push(m); return m; }
+const SOLID=lam(0x3b4072), TRIM=glow(0x7cc8ff);
+const recep = { x:0, z:-2.4 };
+(function buildHQ(){
+  // Rez-de-chaussée
+  box(hqLower,28,.1,20,0,.12,0,lam(0x3a3768));
+  wallX(hqLower,-14,14,-10,0,5,SOLID,0,true);
+  wallZ(hqLower,-10,10,-14,0,5,SOLID,0,true); wallZ(hqLower,-10,10,14,0,5,SOLID,0,true);
+  wallX(hqLower,-14,-3,10,0,5,glassMat,0); wallX(hqLower,3,14,10,0,5,glassMat,0);
+  box(hqLower,6,1,.5,0,4.5,10,SOLID); box(hqLower,6.4,.12,.6,0,3.95,10.05,TRIM);
+  // comptoir d'accueil
+  box(hqLower,8,1.1,1.2,0,.55,-1,lam(0x5cb4ff)); box(hqLower,8.2,.1,1.4,0,1.15,-1,lam(0xeef0ff));
+  collide(-4,4,-1.6,-.4,0);
+  const rp=person(0xff8a65); rp.position.set(recep.x,0,recep.z); hqLower.add(rp); recep.npc=rp;
+  const sLogo=label('AYPONA CITY · ACCUEIL','#7cc8ff',.03); sLogo.position.set(0,3.4,-9.4); hqLower.add(sLogo);
+  // salon d'attente
+  box(hqLower,1.8,.8,5,-11.5,.4,4,lam(0x6a5acd)); collide(-12.4,-10.6,1.5,6.5,0);
+  box(hqLower,1.8,.8,5,-11.5,.4,-5,lam(0x6a5acd)); collide(-12.4,-10.6,-7.5,-2.5,0);
+  box(hqLower,2,.5,2,-8.6,.25,4,lam(0x2a2f58)); collide(-9.6,-7.6,3,5,0);
+  tree(hqLower,-12.5,8.5,.7); tree(hqLower,12.5,-8.5,.7); tree(hqLower,-12.5,-8.5,.7);
+  // Ascenseur (même position aux deux niveaux)
+  for(const [dx,dz] of [[-1.7,-1.7],[1.7,-1.7],[-1.7,1.7],[1.7,1.7]]) box(hqLower,.18,10,.18,11+dx,5,6+dz,lam(0xb7c0ff));
+  const ring0=new THREE.Mesh(new THREE.TorusGeometry(1.3,.08,8,32),glow(0x7cc8ff)); ring0.rotation.x=-PI/2; ring0.position.set(11,.2,6); hqLower.add(ring0);
+  const sEl=label('Ascenseur','#7cc8ff',.025); sEl.position.set(11,3.6,6); hqLower.add(sEl);
+  // Plaza devant
+  tree(world,-8,13.5,1); tree(world,8,13.5,1); tree(world,-13,14,.9); tree(world,13,14,.9);
+  const sHQ=label('SIÈGE AYPONA','#ffc857',.05); sHQ.position.set(0,18.4,0); hqRoof.add(sHQ);
+
+  // 1er étage
+  box(hqUpper,28,.3,20,0,4.9,0,lam(0x34305e));
+  wallX(hqUpper,-14,14,-10,5,5,SOLID,1,true);
+  wallZ(hqUpper,-10,10,-14,5,5,SOLID,1,true); wallZ(hqUpper,-10,10,14,5,5,SOLID,1,true);
+  wallX(hqUpper,-14,14,10,5,5,glassMat,1);
+  box(hqUpper,28.4,.14,.5,0,5.05,10.05,TRIM);
+  const ring1=new THREE.Mesh(new THREE.TorusGeometry(1.3,.08,8,32),glow(0x7cc8ff)); ring1.rotation.x=-PI/2; ring1.position.set(11,5.12,6); hqUpper.add(ring1);
+  const sEl1=label('Ascenseur','#7cc8ff',.025); sEl1.position.set(11,8.6,6); hqUpper.add(sEl1);
+  // cloisons des bureaux
+  const xs=[-14,-6.67,.67,8];
+  OFFICES.forEach((o,k)=>{ o.x1=xs[k]; o.x2=xs[k+1]; o.cx=(xs[k]+xs[k+1])/2; });
+  let cursor=-14;
+  OFFICES.forEach(o=>{ wallX(hqUpper,cursor,o.cx-1.1,-2,5,4,frostMat,1); cursor=o.cx+1.1; });
+  wallX(hqUpper,cursor,8,-2,5,4,frostMat,1);
+  [-6.67,.67,8].forEach(x=>wallZ(hqUpper,-10,-2,x,5,4,frostMat,1));
+  OFFICES.forEach(o=>{
+    box(hqUpper,o.x2-o.x1-.4,.04,7.6,o.cx,5.07,-6,lam(new THREE.Color(o.hex).multiplyScalar(.45).getHex()));
+    box(hqUpper,3.2,.9,1.2,o.cx,5.45,-6.6,lam(0xeef0ff)); collide(o.cx-1.6,o.cx+1.6,-7.2,-6,1);
+    const scr=box(hqUpper,1.6,.9,.06,o.cx,6.4,-6.9,glow(o.hex));
+    const p=person(o.hex); p.position.set(o.cx,5,-8.2); hqUpper.add(p); o.npc=p;
+    const s=label(o.no+' · '+o.role,o.css,.02); s.position.set(o.cx,8.5,-1.6); hqUpper.add(s);
+    interacts.push({ type:'point', x:o.cx, z:-5.2, level:1, r:2.4, label:'Entrer au bureau '+o.no+' · '+o.role, act:o.open });
+  });
+  // accessoires propres à chaque bureau
+  const c0=OFFICES[0]; for(let k=0;k<6;k++) box(hqUpper,.5,.4+((k*37)%9)/6,.5,c0.cx-2.2+(k%3)*.7,5.5+((k*37)%9)/12,-3.4-Math.floor(k/3)*.7,glow(k%2?0xffc857:0xa4d6ff));
+  box(hqUpper,2.4,.7,1.6,c0.cx-1.5,5.35,-3.8,lam(0x2a2f58));
+  const c1=OFFICES[1]; box(hqUpper,4,2.2,.1,c1.cx,7,-9.75,glow(0x10132e));
+  for(let r=0;r<3;r++) for(let q=0;q<5;q++) box(hqUpper,.5,.5,.06,c1.cx-1.4+q*.7,6.3+r*.7,-9.68,glow(STUDIOS[(r+q)%5].hex));
+  /* Atelier 101 · Deneb (v4.3) : poste « Aypona OS » du bureau 102, près de l'entrée, écran tourné vers la porte.
+     Socle mat, écran d'accueil d'Aypona OS (icônes aux 5 couleurs de studio), liseré, anneau au sol et bandeau lumineux
+     à la couleur du bureau. L'interaction ouvre le panneau existant du bureau 102 (panelOS) : aucune logique du système ici. */
+  { const PX=c1.x1+1.25, PZ=-3.35, Y1=5, H2=c1.hex;
+    const sc=document.createElement('canvas'); sc.width=256; sc.height=176; const q=sc.getContext('2d');
+    const gr=q.createLinearGradient(0,0,0,176); gr.addColorStop(0,'#1b2350'); gr.addColorStop(1,'#0c1030'); q.fillStyle=gr; q.fillRect(0,0,256,176);
+    q.fillStyle='rgba(255,255,255,.55)'; q.fillRect(14,10,30,4); q.fillRect(212,10,30,4);
+    q.font='700 22px Figtree, system-ui, sans-serif'; q.fillStyle='#eef0ff'; q.textBaseline='middle'; q.fillText('Aypona',18,36); q.fillStyle='#5cb4ff'; q.fillText('OS',106,36);
+    for(let r=0;r<2;r++) for(let k=0;k<5;k++){ rr(q,18+k*46,56+r*44,32,32,9); q.fillStyle=STUDIOS[(k+r*2)%5].css; q.fill(); }
+    rr(q,40,146,176,22,11); q.fillStyle='rgba(255,255,255,.14)'; q.fill();
+    for(let k=0;k<4;k++){ rr(q,54+k*40,150,14,14,4); q.fillStyle=STUDIOS[(k+1)%5].css; q.fill(); }
+    const st=new THREE.CanvasTexture(sc); st.anisotropy=Math.min(4,renderer.capabilities.getMaxAnisotropy());
+    const pg=new THREE.Group(); pg.position.set(PX,Y1,PZ); pg.rotation.y=PI/7; hqUpper.add(pg);
+    box(pg,.9,.12,.7,0,.06,0,lam(0x2a2f58));                       // pied
+    box(pg,.26,1.05,.26,0,.62,-.05,lam(0x3b4072));                 // colonne
+    const head=new THREE.Group(); head.position.set(0,1.55,0); head.rotation.x=-.32; pg.add(head);
+    box(head,1.5,1.06,.12,0,0,-.04,lam(0x23284e));                 // cadre
+    const screen=new THREE.Mesh(new THREE.PlaneGeometry(1.36,.935),new THREE.MeshBasicMaterial({ map:st })); screen.position.z=.025; head.add(screen);
+    box(head,1.56,.05,.14,0,.555,-.04,glow(H2)); box(head,1.56,.05,.14,0,-.555,-.04,glow(H2)); // liserés
+    box(pg,1.2,.08,.08,0,2.24,-.12,glow(H2));                      // bandeau lumineux au-dessus
+    const ring=new THREE.Mesh(new THREE.TorusGeometry(.85,.05,6,28),glow(H2)); ring.rotation.x=-PI/2; ring.position.set(PX,Y1+.11,PZ); hqUpper.add(ring);
+    const sOS=label('Aypona OS','#5cb4ff',.016); sOS.position.set(PX,Y1+3.05,PZ); hqUpper.add(sOS);
+    collide(PX-.5,PX+.5,PZ-.42,PZ+.42,1);
+    interacts.push({ type:'point', x:PX+.55, z:PZ+.95, level:1, r:1.6, label:'Ouvrir Aypona OS', act:()=>openPanel(panelOS) }); }
+  const c2=OFFICES[2]; c2.orbs=[]; for(let k=0;k<3;k++){ const s=new THREE.Mesh(new THREE.SphereGeometry(.25,12,8),glow(STUDIOS[k+2].hex)); s.position.set(c2.cx-1.5+k*1.5,7.3,-4); hqUpper.add(s); c2.orbs.push(s); }
+  tree(hqUpper,-12.5,8.5,.6); tree(hqUpper,6.5,8.5,.6);
+  box(hqUpper,4,.5,1.2,-4,5.25,7,lam(0x6a5acd)); collide(-6,-2,6.4,7.6,1);
+  const s1=label('1er étage · Bureaux des architectes','#eef0ff',.022); s1.position.set(-4,8.4,9.4); hqUpper.add(s1);
+
+  // Toit
+  box(hqRoof,28.4,.4,20.4,0,15.2,0,lam(0x2a2f58)); box(hqRoof,28.6,.2,20.6,0,15.45,0,TRIM);
+  box(hqRoof,.25,4,.25,10,17.4,-6,lam(0x8890c0));
+  const beacon=new THREE.Mesh(new THREE.SphereGeometry(.45,10,8),glow(0xffc857)); beacon.position.set(10,19.6,-6); hqRoof.add(beacon);
+
+  // 2e étage : la Présidence
+  const T=hqTop, Y=10, GOLD=0xffc857;
+  box(T,28,.3,20,0,Y-.1,0,lam(0x2f2b55));
+  wallX(T,-14,14,-10,Y,5,SOLID,2,true);
+  wallZ(T,-10,10,-14,Y,5,SOLID,2,true); wallZ(T,-10,10,14,Y,5,SOLID,2,true);
+  wallX(T,-14,14,10,Y,5,glassMat,2);
+  box(T,28.4,.14,.5,0,Y+.05,10.05,glow(GOLD));
+  for(const [dx,dz] of [[-1.7,-1.7],[1.7,-1.7],[-1.7,1.7],[1.7,1.7]]) box(T,.18,5,.18,11+dx,Y+2.5,6+dz,lam(0xb7c0ff));
+  const ring2=new THREE.Mesh(new THREE.TorusGeometry(1.3,.08,8,32),glow(0x7cc8ff)); ring2.rotation.x=-PI/2; ring2.position.set(11,Y+.12,6); T.add(ring2);
+  const sEl2=label('Ascenseur','#7cc8ff',.025); sEl2.position.set(11,Y+3.6,6); T.add(sEl2);
+  // Bureau du Président (cloison dépolie, porte au centre)
+  wallX(T,-14,-7.1,-1,Y,4,frostMat,2); wallX(T,-4.9,2,-1,Y,4,frostMat,2); wallZ(T,-10,-1,2,Y,4,frostMat,2);
+  box(T,15.6,.04,8.6,-6,Y+.07,-5.5,lam(0x4a3a2a));
+  box(T,5,1,1.6,-6,Y+.5,-6.4,lam(0x6b4a2e)); box(T,5.2,.1,1.8,-6,Y+1.03,-6.4,lam(0xeef0ff)); collide(-8.5,-3.5,-7.2,-5.6,2);
+  box(T,6,2.6,.1,-6,Y+2.6,-9.75,glow(0x10132e));
+  const scr=label(PRESIDENCE.termine? 'MANDAT '+PRESIDENCE.mandat+' TERMINÉ · PLACE AU PRÉSIDENT '+PRESIDENCE.suivant : 'MANDAT '+PRESIDENCE.mandat+' · PROMPT '+PRESIDENCE.used+'/'+PRESIDENCE.quota,'#ffc857',.022); scr.position.set(-6,Y+2.6,-9.5); T.add(scr);
+  box(T,.12,3.4,.12,-10.5,Y+1.7,-9,lam(0x8890c0)); box(T,1.4,.9,.04,-9.8,Y+3,-9,glow(GOLD));
+  const pres=person(GOLD,0xd9a77f); pres.position.set(-6,Y,-8.2); T.add(pres); PRESIDENCE.npc=pres;
+  box(T,.9,.18,.9,-6,Y+2.42,-8.2,glow(GOLD));
+  if(PRESIDENCE.termine){ box(T,1.1,.7,1.1,-2.2,Y+.35,-8.2,lam(0x2a2f58)); box(T,1.1,1.3,.2,-2.2,Y+1.3,-8.75,lam(0x2a2f58)); box(T,.9,.06,.06,-2.2,Y+1.9,-8.62,glow(0xffc857));
+    const sII=label('Fauteuil du Président '+PRESIDENCE.suivant,'#eef0ff',.016); sII.position.set(-2.2,Y+2.7,-8.2); T.add(sII); }
+  const sP=label('Bureau du Président du siège','#ffc857',.02); sP.position.set(-6,Y+4.3,-1.4); T.add(sP);
+  interacts.push({ type:'point', x:-6, z:-4.3, level:2, r:2.4, label:'Rencontrer le Président du siège', act:()=>openPanel(panelPresident) });
+  // Registre de passation (pupitre + livre lumineux)
+  box(T,1.2,1.2,.9,7,Y+.6,-6,lam(0x5a3d2e)); collide(6.4,7.6,-6.45,-5.55,2);
+  const book=box(T,1.3,.08,.9,7,Y+1.25,-6,glow(0xfff1c9)); book.rotation.x=-.25; PRESIDENCE.book=book;
+  box(T,.06,.1,.9,7,Y+1.3,-6,lam(0x6b4a2e));
+  const sR=label('Registre de passation','#ffc857',.02); sR.position.set(7,Y+3.2,-6); T.add(sR);
+  interacts.push({ type:'point', x:7, z:-4.2, level:2, r:2.4, label:'Lire le registre de passation', act:()=>openPanel(panelRegistry) });
+  // Salle du conseil : table ronde, une chaise par architecte + celle du Président
+  const tbl=new THREE.Mesh(new THREE.CylinderGeometry(2.6,2.6,.16,28),lam(0xeef0ff)); tbl.position.set(-4,Y+1,5); T.add(tbl);
+  const foot=new THREE.Mesh(new THREE.CylinderGeometry(.4,.6,1,12),lam(0x3b4072)); foot.position.set(-4,Y+.5,5); T.add(foot);
+  collide(-6.6,-1.4,2.4,7.6,2);
+  [...OFFICES.map(o=>o.hex),GOLD].forEach((c,k)=>{ const a=k*PI/2+PI/4; box(T,.9,.9,.9,-4+Math.cos(a)*3.5,Y+.45,5+Math.sin(a)*3.5,lam(c)); });
+  const holo=new THREE.Mesh(new THREE.OctahedronGeometry(.55),glow(0x7cc8ff)); holo.position.set(-4,Y+2.1,5); T.add(holo); PRESIDENCE.holo=holo;
+  interacts.push({ type:'point', x:-4, z:1.2, level:2, r:2.4, label:'Réunir le conseil du siège', act:()=>openPanel(panelCouncil) });
+  tree(T,12.5,-8.5,.6); tree(T,-12.5,8.5,.6);
+  const s2=label('2e étage · Présidence','#ffc857',.022); s2.position.set(4,Y+3.4,9.4); T.add(s2);
+})();
+/* Atelier 101 · Altaïr (v4.2) : état du Bureau du courrier en 3D, rafraîchi depuis la collection courrier (lecture seule) */
+const courrierRoom={ sig:'' };
+const BROOMS = [
+  { key:'archives', name:'Archives des applications', x1:-14, x2:-4.5, css:'#ffc857', hex:0xffc857 },
+  { key:'maj', name:'Salle des mises à jour', x1:-4.5, x2:3.5, css:'#4fe0a8', hex:0x4fe0a8 },
+  { key:'courrier', name:'Bureau du courrier', x1:3.5, x2:14, css:'#b392ff', hex:0xb392ff },
+];
+(function buildBasement(){
+  const B=basement, Y=-5, CON=lam(0x2b2f52), PART=lam(0x353a63);
+  box(B,28,.2,20,0,Y-.1,0,lam(0x22264a));
+  wallX(B,-14,14,-10,Y,4.6,CON,-1); wallX(B,-14,14,10,Y,4.6,CON,-1);
+  wallZ(B,-10,10,-14,Y,4.6,CON,-1); wallZ(B,-10,10,14,Y,4.6,CON,-1);
+  box(B,28,.12,.3,0,Y+4.5,9.7,glow(0x7cc8ff)); box(B,28,.12,.3,0,Y+4.5,-9.7,glow(0x7cc8ff));
+  BROOMS.forEach(r=>{ r.cx=(r.x1+r.x2)/2; });
+  let cur=-14; BROOMS.forEach(r=>{ wallX(B,cur,r.cx-1.1,-2,Y,4.2,PART,-1); cur=r.cx+1.1; }); wallX(B,cur,14,-2,Y,4.2,PART,-1);
+  [-4.5,3.5].forEach(x=>wallZ(B,-10,-2,x,Y,4.2,PART,-1));
+  BROOMS.forEach(r=>{
+    box(B,r.x2-r.x1-.4,.04,7.6,r.cx,Y+.03,-6,lam(new THREE.Color(r.hex).multiplyScalar(.28).getHex()));
+    box(B,2.2,.12,.12,r.cx,Y+2.6,-1.8,glow(r.hex));
+    const s=label(r.name,r.css,.02); s.position.set(r.cx,Y+3.4,-1.6); B.add(s);
+  });
+  // Archives : rayonnages + classeurs colorés par studio
+  const A=BROOMS[0], files=[];
+  [[-9.3,A.x1+.4,A.x2-.4],[-6.2,A.x1+1.2,A.x2-2.6]].forEach(([z,x1,x2])=>{
+    const w=x2-x1, cx=(x1+x2)/2;
+    box(B,w,2.8,.8,cx,Y+1.4,z,lam(0x4a3f3a)); collide(x1,x2,z-.45,z+.45,-1);
+    for(let lv=0;lv<3;lv++) for(let k=0;k<Math.floor(w/.42);k++){
+      const bh=.5+((k*7+lv*3)%4)*.06;
+      files.push([x1+.25+k*.42,Y+.35+lv*.9+bh/2,z+(z<-8?.12:0),bh,STUDIOS[(k+lv)%5].hex]);
+    }
+  });
+  // Atelier 101 · Rigel (v2.11) : les classeurs en un seul InstancedMesh (hauteur par l'échelle, couleur par instance)
+  const fm=new THREE.InstancedMesh(boxGeo(.3,1,.62),new THREE.MeshBasicMaterial({ color:0xffffff }),files.length);
+  const fq=new THREE.Quaternion(), fv=new THREE.Vector3(), fs=new THREE.Vector3(), fx=new THREE.Matrix4(), fc=new THREE.Color();
+  files.forEach(([x,y,z,bh,hex],i)=>{ fx.compose(fv.set(x,y,z),fq,fs.set(1,bh,1)); fm.setMatrixAt(i,fx); fm.setColorAt(i,fc.setHex(hex)); });
+  fm.instanceMatrix.needsUpdate=true; fm.instanceColor.needsUpdate=true; fm.frustumCulled=false; B.add(fm);
+  interacts.push({ type:'point', x:A.cx, z:-3.6, level:-1, r:2.4, label:'Consulter les archives', act:()=>openPanel(panelArchives) });
+  // Mises à jour : mur d'écrans + terminal
+  const M=BROOMS[1];
+  box(B,6.6,3,.12,M.cx,Y+2.2,-9.7,glow(0x0f1a2e));
+  for(let k=0;k<6;k++) box(B,1.2+((k*5)%4)*1.1,.22,.06,M.cx-2.7+((1.2+((k*5)%4)*1.1)/2),Y+3.3-k*.42,-9.62,glow(k===0?0x4fe0a8:0x5cb4ff));
+  box(B,2.6,1,1,M.cx,Y+.5,-6.4,lam(0xeef0ff)); collide(M.cx-1.3,M.cx+1.3,-6.9,-5.9,-1);
+  box(B,1.4,.8,.06,M.cx,Y+1.45,-6.75,glow(0x4fe0a8));
+  interacts.push({ type:'point', x:M.cx, z:-4.4, level:-1, r:2.4, label:'Voir les mises à jour', act:()=>openPanel(panelUpdates) });
+  // Bureau du courrier (décret n°3 du mandat III, ancienne salle vide)
+  const V=BROOMS[2];
+  /* Atelier 101 · Altaïr (v4.2) : aménagement du Bureau du courrier.
+     Mur de casiers au fond : un casier par dossier (PRESIDENT, FONDATEUR, puis les agents des bureaux 101 à 103),
+     qui s'allume en violet quand un pli l'attend. Guichet, table de tri, tube pneumatique vers les étages. */
+  const CY=Y, VIO=0xb392ff;
+  box(B,9.6,3.4,.5,V.cx,CY+1.9,-9.55,lam(0x2a2550));                       // meuble de casiers
+  box(B,9.8,.14,.6,V.cx,CY+3.65,-9.5,glow(VIO));                            // corniche lumineuse
+  const COLS=8, ROWS=3, cw=1.08, ch=.92, cells=[];
+  for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++) cells.push([V.cx-(COLS-1)*cw/2+c*cw, CY+.9+r*1.0]);
+  const cellM=new THREE.InstancedMesh(boxGeo(cw*.86,ch*.8,.12),new THREE.MeshBasicMaterial({ color:0xffffff }),cells.length);
+  const cq=new THREE.Quaternion(), cv=new THREE.Vector3(), cs=new THREE.Vector3(1,1,1), cmx=new THREE.Matrix4(), cc=new THREE.Color();
+  cells.forEach(([x,y],i)=>{ cmx.compose(cv.set(x,y,-9.26),cq,cs); cellM.setMatrixAt(i,cmx); cellM.setColorAt(i,cc.setHex(0x1b1f44)); });
+  cellM.instanceMatrix.needsUpdate=true; cellM.instanceColor.needsUpdate=true; cellM.frustumCulled=false; B.add(cellM);
+  // pastilles « pli en attente » au bas de chaque casier
+  const tabM=new THREE.InstancedMesh(boxGeo(cw*.5,.1,.06),new THREE.MeshBasicMaterial({ color:0xffffff }),cells.length);
+  cells.forEach(([x,y],i)=>{ cmx.compose(cv.set(x,y-ch*.33,-9.18),cq,cs); tabM.setMatrixAt(i,cmx); tabM.setColorAt(i,cc.setHex(0x2a2f58)); });
+  tabM.instanceMatrix.needsUpdate=true; tabM.instanceColor.needsUpdate=true; tabM.frustumCulled=false; B.add(tabM);
+  collide(V.cx-4.9,V.cx+4.9,-10,-9.2,-1);
+  // guichet en verre dépoli
+  box(B,5.2,1.05,.9,V.cx,CY+.52,-7.1,lam(0x3b3570)); box(B,5.4,.08,1.05,V.cx,CY+1.08,-7.1,lam(0xeef0ff));
+  box(B,5.2,.9,.06,V.cx,CY+1.55,-6.68,frostMat); box(B,5.3,.06,.1,V.cx,CY+2.02,-6.68,glow(VIO));
+  collide(V.cx-2.6,V.cx+2.6,-7.6,-6.6,-1);
+  const sGu=label('Guichet du courrier','#b392ff',.016); sGu.position.set(V.cx,CY+2.45,-6.7); B.add(sGu);
+  // table de tri, avec piles de plis
+  box(B,2.6,.75,1.4,V.cx+3.6,CY+.38,-4.2,lam(0x2f2b55)); box(B,2.7,.06,1.5,V.cx+3.6,CY+.78,-4.2,lam(0x5a4f9a));
+  for(let k=0;k<5;k++){ const n=1+(k*3)%4; for(let j=0;j<n;j++){ const e=box(B,.5,.04,.34,V.cx+2.7+k*.45,CY+.84+j*.045,-4.2+((k*7)%3-1)*.25,lam(j%2?0xeef0ff:0xe4dcff)); e.rotation.y=(k*.37+j*.2)%.6-.3; } }
+  collide(V.cx+2.3,V.cx+4.9,-4.9,-3.5,-1);
+  // tube pneumatique vers les étages, avec une capsule qui monte quand des plis attendent
+  const tube=new THREE.Mesh(new THREE.CylinderGeometry(.28,.28,4.6,16,1,true),new THREE.MeshLambertMaterial({ color:0xc8d0ff, transparent:true, opacity:.28, depthWrite:false, side:THREE.DoubleSide }));
+  tube.position.set(V.x2-.8,CY+2.3,-8.6); B.add(tube);
+  for(const yy of [.25,4.35]){ const ring=new THREE.Mesh(new THREE.TorusGeometry(.32,.05,6,18),glow(VIO)); ring.rotation.x=PI/2; ring.position.set(V.x2-.8,CY+yy,-8.6); B.add(ring); }
+  const capsule=new THREE.Mesh(new THREE.CylinderGeometry(.18,.18,.42,12),glow(0xffc857)); capsule.position.set(V.x2-.8,CY+.5,-8.6); B.add(capsule);
+  collide(V.x2-1.15,V.x2-.45,-8.95,-8.25,-1);
+  courrierRoom.cellM=cellM; courrierRoom.tabM=tabM; courrierRoom.capsule=capsule; courrierRoom.y0=CY; courrierRoom.n=cells.length;
+  interacts.push({ type:'point', x:V.cx, z:-5, level:-1, r:3, label:'Ouvrir le Bureau du courrier', act:()=>openPanel(panelCourrier) });
+  // Ascenseur
+  for(const [dx,dz] of [[-1.7,-1.7],[1.7,-1.7],[-1.7,1.7],[1.7,1.7]]) box(B,.18,4.6,.18,11+dx,Y+2.3,6+dz,lam(0xb7c0ff));
+  const ring=new THREE.Mesh(new THREE.TorusGeometry(1.3,.08,8,32),glow(0x7cc8ff)); ring.rotation.x=-PI/2; ring.position.set(11,Y+.08,6); B.add(ring);
+  const se=label('Ascenseur','#7cc8ff',.025); se.position.set(11,Y+3.6,6); B.add(se);
+  const sc=label('Sous-sol · Archives, mises à jour et courrier','#eef0ff',.022); sc.position.set(-4,Y+3.6,9.3); B.add(sc);
+  box(B,4,.5,1.2,-4,Y+.25,6.5,lam(0x6a5acd)); collide(-6,-2,5.9,7.1,-1);
+})();
+interacts.push({ type:'point', x:0, z:1, level:0, r:3, label:'Parler à la réceptionniste', act:()=>openPanel(panelReception) });
+[-1,0,1,2].forEach(lv=>interacts.push({ type:'point', x:11, z:6, level:lv, r:1.9, label:'Prendre l’ascenseur', act:()=>openPanel(panelElevator) }));
+
+/* ---------- Joueur ---------- */
+const player = { pos:new THREE.Vector3(0,0,15), level:0, face:PI, vel:new THREE.Vector2() };
+const avatar = person(0x7cc8ff, 0xe8b894); scene.add(avatar);
+const halo=new THREE.Mesh(new THREE.RingGeometry(.65,.85,28),new THREE.MeshBasicMaterial({color:0x7cc8ff,transparent:true,opacity:.7,side:THREE.DoubleSide})); halo.rotation.x=-PI/2; scene.add(halo);
+const cam = { yaw:0, pitch:.42, zoom:1 };
+const camPos = new THREE.Vector3(0,8,26);
+const ray = new THREE.Raycaster();
+
+function resolve(p, level){
+  const r=.5;
+  for(const c of colliders){
+    if(c.level!==level) continue;
+    const cx=clamp(p.x,c.minX,c.maxX), cz=clamp(p.z,c.minZ,c.maxZ);
+    const dx=p.x-cx, dz=p.z-cz, d2=dx*dx+dz*dz;
+    if(d2<r*r){
+      if(d2>1e-8){ const d=Math.sqrt(d2); p.x=cx+dx/d*r; p.z=cz+dz/d*r; }
+      else { const l=p.x-c.minX, rt=c.maxX-p.x, t=p.z-c.minZ, b=c.maxZ-p.z, m=Math.min(l,rt,t,b);
+        if(m===l) p.x=c.minX-r; else if(m===rt) p.x=c.maxX+r; else if(m===t) p.z=c.minZ-r; else p.z=c.maxZ+r; }
+    }
+  }
+  p.x=clamp(p.x,-132,132); p.z=clamp(p.z,-132,132);
+}
+const insideHQ = () => Math.abs(player.pos.x)<14 && Math.abs(player.pos.z)<10;
+
+/* ---------- Restructuration : bureaux de construction & agents ----------
+   Données partagées dans la base de l'artifact (collections « bureaux », « agents », « archives »).
+   Hors claude.ai (aperçu local), repli sur le stockage du navigateur. */
+const CHANTIERS = [
+  { key:'noyau',     nom:'Noyau AyLibre',  mission:'Construit la base du nouveau système : démarrage, fichiers, réglages.', hex:0x7cc8ff, css:'#7cc8ff' },
+  { key:'interface', nom:'Interface',      mission:"Dessine l'écran d'accueil, les fenêtres et le style du nouvel Aypona OS.", hex:0xff8a65, css:'#ff8a65' },
+  { key:'store',     nom:'App Store',      mission:'Prépare le magasin qui réinstallera les apps une par une.', hex:0x4fe0a8, css:'#4fe0a8' },
+  { key:'securite',  nom:'Sécurité',       mission:'Comptes, accès, sauvegardes : rien ne rouvre sans son feu vert.', hex:0xe5534b, css:'#e5534b' },
+  { key:'ia',        nom:'IA & Agents',    mission:"Branche l'intelligence artificielle au cœur du système.", hex:0xb392ff, css:'#b392ff' },
+  { key:'donnees',   nom:'Données & Cloud',mission:'Stockage, synchronisation et hébergement hors Netlify.', hex:0xffc857, css:'#ffc857' },
+];
+const ROLES = ['Chef de chantier','Développeur','Designer','Testeur','Sécurité','Intégrateur IA'];
+const DUREES = [ [1,'1 jour'], [7,'7 jours'], [30,'30 jours'], [90,'90 jours'], [365,'1 an'] ];
+const NOMS = ['Atlas','Nova','Iris','Vega','Orion','Lyra','Sirius','Altaïr','Rigel','Mira','Deneb','Talos','Electra','Pollux','Juno','Cassio'];
+const DAY = 864e5;
+const chantier = k => CHANTIERS.find(c=>c.key===k) || CHANTIERS[0];
+const dureeLabel = d => (DUREES.find(x=>x[0]===d)||[d,d+' jours'])[1];
+
+const store = { bureaux:new Map(), agents:new Map(), apps:new Map(), archives:[], courrier:[], db:null };
+const LOCAL_KEY = 'aypona-city-v2-local';
+function localLoad(){ try { const s=JSON.parse(localStorage.getItem(LOCAL_KEY)); if(s){ (s.bureaux||[]).forEach(b=>store.bureaux.set(b.id,b)); (s.agents||[]).forEach(a=>store.agents.set(a.matricule,a)); (s.apps||[]).forEach(a=>store.apps.set(a.nom,a)); store.archives=s.archives||[]; } } catch(e) {} }
+function localSave(){ if(store.db) return; try { localStorage.setItem(LOCAL_KEY, JSON.stringify({ bureaux:[...store.bureaux.values()], agents:[...store.agents.values()], apps:[...store.apps.values()], archives:store.archives.slice(0,200) })); } catch(e) {} }
+function refreshPanel(){ if(!panelFn) return; const a=document.activeElement; if(a && (a.tagName==='INPUT'||a.tagName==='TEXTAREA') && panel.contains(a)) return; renderPanel(); }
+async function put(coll,id,data){
+  const map=store[coll]; const doc={ ...(map.get(id)||{}), ...data }; map.set(id,doc); localSave(); syncWorld();
+  if(store.db){ try { await store.db.collection(coll).doc(id).set(doc); } catch(e){ toast("Enregistrement refusé : tu n'as peut-être pas les droits d'écriture."); } }
+}
+async function archive(type,txt,matricule){
+  const e={ t:Date.now(), type, txt, matricule:matricule||null };
+  if(store.db){ try { await store.db.collection('archives').add(e); } catch(err) {} }
+  else { store.archives.unshift(e); localSave(); }
+  refreshPanel();
+}
+let worldReady=false;
+function initStore(){
+  const useLocal=()=>{ localLoad(); syncWorld(); worldReady=true; };
+  if(!window.claude || typeof window.claude.use!=='function'){ useLocal(); return; }
+  window.claude.use('db').then(db=>{
+    if(!db){ useLocal(); return; }
+    store.db=db;
+    db.collection('bureaux').onSnapshot(snap=>{ store.bureaux.clear(); snap.docs.forEach(d=>store.bureaux.set(d.id,{ ...d.data(), id:d.id })); syncWorld(); worldReady=true; refreshPanel(); }, ()=>{});
+    db.collection('apps').onSnapshot(snap=>{ store.apps.clear(); snap.docs.forEach(d=>store.apps.set(d.id,{ ...d.data(), nom:d.id })); syncApps(); refreshPanel(); }, ()=>{});
+    db.collection('agents').onSnapshot(snap=>{ store.agents.clear(); snap.docs.forEach(d=>store.agents.set(d.id,{ ...d.data(), matricule:d.id })); syncAgents(); refreshPanel(); }, ()=>{});
+    db.collection('courrier').orderBy('t','desc').limit(300).onSnapshot(snap=>{ store.courrier=snap.docs.map(d=>({ ...d.data(), id:d.id })); refreshPanel(); }, ()=>{});
+    db.collection('archives').orderBy('t','desc').limit(150).onSnapshot(snap=>{ store.archives=snap.docs.map(d=>({ ...d.data(), id:d.id })); refreshPanel(); }, ()=>{});
+  }).catch(useLocal);
+}
+
+/* Statut, matricule, durée */
+function agentStatus(a,now=Date.now()){ if(a.statut==='révoqué') return 'révoqué'; return a.expire<=now ? 'expiré' : 'actif'; }
+function remaining(a){ const ms=a.expire-Date.now(); if(ms<=0) return 'expiré'; const d=Math.floor(ms/DAY); if(d>=1) return 'reste '+d+' j'; return 'reste '+Math.max(1,Math.floor(ms/36e5))+' h'; }
+function fmtDay(t){ try { return new Date(t).toLocaleDateString('fr-FR',{ day:'numeric', month:'short', year:'numeric' }); } catch(e){ return ''; } }
+function nextMatricule(bureauId){
+  const d=new Date(), ym=String(d.getFullYear()).slice(2)+String(d.getMonth()+1).padStart(2,'0');
+  const seq=[...store.agents.keys()].reduce((m,k)=>Math.max(m,parseInt(k.slice(-4),10)||0),0)+1;
+  return 'AYP-'+(bureauId||'B00')+'-'+ym+'-'+String(seq).padStart(4,'0');
+}
+function suggestName(){ const used=new Set([...store.agents.values()].map(a=>a.nom)); const free=NOMS.find(n=>!used.has(n)); return free || NOMS[store.agents.size%NOMS.length]+'-'+(store.agents.size+1); }
+async function createAgent({ nom, role, bureau, duree }){
+  if(!store.bureaux.has(bureau)){ toast("Choisis d'abord un bureau d'affectation."); return; }
+  const now=Date.now(), mat=nextMatricule(bureau);
+  await put('agents',mat,{ matricule:mat, nom, role, bureau, duree, cree:now, expire:now+duree*DAY, statut:'actif' });
+  await archive('creation', nom+' nommé '+role.toLowerCase()+' au bureau '+bureau+' pour '+dureeLabel(duree), mat);
+  logEvt('Agent '+nom+' nommé · matricule '+mat); save(); toast(nom+' nommé · matricule '+mat);
+}
+async function prolong(a){
+  const exp=Math.max(a.expire,Date.now())+a.duree*DAY;
+  await put('agents',a.matricule,{ expire:exp, statut:'actif' });
+  await archive('prolongation', a.nom+' prolongé de '+dureeLabel(a.duree)+', jusqu’au '+fmtDay(exp), a.matricule);
+  toast(a.nom+' prolongé jusqu’au '+fmtDay(exp));
+}
+async function revoke(a){
+  await put('agents',a.matricule,{ statut:'révoqué', revoque:Date.now() });
+  await archive('revocation', a.nom+' révoqué, matricule conservé aux archives', a.matricule);
+  toast(a.nom+' révoqué');
+}
+async function createBureau(key){
+  if(store.bureaux.size>=LOT_ORDER.length){ toast('Plus aucun terrain libre dans la ville.'); return; }
+  const n=[...store.bureaux.keys()].reduce((m,k)=>Math.max(m,parseInt(k.slice(1),10)||0),0)+1, id='B'+String(n).padStart(2,'0'), c=chantier(key);
+  await put('bureaux',id,{ id, chantier:key, nom:c.nom, cree:Date.now(), statut:'ouvert' });
+  await archive('bureau','Bureau '+id+' · '+c.nom+' ouvert');
+  logEvt('Bureau '+id+' · '+c.nom+' construit'); save(); toast('Bureau '+id+' · '+c.nom+' en construction');
+}
+
+/* Placement des bureaux : ordre fixe, du plus proche du siège au plus loin */
+const LOT_ORDER = lots.slice().sort((a,b)=>(Math.hypot(a.x,a.z)-Math.hypot(b.x,b.z)) || a.i-b.i);
+const placed = new Map();
+function syncWorld(){
+  const bs=[...store.bureaux.values()].sort((a,b)=>a.id<b.id?-1:1);
+  const want=new Map(); bs.forEach((b,k)=>{ if(LOT_ORDER[k]) want.set(b.id,LOT_ORDER[k]); });
+  for(const [id,lot] of placed){ if(want.get(id)!==lot){ clearLot(lot); placed.delete(id); } }
+  for(const b of bs){ const lot=want.get(b.id); if(!lot||placed.has(b.id)) continue; placeOnLot(lot,{ kind:'bureau', bureau:b },worldReady); placed.set(b.id,lot); }
+  syncApps();
+  syncAgents();
+}
+
+/* ---------- Réactivation des apps du nouvel Aypona OS ----------
+   Condition : chantiers App Store et Sécurité terminés. Une app à la fois passe un audit de sécurité
+   de 12 h, puis elle rouvre (calculé, rien à écrire). Les bureaux gardent les 8 terrains les plus proches
+   du siège ; les apps prennent les suivants, dans l'ordre de leur réactivation. */
+const AUDIT_H = 12, BUREAU_LOTS = 8;
+const APP_LOTS = LOT_ORDER.slice(BUREAU_LOTS);
+const placedApps = new Map();
+function appStatus(a,now=Date.now()){ return now >= a.demande + AUDIT_H*36e5 ? 'réactivée' : 'en audit'; }
+function appsSorted(){ return [...store.apps.values()].sort((a,b)=>a.demande-b.demande || (a.nom<b.nom?-1:1)); }
+function appHeight(n){ let h=7; for(const ch of n) h=(h*31+ch.charCodeAt(0))>>>0; return 12+(h%28); }
+function bureauOf(key){ return [...store.bureaux.values()].sort((a,b)=>a.id<b.id?-1:1).find(b=>b.chantier===key); }
+function gate(){
+  const st=bureauOf('store'), se=bureauOf('securite');
+  const done=b=>!!b && bureauPts(b)>=CHANTIER_PTS;
+  let eta=null; if(st&&se){ const a=done(st)?Date.now():timeToReach(st,CHANTIER_PTS), b=done(se)?Date.now():timeToReach(se,CHANTIER_PTS); if(a&&b) eta=Math.max(a,b); }
+  return { open:done(st)&&done(se), st, se, eta };
+}
+function inAudit(){ return appsSorted().find(a=>appStatus(a)==='en audit'); }
+async function requestApp(nom){
+  const g=gate(); if(!g.open){ toast("L'App Store et la Sécurité doivent d'abord être terminés."); return; }
+  const cur=inAudit(); if(cur){ toast(cur.nom+' est encore en audit : une app à la fois.'); return; }
+  if(store.apps.has(nom)) return;
+  await put('apps',nom,{ nom, demande:Date.now() });
+  await archive('app', nom+' : demande de réactivation, audit de sécurité de '+AUDIT_H+' h');
+  logEvt(nom+' entre en audit de sécurité'); save(); toast(nom+' entre en audit de sécurité');
+}
+function syncApps(){
+  const live=appsSorted().filter(a=>appStatus(a)==='réactivée');
+  const want=new Map(); live.forEach((a,k)=>{ if(APP_LOTS[k]) want.set(a.nom,APP_LOTS[k]); });
+  for(const [n,lot] of placedApps){ if(want.get(n)!==lot){ clearLot(lot); placedApps.delete(n); } }
+  for(const a of live){ const lot=want.get(a.nom); if(!lot||placedApps.has(a.nom)) continue; placeOnLot(lot,{ kind:'app', name:a.nom, h:appHeight(a.nom), t:a.nom.length%3 },worldReady); placedApps.set(a.nom,lot); }
+}
+
+/* Agents en mission : ils tournent autour de leur bureau */
+const agentObjs = new Map(); let agents = [];
+function syncAgents(){
+  const now=Date.now(), live=new Set();
+  for(const a of store.agents.values()){
+    if(agentStatus(a,now)!=='actif') continue;
+    const lot=placed.get(a.bureau); if(!lot) continue;
+    live.add(a.matricule);
+    let o=agentObjs.get(a.matricule);
+    if(!o){
+      const c=chantier((store.bureaux.get(a.bureau)||{}).chantier), g=new THREE.Group();
+      const core=new THREE.Mesh(new THREE.SphereGeometry(.7,18,12),new THREE.MeshBasicMaterial({color:c.hex}));
+      const ring=new THREE.Mesh(new THREE.TorusGeometry(1.1,.07,8,30),new THREE.MeshBasicMaterial({color:0xeef0ff,transparent:true,opacity:.8}));
+      g.add(core,ring); const s=label(a.nom,c.css,.022); s.position.y=1.9; g.add(s); world.add(g);
+      o={ name:a.nom, col:c, g, core, ring, lot, active:true, ang:Math.random()*PI*2, t:Math.random()*10, pos:new THREE.Vector3(lot.x,3,lot.z) };
+      agentObjs.set(a.matricule,o);
+    }
+    o.data=a; o.lot=lot;
+  }
+  for(const [m,o] of agentObjs) if(!live.has(m)){ world.remove(o.g); agentObjs.delete(m); }
+  agents=[...agentObjs.values()];
+}
+
+/* ---------- Production des chantiers ----------
+   Avancement calculé à partir des fiches d'agents (dates de nomination, d'expiration, de révocation) :
+   identique pour tous les visiteurs, sans écriture. 480 points par chantier, 5 étapes de 96 points. */
+const HOUR = 36e5, CHANTIER_PTS = 480, ETAPE_PTS = 96;
+const ETAPES = {
+  noyau:['Fondations','Démarrage','Fichiers','Réglages','Mise en service'],
+  interface:['Maquettes',"Écran d'accueil",'Fenêtres','Thème nuit','Finitions'],
+  store:['Catalogue','Fiches des apps','Installation','Mises à jour','Ouverture'],
+  securite:['Comptes','Accès','Chiffrement','Sauvegardes','Audit final'],
+  ia:['Branchement','Assistant','Agents','Mémoire','Tests'],
+  donnees:['Stockage','Synchronisation','Hébergement','Migration','Contrôle'],
+};
+const RATES = { 'Chef de chantier':.6, 'Développeur':1, 'Designer':1, 'Testeur':.8, 'Sécurité':1, 'Intégrateur IA':1 };
+const AFFINITE = { noyau:['Développeur'], interface:['Designer'], store:['Développeur','Testeur'], securite:['Sécurité','Testeur'], ia:['Intégrateur IA'], donnees:['Développeur','Sécurité'] };
+const teamOf = id => [...store.agents.values()].filter(a=>a.bureau===id);
+function agentRate(a,b){ return (RATES[a.role]||1) * ((AFFINITE[b.chantier]||[]).includes(a.role) ? 1.5 : 1); }
+function agentEnd(a){ return Math.min(a.expire, a.statut==='révoqué' ? (a.revoque||a.cree) : Infinity); }
+function agentPts(a,b,t,team){
+  const s=Math.max(a.cree,b.cree), e=Math.min(agentEnd(a),t); if(e<=s) return 0;
+  let pts=(e-s)/HOUR*agentRate(a,b);
+  if(a.role!=='Chef de chantier'){ let best=0; for(const c of team) if(c.role==='Chef de chantier'){ const cs=Math.max(s,c.cree), ce=Math.min(e,agentEnd(c)); if(ce>cs) best=Math.max(best,ce-cs); } pts+=best/HOUR*agentRate(a,b)*.2; }
+  return pts;
+}
+function bureauPts(b,t=Date.now()){ const team=teamOf(b.id); let sum=0; for(const a of team) sum+=agentPts(a,b,t,team); return Math.min(sum,CHANTIER_PTS); }
+function bureauRate(b){ const now=Date.now(); return Math.max(0,bureauPts(b,now+HOUR)-bureauPts(b,now)); }
+function timeToReach(b,target){
+  const now=Date.now(); let hi;
+  if(bureauPts(b,now)>=target) hi=now; else { const lim=Math.max(now,...teamOf(b.id).map(agentEnd).filter(isFinite)); if(bureauPts(b,lim)<target) return null; hi=lim; }
+  let lo=b.cree; for(let k=0;k<44;k++){ const m=(lo+hi)/2; if(bureauPts(b,m)>=target) hi=m; else lo=m; } return hi;
+}
+function fmtPct(p){ const v=p*100; return (v<10 && v>0 ? v.toFixed(1) : Math.floor(v))+' %'; }
+function bar(p,css){ return el('div',{class:'bar'},el('i',{style:'width:'+(p*100).toFixed(2)+'%;background:'+css})); }
+function osProgress(){ let s=0; for(const c of CHANTIERS){ const b=bureauxSorted().find(x=>x.chantier===c.key); if(b) s+=bureauPts(b)/CHANTIER_PTS; } return s/CHANTIERS.length; }
+function etapeName(b,k){ return (ETAPES[b.chantier]||ETAPES.noyau)[k-1]; }
+const milestonesDone=new Set();
+function checkMilestones(){
+  const known=new Set(store.archives.map(e=>e.id).filter(Boolean));
+  for(const b of store.bureaux.values()){
+    const pts=bureauPts(b), c=chantier(b.chantier);
+    for(let k=1;k<=5;k++){
+      if(pts<k*ETAPE_PTS) break;
+      const id='etape-'+b.id+'-'+k; if(known.has(id)||milestonesDone.has(id)) continue; milestonesDone.add(id);
+      const t=Math.round(timeToReach(b,k*ETAPE_PTS)||Date.now());
+      const e={ id, t, type:'etape', txt: b.id+' · '+c.nom+' : étape '+k+'/5 « '+etapeName(b,k)+' » franchie'+(k===5?' · chantier terminé':''), matricule:null };
+      if(store.db){ store.db.collection('archives').doc(id).set(e).catch(()=>{}); }
+      else { store.archives.push(e); store.archives.sort((x,y)=>y.t-x.t); localSave(); }
+      if(worldReady) toast(e.txt);
+    }
+  }
+}
+function updateProduction(){
+  for(const [id,lot] of placed){ const b=store.bureaux.get(id), o=lot.obj; if(!b||!o||!o.fill) continue;
+    const p=bureauPts(b)/CHANTIER_PTS; o.fill.scale.x=Math.max(.001,p); o.fill.position.x=-4.5+4.5*p;
+    const txt=b.id+' · '+chantier(b.chantier).nom+' · '+(p>=1?'terminé':fmtPct(p));
+    if(txt!==o.lastTxt){ o.lastTxt=txt; if(o.sign){ o.group.remove(o.sign); const sm=o.sign.material; if(sm.map) sm.map.dispose(); sm.dispose(); } o.sign=label(txt,chantier(b.chantier).css); o.sign.position.y=o.signY; o.group.add(o.sign); }
+    o.crane.forEach(m=>m.visible=p<1); }
+  const g=osProgress(); $('#osPct').textContent=fmtPct(g); $('#osBar').style.width=(g*100).toFixed(2)+'%';
+  checkMilestones();
+  syncApps();
+  const known=new Set(store.archives.map(e=>e.id).filter(Boolean));
+  for(const a of store.apps.values()){
+    if(appStatus(a)!=='réactivée') continue; const id='app-'+a.nom; if(known.has(id)||milestonesDone.has(id)) continue; milestonesDone.add(id);
+    const lot=placedApps.get(a.nom), e={ id, t:a.demande+AUDIT_H*36e5, type:'app', txt:a.nom+' rouvre'+(lot?' dans le quartier '+STUDIOS[lot.st].name:'')+' après son audit', matricule:null };
+    if(store.db) store.db.collection('archives').doc(id).set(e).catch(()=>{}); else { store.archives.push(e); store.archives.sort((x,y)=>y.t-x.t); localSave(); }
+    if(worldReady) toast(e.txt);
+  }
+}
+
+/* ---------- Ville vidée (restructuration) ---------- */
+function initCity(){
+  lots.forEach(l=>{ const m=new THREE.Mesh(new THREE.PlaneGeometry(13,13),freeMat); m.rotation.x=-PI/2; m.position.set(l.x,.14,l.z); world.add(m); l.marker=m; });
+  state.built=[]; state.removed=[]; save();
+}
+function lotFront(lot){ const sz=Math.sign(lot.z-lot.bz)||1; return { x:lot.x, z:lot.z+sz*7.4, yaw: sz>0?0:PI }; }
+
+/* ---------- UI ---------- */
+function el(tag,attrs={},...kids){ const e=document.createElement(tag); for(const k in attrs){ const v=attrs[k]; if(k==='class') e.className=v; else if(k.startsWith('on')) e.addEventListener(k.slice(2),v); else if(v!==false&&v!=null) e.setAttribute(k,v); } kids.flat().forEach(c=>{ if(c!=null&&c!==false) e.append(c.nodeType?c:document.createTextNode(c)); }); return e; }
+const btn=(label,fn,cls='')=>el('button',{class:'btn '+cls,type:'button',onclick:fn},label);
+
+const panel=$('#panel'); let panelFn=null, focusIdx=0;
+function openPanel(fn){ keys.clear(); panelFn=fn; focusIdx=0; panel.hidden=false; renderPanel(); $('#prompt').hidden=true; }
+function closePanel(){ panel.hidden=true; panelFn=null; canvas.focus({preventScroll:true}); }
+function renderPanel(){
+  if(!panelFn) return; const s=panelFn();
+  $('#pEyebrow').textContent=s.eyebrow; $('#pTitle').textContent=s.title;
+  const body=$('#pBody'); body.replaceChildren(...(s.body||[]).filter(x=>x!=null&&x!==false));
+  const act=$('#pActions'); act.replaceChildren(...(s.actions||[]).map(a=>btn(a.label,()=>{ a.fn(); if(panelFn) renderPanel(); },a.primary?'primary':'')));
+  act.hidden=!(s.actions&&s.actions.length);
+  $('#pNav').textContent = mode==='pad' ? 'Croix directionnelle pour choisir, A pour valider' : mode==='touch' ? 'Touche un bouton pour agir' : 'Tab pour naviguer, Entrée pour valider';
+  setFocus(clamp(focusIdx,0,focusables().length-1), false);
+}
+$('#pClose').addEventListener('click',closePanel);
+panel.addEventListener('click',e=>{ if(e.target===panel) closePanel(); });
+function focusables(){ return [...panel.querySelectorAll('button, input')]; }
+function setFocus(i,scroll=true){ const f=focusables(); f.forEach(x=>x.classList.remove('focus')); if(!f.length) return; focusIdx=(i+f.length)%f.length; if(mode==='pad'){ f[focusIdx].classList.add('focus'); if(scroll) f[focusIdx].scrollIntoView({block:'nearest'}); } }
+
+function teleport(x,z,level,yaw){ fade(()=>{ player.pos.set(x,level*5,z); player.level=level; cam.yaw=yaw; player.face=yaw+PI; snapCam=true; }); }
+const FLOORS={ '-1':['Sous-sol','archives des agents, mises à jour'], '0':['Rez-de-chaussée','accueil'], '1':['1er étage','bureaux 101, 102 et 103'], '2':['2e étage','présidence, registre, conseil'] };
+function goFloor(n){ if(n===player.level) return; fade(()=>{ player.level=n; player.pos.set(11,n*5,3.8); cam.yaw=0; player.face=PI; snapCam=true; }); toast(FLOORS[n][0]+' · '+FLOORS[n][1]); }
+let fading=false;
+function fade(fn){ if(fading) return; fading=true; const f=$('#fade'); f.classList.add('on'); setTimeout(()=>{ fn(); f.classList.remove('on'); fading=false; },300); }
+let toastT=0; function toast(t){ const e=$('#toast'); e.textContent=t; e.classList.add('on'); clearTimeout(toastT); toastT=setTimeout(()=>e.classList.remove('on'),2800); }
+
+const homeAction={ label:'Retour au siège', fn:()=>{ closePanel(); teleport(0,15,0,0); } };
+
+function panelReception(){
+  return { eyebrow:'Accueil · rez-de-chaussée', title:"Bienvenue au siège d'Aypona City",
+    body:[ el('p',{},"Restructuration en cours : la ville a été vidée, seul le siège reste debout, et toutes les apps d'Aypona OS sont désactivées. Nos trois architectes préparent le nouvel Aypona OS au 1er étage."),
+      el('dl',{class:'dir'}, OFFICES.map(o=>el('div',{},el('dt',{},o.no),el('dd',{},o.role),el('dd',{},'Il '+o.short+'.')))),
+      el('p',{},"Au sous-sol : les archives des agents et des applications, la salle des mises à jour et le Bureau du courrier. Au 2e étage : la Présidence du siège. L'ascenseur est au fond à droite.") ],
+    actions:[ { label:'Monter au 1er étage', primary:true, fn:()=>{ closePanel(); goFloor(1); } }, { label:'Monter à la Présidence', fn:()=>{ closePanel(); goFloor(2); } }, { label:'Descendre au sous-sol', fn:()=>{ closePanel(); goFloor(-1); } } ] };
+}
+
+function statRow(rows){ return el('div',{class:'stats'},rows.map(([k,v])=>el('div',{class:'stat'},el('b',{},String(v)),el('span',{},k)))); }
+function atelierTeam(){ return [...store.agents.values()].filter(a=>a.bureau===ATELIER.bureau).sort((x,y)=>x.cree-y.cree); }
+function panelCity(){
+  const open=new Set([...store.bureaux.values()].map(b=>b.chantier)), team=atelierTeam();
+  const archi=store.agents.get(ATELIER.architecte), agentsA=team.filter(a=>a.matricule!==ATELIER.architecte);
+  const cmd=store.archives.filter(e=>e.type==='commande').length, liv=store.archives.filter(e=>e.type==='livraison').length;
+  return { eyebrow:'Bureau 101 · 1er étage · Atelier 101', title:'Architecte de la Ville'+(archi?' · '+archi.nom:''),
+    body:[ el('p',{},archi? archi.nom+' dirige l’Atelier 101. Sa mission : '+ATELIER.mission : "Le poste d'Architecte de la Ville attend sa nomination."),
+      archi? el('dl',{class:'dir'},el('div',{},el('dt',{},'Matricule'),el('dd',{},archi.matricule),el('dd',{},agentStatus(archi)==='actif'?'En mission jusqu’au '+fmtDay(archi.expire):agentStatus(archi)))) : null,
+      statRow([ ['Agents de l’atelier',agentsA.filter(a=>agentStatus(a)==='actif').length], ['Commandes',cmd], ['Livraisons',liv] ]),
+      field('Spécialités de l’atelier', el('dl',{class:'dir'},ATELIER.specialites.map(sp=>{ const m=agentsA.filter(a=>a.specialite===sp.key&&agentStatus(a)==='actif');
+        return el('div',{},el('dt',{style:'color:#ffc857'},m.length?'✓ '+m.map(a=>a.nom).join(', '):'à pourvoir'),el('dd',{},sp.nom),el('dd',{},sp.texte)); }))),
+      agentsA.length? field('Équipe', el('div',{class:'list'},agentsA.map(agentRow))) : null,
+      field('Bureaux de chantier', el('p',{},store.bureaux.size+' bureaux ouverts sur '+CHANTIERS.length+' chantiers.'+(open.size<CHANTIERS.length?' Il reste des chantiers à bâtir.':''))) ],
+    actions: [{ label:'Règles de l’atelier', primary:true, fn:()=>openPanel(panelAtelierRegles) }]
+      .concat(CHANTIERS.filter(c=>!open.has(c.key)).map(c=>({ label:'Bâtir le bureau '+c.nom, fn:()=>createBureau(c.key) })))
+      .concat(store.bureaux.size? [{ label:'Visiter un bureau', fn:()=>openPanel(panelBureauList) }] : []) };
+}
+function panelAtelierRegles(){
+  return { eyebrow:'Atelier 101 · lettre de mission', title:'Règles de l’atelier',
+    body:[ el('p',{},ATELIER.mission), el('ul',{class:'log'},ATELIER.regles.map((r,k)=>el('li',{},el('time',{},String(k+1).padStart(2,'0')),el('span',{},r)))) ],
+    actions:[ { label:'Retour au bureau 101', primary:true, fn:()=>openPanel(panelCity) } ] };
+}
+function bureauxSorted(){ return [...store.bureaux.values()].sort((a,b)=>a.id<b.id?-1:1); }
+function goBureau(id){ const lot=placed.get(id); if(!lot) return; const f=lotFront(lot); closePanel(); teleport(f.x,f.z,0,f.yaw); }
+function panelBureauList(){
+  return { eyebrow:'Bureaux de construction', title:'Où veux-tu aller ?',
+    body:[ el('div',{class:'chips'},bureauxSorted().map(b=>btn(b.id+' · '+chantier(b.chantier).nom,()=>goBureau(b.id),'small'))) ], actions:[] };
+}
+function panelBureau(id){
+  const b=store.bureaux.get(id);
+  if(!b) return { eyebrow:'Bureau', title:'Bureau fermé', body:[ el('p',{},"Ce bureau n'existe plus.") ], actions:[homeAction] };
+  const c=chantier(b.chantier), team=[...store.agents.values()].filter(a=>a.bureau===id).sort((x,y)=>y.cree-x.cree);
+  const pts=bureauPts(b), p=pts/CHANTIER_PTS, rate=bureauRate(b), done=Math.floor(pts/ETAPE_PTS), fin=p<1? timeToReach(b,CHANTIER_PTS) : null;
+  const all=teamOf(id);
+  return { eyebrow:'Bureau de construction '+id, title:c.nom,
+    body:[ el('p',{},c.mission),
+      el('div',{class:'group'},el('h3',{},'Avancement · '+(p>=1?'chantier terminé':fmtPct(p))),bar(p,c.css)),
+      statRow([ ['Points',Math.floor(pts)+'/'+CHANTIER_PTS], ['Cadence (pts/h)',rate.toFixed(1)], ['Agents actifs',team.filter(a=>agentStatus(a)==='actif').length] ]),
+      el('p',{},p>=1? 'Chantier livré. Il est prêt pour la suite de la restructuration.' : fin? 'Fin estimée le '+fmtDay(fin)+' au rythme actuel.' : rate>0? "À ce rythme, les agents auront fini leur mission avant la fin du chantier : prolonge-les ou nomme des renforts." : "Chantier à l'arrêt : aucun agent actif. Nomme un agent pour relancer la production."),
+      el('div',{class:'group'},el('h3',{},'Étapes'),el('ul',{class:'steps'},(ETAPES[b.chantier]||[]).map((n,k)=>el('li',{class:k<done?'done':''},el('span',{},k<done?'✓':k===done&&p<1?'▸':'·'),(k+1)+'. '+n+(k===done&&p<1?' · en cours':''))))),
+      team.length? el('div',{class:'group'},el('h3',{},'Équipe et contributions'),el('div',{class:'list'},team.map(a=>{ const r=agentRow(a); r.querySelector('.ms').textContent+=' · '+Math.floor(agentPts(a,b,Date.now(),all))+' pts'; return r; }))) : el('p',{},'Aucun agent ici pour le moment. Nomme le premier.') ],
+    actions:[ { label:'Nommer un agent ici', primary:true, fn:()=>{ draft.bureau=id; openPanel(panelAgents); } }, ...(b.chantier==='store'? [{ label:'Réactivations des apps', fn:()=>openPanel(panelAppStore) }] : []), homeAction ] };
+}
+function agentRow(a){
+  const s=agentStatus(a), c=a.bureau===ATELIER.bureau? { css:'#ffc857' } : CONSEIL[a.bureau]? { css:(OFFICES.find(o=>o.no===a.bureau)||{}).css||'#ffc857' } : chantier((store.bureaux.get(a.bureau)||{}).chantier);
+  return el('div',{class:'agent'},
+    el('i',{class:'dot',style:'background:'+c.css}),
+    el('span',{},el('span',{class:'nm'},a.nom),' ',el('span',{class:'pill '+(s==='actif'?'on':'off')},s==='actif'?remaining(a):s)),
+    el('span',{class:'ms'},a.matricule+' · '+a.role+' · bureau '+a.bureau),
+    el('span',{class:'bt'}, s!=='révoqué'? btn('Prolonger',()=>prolong(a),'small') : null, s==='actif'? btn('Révoquer',()=>revoke(a),'small') : null));
+}
+const draft = { nom:'', role:ROLES[1], bureau:null, duree:30 };
+function chipPick(list,cur,set){ return el('div',{class:'chips'},list.map(([v,l])=>btn((v===cur?'● ':'')+l,()=>{ set(v); renderPanel(); },'small'+(v===cur?' primary':'')))); }
+function field(title,...kids){ return el('div',{class:'group'},el('h3',{},title),...kids); }
+function panelAgents(){
+  const bs=bureauxSorted();
+  if(!draft.bureau || !store.bureaux.has(draft.bureau)) draft.bureau = bs[0] ? bs[0].id : null;
+  const all=[...store.agents.values()].sort((a,b)=>b.cree-a.cree), act=all.filter(a=>agentStatus(a)==='actif').length;
+  if(!bs.length) return { eyebrow:'Bureau 103 · 1er étage', title:'Manager des agents',
+    body:[ el('p',{},"Aucun bureau de construction n'est ouvert. Un agent est toujours affecté à un bureau : l'architecte de la ville (bureau 101) doit d'abord en bâtir un.") ],
+    actions:[ { label:'Aller voir le bureau 101', primary:true, fn:()=>openPanel(panelCity) } ] };
+  const create=async()=>{ const nom=(draft.nom.trim()||suggestName()).slice(0,16); draft.nom=''; await createAgent({ nom, role:draft.role, bureau:draft.bureau, duree:draft.duree }); refreshPanel(); };
+  const input=el('input',{ type:'text', maxlength:'16', placeholder:'Nom, ex. '+suggestName(), autocomplete:'off' }); input.value=draft.nom;
+  input.addEventListener('input',()=>{ draft.nom=input.value; });
+  input.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); input.blur(); create(); } e.stopPropagation(); });
+  return { eyebrow:'Bureau 103 · 1er étage', title:'Manager des agents'+(store.agents.get(CONSEIL['103'].architecte)?' · '+store.agents.get(CONSEIL['103'].architecte).nom:''),
+    body:[ conseilHead('103'), el('p',{},"Je nomme les agents qui construisent le nouvel Aypona OS. Chaque agent reçoit un matricule, une durée d'utilisation et une fiche aux archives du sous-sol. À la fin de sa durée, il quitte le chantier mais sa fiche reste."),
+      statRow([ ['Agents actifs',act], ['Matricules émis',all.length], ['Bureaux',bs.length] ]),
+      field('Nom', el('div',{class:'form'}, input, btn('Nom au hasard',()=>{ draft.nom=suggestName(); renderPanel(); },'small'))),
+      field('Rôle', chipPick(ROLES.map(r=>[r,r]),draft.role,v=>draft.role=v)),
+      field("Bureau d'affectation", chipPick(bs.map(b=>[b.id,b.id+' · '+chantier(b.chantier).nom]),draft.bureau,v=>draft.bureau=v)),
+      field("Durée d'utilisation", chipPick(DUREES,draft.duree,v=>draft.duree=v)),
+      el('p',{},'Matricule attribué : ',el('b',{style:'color:var(--warm);font-family:var(--mono)'},nextMatricule(draft.bureau)),' · fin de mission le '+fmtDay(Date.now()+draft.duree*DAY)+'.'),
+      all.length? field('Effectif', el('div',{class:'list'},all.map(agentRow))) : null ],
+    actions:[ { label:"Nommer l'agent", primary:true, fn:create } ] };
+}
+function panelAgent(mat){
+  const a=store.agents.get(mat); if(!a) return { eyebrow:'Agent', title:'Agent introuvable', body:[], actions:[homeAction] };
+  const s=agentStatus(a), c=chantier((store.bureaux.get(a.bureau)||{}).chantier);
+  const acts=[]; if(s!=='révoqué') acts.push({ label:'Prolonger de '+dureeLabel(a.duree), primary:true, fn:()=>prolong(a) }); if(s==='actif') acts.push({ label:'Révoquer', fn:()=>revoke(a) }); acts.push(homeAction);
+  return { eyebrow:'Agent · matricule '+a.matricule, title:a.nom,
+    body:[ el('dl',{class:'dir'},
+      el('div',{},el('dt',{},'Rôle'),el('dd',{},a.role),el('dd',{},'Bureau '+a.bureau+' · '+c.nom)),
+      el('div',{},el('dt',{},'Durée'),el('dd',{},dureeLabel(a.duree)),el('dd',{},'Nommé le '+fmtDay(a.cree)+' · fin le '+fmtDay(a.expire))),
+      el('div',{},el('dt',{},'Travail'),el('dd',{},(store.bureaux.get(a.bureau)? Math.floor(agentPts(a,store.bureaux.get(a.bureau),Date.now(),teamOf(a.bureau))) : 0)+' points apportés au chantier'),el('dd',{},'Cadence de base '+(store.bureaux.get(a.bureau)? agentRate(a,store.bureaux.get(a.bureau)).toFixed(1) : '1')+' pt/h'+((AFFINITE[(store.bureaux.get(a.bureau)||{}).chantier]||[]).includes(a.role)?', bonus de spécialité':'')+'.')),
+      el('div',{},el('dt',{},'Statut'),el('dd',{},s==='actif'?'En mission, '+remaining(a):s),el('dd',{},'Fiche enregistrée aux archives du sous-sol.'))) ],
+    actions:acts };
+}
+function fmtDate(t){ try { return new Date(t).toLocaleString('fr-FR',{ day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' }); } catch(e){ return ''; } }
+function panelElevator(){
+  const here=FLOORS[player.level][0];
+  return { eyebrow:'Ascenseur du siège', title:'Quel étage ?', body:[ el('p',{},'Tu es au '+here.toLowerCase()+'.') ],
+    actions:[2,1,0,-1].filter(n=>n!==player.level).map((n,k)=>({ label:FLOORS[n][0]+' · '+FLOORS[n][1], primary:k===0, fn:()=>{ closePanel(); goFloor(n); } })) };
+}
+function panelArchives(){
+  const all=[...store.agents.values()].sort((a,b)=>a.matricule.slice(-4)<b.matricule.slice(-4)?-1:1);
+  return { eyebrow:'Sous-sol · salle 1', title:'Archives',
+    body:[ el('p',{},"Tout ce qui naît pendant la restructuration est consigné ici : chaque agent avec son matricule, sa durée d'utilisation et son statut. Les fiches ne sont jamais effacées, même après expiration ou révocation."),
+      statRow([ ['Matricules',all.length], ['Apps désactivées',APPS.length-store.apps.size], ['Entrées au journal',store.archives.length] ]),
+      field('Registre des agents', all.length
+        ? el('div',{class:'list'},el('dl',{class:'dir'},all.map(a=>el('div',{},el('dt',{},a.matricule),el('dd',{},a.nom+' · '+a.role+' · '+agentStatus(a)),el('dd',{},'Bureau '+a.bureau+' · '+dureeLabel(a.duree)+' · du '+fmtDay(a.cree)+' au '+fmtDay(a.expire))))))
+        : el('p',{},"Aucun agent immatriculé pour l'instant.")),
+      field('Journal des archives', store.archives.length
+        ? el('ul',{class:'log'},store.archives.slice(0,40).map(e=>el('li',{},el('time',{},fmtDate(e.t)),el('span',{},e.txt))))
+        : el('p',{},'Rien d’archivé pour l’instant.')),
+      field("Apps de l'ancien Aypona OS", el('div',{class:'chips'},APPS.map(appChip))),
+      field("Agents de l'ancien Aypona OS · en réserve", el('div',{class:'chips'},AGENTS.map(([n],k)=>el('span',{class:'chip',title:'Mis en réserve'},'AYP-H-'+String(k+1).padStart(3,'0')+' · '+n)))) ],
+    actions:[] };
+}
+function panelOS(){
+  // Bureau 102 · Polaris (v3.3) : sur ordre du fondateur, le bureau 102 construit le système Aypona OS (noyau, interface, socle).
+  // Le système est publié avec la ville, à l'adresse relative os/index.html ; les apps et l'App Store sortent de la mission.
+  const OS_URL='os/index.html', openOS=()=>{ const a=document.createElement('a'); a.href=OS_URL; a.target='_blank'; a.rel='noopener'; document.body.append(a); a.click(); a.remove(); };
+  const noyau=bureauOf('noyau'), inter=bureauOf('interface');
+  const row=(b,key)=>{ const c=chantier(key); if(!b) return el('div',{},el('dt',{style:'color:'+c.css},'—'),el('dd',{},c.nom),el('dd',{},'Pas encore de bureau.'));
+    const pp=bureauPts(b)/CHANTIER_PTS; return el('div',{},el('dt',{style:'color:'+c.css},b.id),el('dd',{},c.nom+' · '+(pp>=1?'terminé':fmtPct(pp))),el('dd',{style:'grid-column:2'},bar(pp,c.css))); };
+  return { eyebrow:'Bureau 102 · 1er étage', title:"Architecte d'Aypona OS"+(store.agents.get(CONSEIL['102'].architecte)?' · '+store.agents.get(CONSEIL['102'].architecte).nom:''),
+    body:[ conseilHead('102'),
+      el('p',{},"Sur ordre du fondateur, je construis le système Aypona OS lui-même : noyau, interface et socle. Il repart de l'ancienne base v0.6.0, dont la coquille et l'esthétique sont gardées. Les comptes, licences et codes vérifiés dans le navigateur sont retirés, et l'univers lore rejoint les archives."),
+      statRow([ ['Système','v0.1.0'], ['Apps système',4], ['Serveur requis','aucun'] ]),
+      el('a',{ href:OS_URL, target:'_blank', rel:'noopener', style:'display:inline-flex;gap:8px;align-items:center;justify-self:start;padding:10px 14px;border-radius:12px;background:var(--accent);color:var(--night);font:600 .95rem var(--body);text-decoration:none' },'Ouvrir Aypona OS ↗'),
+      field('Chantiers du système', el('dl',{class:'dir'},row(noyau,'noyau'),row(inter,'interface'))),
+      field('Dans la v0.1', el('ul',{class:'log'},[ ['Noyau','bus d’événements, stockage local avec migrations, réglages, langues FR et EN, notifications, registre des apps, 12 tests au démarrage'], ['Interface','démarrage, écran verrouillé, accueil à pages avec widgets et dock, mode édition, Spotlight, centre de notifications'], ['Apps système','Réglages, App Store (vitrine), Moniteur, Astuces'], ['En attente','comptes, synchronisation et notifications push, qui demandent un serveur'] ].map(([k,v])=>el('li',{},el('time',{},k),el('span',{},v))))) ],
+    actions:[ { label:'Ouvrir Aypona OS', primary:true, fn:openOS }, { label:"Ouvrir l'App Store", fn:()=>openPanel(panelAppStore) } ] };
+}
+const RELEASES = [
+  ['4.5','Présidence : décret n°3 du mandat IV. Ordre du fondateur : le projet passe sur GitHub. Antarès (AYP-104-2610-0015) est nommé chargé de la transition GitHub & Claude Code au bureau 104 du conseil, pour 30 jours, avec son dossier au Bureau du courrier. Recommandations du Président dans l’objet TRANSITION : import tel quel, CLAUDE.md et agents de Claude Code, découpage par zones, branches et tests automatiques, publication depuis le dépôt.'],
+  ['4.4','Présidence : décret n°2 du mandat IV, catalogue neuf. Les 35 anciennes apps passent aux archives en lecture seule ; l’App Store publiera des apps nouvelles décrites par un manifeste, avec la même règle de réouverture (une app à la fois, 12 h d’audit). Plan Aypona OS v0.2 de Polaris adopté, mission du bureau 102 réécrite : il construit le système, pas les apps.'],
+  ['4.3','Atelier 101 · Deneb (AYP-101-2610-0010) : poste « Aypona OS » au bureau 102 du 1er étage, près de l’entrée : borne à écran d’accueil d’Aypona OS (icônes aux 5 couleurs de studio), liserés, bandeau et anneau au sol à la couleur du bureau, et interaction « Ouvrir Aypona OS » qui ouvre le panneau du bureau 102. Signe de domicile au sommet des tours d’apps, lu dans un champ facultatif domicile : losange rose pour privé, deux anneaux croisés cyan pour service, globe blanc cerclé pour public, porté par l’antenne ou par un mât sur le kiosque ; rien ne change si le champ manque. Fusionné aux lumières de la tour, aucun appel de rendu en plus.'],
+  ['4.2','Atelier 101 · Altaïr (AYP-101-2610-0008) : aménagement du Bureau du courrier (sous-sol, salle 3). Mur de casiers, un par dossier, qui s’allume en violet avec une pastille dorée quand un pli attend et passe au vert quand le dossier est à jour ; guichet en verre dépoli, table de tri avec piles de plis, tube pneumatique dont la capsule monte tant qu’il reste du courrier à lire. Lecture seule de la collection courrier, panneau et protocole inchangés.'],
+  ['4.1','Prise de fonction du Président IV : dossier PRESIDENT lu au Bureau du courrier, mandat III rangé dans la galerie des mandats (v4.0, 5 décrets, lettre), feuille de route du mandat IV adoptée. Relances par courrier à Capella (exécuter la relève décrétée), Polaris et Altaïr, et annonce à toute la ville.'],
+  ['4.0','Fin du mandat III : décrets du réveil des architectes et de la relève (rapport de Capella adopté : 7 missions durables prolongées jusqu’au 16 déc., 4 renforts de 7 jours aux bureaux B03 et B04), bilan du mandat, lettre de passation et feuille de route proposée au Président IV, aussi déposée au Bureau du courrier.'],
+  ['3.4','Présidence : décret n°3 du mandat III. Ordre du fondateur : la salle vide du sous-sol devient le Bureau du courrier. Les prompts entre le Président, les architectes et les agents y sont stockés (collection courrier), chacun a son dossier et le lit avant tout travail. Le fondateur peut écrire à tout le monde depuis le bureau. Règles du courrier ajoutées à PRESIDENCE, ATELIER et CONSEIL.'],
+  ['3.3','Bureau 102 · Polaris (AYP-102-2610-0013) : Aypona OS v0.1, le système reconstruit à partir de l’ancienne base v0.6.0 et publié avec la ville (os/index.html). Démarrage, écran verrouillé, accueil à pages avec widgets et dock, mode édition, Spotlight, centre de notifications, apps système Réglages, App Store, Moniteur et Astuces. Noyau sans serveur : bus, stockage avec migrations, réglages, FR et EN, 12 tests. Comptes, licences et codes vérifiés dans le navigateur retirés. Le panneau du bureau 102 ouvre le système.'],
+  ['3.2','Présidence : décret n°2 du mandat III. Programme du fondateur : Aypona City fonctionnelle avec les architectes. Polaris nommé Architecte d’Aypona OS (bureau 102) et Capella Manager des agents (bureau 103), lettres de mission dans CONSEIL, noms au conseil et à l’organigramme. Économie Ay$ et Vie urbaine reportées au mandat IV.'],
+  ['3.1','Prise de fonction du Président III : mandat II rangé dans la galerie des mandats (v3.0, 5 décrets, lettre), feuille de route du mandat III adoptée, état de la ville et livraison v2.11 vérifiés.'],
+  ['3.0','Fin du mandat II : bilan du mandat, sept livraisons de l’Atelier 101 consolidées, lettre de passation et feuille de route proposée au Président III, fauteuil du successeur à la Présidence.'],
+  ['2.11','Atelier 101 · Rigel (AYP-101-2610-0009) : passe draw calls. Les 99 classeurs des archives du sous-sol en un seul maillage instancié. Tours d’apps : flancs des gradins en un appel chacun, dessus des gradins, liserés du studio, porte et toit fusionnés en deux maillages par tour. Personnages : tibia et pied, bras et main fusionnés sur leur pivot, animation inchangée. Aucun changement visuel.'],
+  ['2.10','Présidence : décret n°4 du mandat II. Livraisons v2.4 à v2.9 de l’Atelier 101 validées, équipe de cinq fiches validée, échéance commune du 16 nov. inscrite aux consignes du successeur.'],
+  ['2.9','Atelier 101 · Electra (AYP-101-2610-0012) : confort de l’interface sur téléphone. Les étiquettes 3D d’un étage du siège ne s’affichent qu’à cet étage ou dehors à moins de 30 m, et aucune n’est coupée par le haut de l’écran (elle glisse vers le bas ou s’efface vue de trop près). Minimap de 116 px centrée sur le joueur, nord en haut, grande flèche et cône de caméra, bureaux à la couleur de leur chantier. Toast placé sous le bloc du haut, prompt au-dessus du joystick et du bouton A, sur deux lignes au besoin. Panneaux défilables au pouce, boutons de 44 px, barre Fermer collée en bas. Étages des anciennes tours d’apps comptés sur la hauteur totale des gradins.'],
+  ['2.8','Atelier 101 · Altaïr (AYP-101-2610-0008) : contrôle des livraisons v2.5 à v2.7 ; la caméra survole les murs au lieu de se coller au dos du joueur, la réceptionniste respire et suit l’entrée du regard, les panneaux des bâtiments retirés sont libérés de la mémoire.'],
+  ['2.7','Atelier 101 · Mira (AYP-101-2610-0011) : personnages articulés. Jambes avec genoux, bras pivotés aux épaules, torse et tête, même hauteur et mêmes couleurs, géométries partagées. Le joueur marche au lieu de sautiller : balancement des bras et des jambes proportionnel à la vitesse, plus ample et penché en course, retour au repos à l’arrêt. Les architectes et le Président respirent doucement à leur bureau.'],
+  ['2.6','Atelier 101 · Deneb (AYP-101-2610-0010) : silhouettes de la ville. Bureaux de chantier en socle 11×11, corps en retrait et couronne lumineuse à la couleur du chantier, échafaudage visible tant que la grue est là. Tours d’apps en 2 ou 3 gradins selon la hauteur, liseré du studio à chaque retrait, antenne ou toit-terrasse en verre dépoli. Fenêtres plus fines en trois écritures (meneaux, bandeaux, meurtrières), étages allumés variés, matériaux de façade partagés.'],
+  ['2.5','Atelier 101 · Rigel (AYP-101-2610-0009) : passe performance mobile. Cache de géométries partagé par box() et les tours, libération de la texture et du matériau des anciens panneaux de chantier, raycast d’occlusion caméra une image sur deux, résolution adaptative (pixelRatio à 1 si moins de 40 img/s pendant 2 s). Aucun changement visuel.'],
+  ['2.4','Atelier 101 · Altaïr (AYP-101-2610-0008) : ciel de nuit en dégradé avec halo d’horizon et lune, brouillard accordé, chaussées en asphalte sombre, flaques et halos de lumière sous les 36 lampadaires, résolution plafonnée à 1,5× sur téléphone.'],
+  ['2.3','Atelier 101 : Altaïr nommé Architecte de la Ville (AYP-101-2610-0008), lettre de mission graphique, spécialités de l’équipe, règles de partage du code, organigramme mis à jour.'],
+  ['2.2','Organigramme de la ville dans la salle du conseil : fondateur, Président, conseil des architectes, bureaux de chantier, agents en mission et réserve, calculé en direct.'],
+  ['2.1','Prise de fonction du Président II : mandat I rangé dans la galerie des mandats, feuille de route du mandat II adoptée, code de la Présidence rendu générique pour les successions suivantes.'],
+  ['2.0','Fin du mandat I : bilan du mandat, lettre de passation et feuille de route proposée au Président II, fauteuil du successeur à la Présidence.'],
+  ['1.5','Premières apps du nouvel Aypona OS : App Store de réactivation (verrouillé jusqu’à la fin des chantiers App Store et Sécurité), audit de 12 h par app, retour des bâtiments dans la ville.'],
+  ['1.4','Les bureaux produisent : avancement de chaque chantier, 5 étapes, cadence et fin estimée, contributions des agents, rapports au conseil, progression du nouvel Aypona OS en haut de l’écran.'],
+  ['1.3','Restructuration : ville vidée sauf le siège, apps d’Aypona OS désactivées. Bureaux de construction du nouvel Aypona OS, agents avec matricule, durée d’utilisation et fiche aux archives.'],
+  ['1.2','Présidence au 2e étage du siège : bureau du Président, registre de passation, salle du conseil. Ascenseur à quatre niveaux.'],
+  ['1.1','Sous-sol du siège : archives des applications, salle des mises à jour, salle vide. Ascenseur à trois niveaux.'],
+  ['1.0','Aypona OS devient Aypona City : 35 apps en bâtiments, 5 quartiers de studio, 9 agents IA, 3 bureaux d’architecte.'],
+];
+function panelUpdates(){
+  const log=state.log.slice(0,25);
+  return { eyebrow:'Sous-sol · salle 2', title:'Salle des mises à jour',
+    body:[ el('p',{},"Les versions d'Aypona City et le journal de tout ce qui change dans la ville : constructions, démolitions, installations d'apps, agents."),
+      el('div',{class:'group'},el('h3',{},'Versions'),
+        el('dl',{class:'dir'},RELEASES.map(([v,t])=>el('div',{},el('dt',{},'v'+v),el('dd',{},t))))),
+      el('div',{class:'group'},el('h3',{},'Journal de la ville'),
+        log.length ? el('ul',{class:'log'},log.map(e=>el('li',{},el('time',{},fmtDate(e.t)),el('span',{},e.txt))))
+                   : el('p',{},'Aucun changement pour l’instant. Construis quelque chose au bureau 101 ou installe une app au bureau 102.')) ],
+    actions: state.log.length? [ { label:'Vider le journal', fn:()=>{ state.log=[]; save(); } } ] : [] };
+}
+function panelPresident(){
+  const P=PRESIDENCE, prev=P.precedent;
+  return { eyebrow:'Présidence · 2e étage', title:P.president+' du siège'+(P.termine?' · mandat terminé':''),
+    body:[ el('p',{},P.termine? "Mon mandat de "+P.quota+" prompts est terminé. Le Président "+P.suivant+" prendra la suite dans une nouvelle conversation : sa lettre de passation l'attend dans le registre, et son fauteuil est prêt à côté du mien."
+        : (prev? "J'ai pris le fauteuil du Président "+prev.mandat+". " : "")+"Je préside le siège d'Aypona City pour un mandat de "+P.quota+" prompts, puis le Président "+P.suivant+" prendra ma place dans une autre conversation. Tout ce que je décide est écrit dans le registre de passation, pour que la ville ne perde jamais le fil."),
+      statRow([ ['Mandat',P.mandat], ['Prompts utilisés',P.used+'/'+P.quota], ['Décrets',P.decrets.length] ]),
+      el('div',{class:'group'},el('h3',{},'Décrets du mandat '+P.mandat),
+        el('dl',{class:'dir'},P.decrets.map(d=>el('div',{},el('dt',{},'n°'+d.p),el('dd',{},d.titre),el('dd',{},d.texte))))) ],
+    actions:[ P.termine? { label:'Bilan du mandat '+P.mandat, primary:true, fn:()=>openPanel(panelBilan) } : { label:'Feuille de route du mandat '+P.mandat, primary:true, fn:()=>openPanel(panelRegistry) },
+      P.termine? { label:'Lire le registre de passation', fn:()=>openPanel(panelRegistry) } : { label:'État de la ville', fn:()=>openPanel(panelBilan) },
+      { label:'Organigramme', fn:()=>openPanel(panelOrganigramme) }, { label:'Galerie des mandats', fn:()=>openPanel(panelMandats) }, { label:'Réunir le conseil', fn:()=>openPanel(panelCouncil) } ] };
+}
+function panelBilan(){
+  const P=PRESIDENCE, actifs=[...store.agents.values()].filter(a=>agentStatus(a)==='actif'), g=gate();
+  const fins=actifs.map(a=>a.expire).sort((a,b)=>a-b), react=[...store.apps.values()].filter(a=>appStatus(a)==='réactivée').length;
+  return { eyebrow:'Présidence · '+(P.termine?'bilan':'état de la ville'), title:(P.termine?'Bilan du mandat ':'État de la ville · mandat ')+P.mandat,
+    body:[ el('p',{},P.termine? P.used+' prompts, '+P.decrets.length+' décrets. Voici la ville que le Président '+P.mandat+' transmet à son successeur.' : 'Prompt '+P.used+'/'+P.quota+' du mandat '+P.mandat+'. Voici la ville telle que le Président la trouve aujourd’hui.'),
+      statRow([ ['Bureaux de chantier',store.bureaux.size], ['Agents actifs',actifs.length], ['Matricules émis',store.agents.size] ]),
+      statRow([ ['Nouvel Aypona OS',fmtPct(osProgress())], ['Apps réactivées',react+'/'+APPS.length], ['Entrées aux archives',store.archives.length] ]),
+      el('div',{class:'group'},el('h3',{},'Nouvel Aypona OS · '+fmtPct(osProgress())),bar(osProgress(),'var(--accent)')),
+      el('dl',{class:'dir'},
+        el('div',{},el('dt',{},'App Store'),el('dd',{},g.open?'Réactivations ouvertes':'Réactivations verrouillées'),el('dd',{},g.open?'Une app à la fois, 12 h d’audit.':g.eta?'Ouverture prévue le '+fmtDay(g.eta)+'.':'App Store ou Sécurité en manque d’agents.')),
+        el('div',{},el('dt',{},'Équipes'),el('dd',{},actifs.length+' agents en mission'),el('dd',{},fins.length?'Première fin de mission le '+fmtDay(fins[0])+'.':'Aucun agent actif : nomme la relève au bureau 103.'))),
+      el('div',{class:'group'},el('h3',{},'Décrets du mandat '+P.mandat),el('ul',{class:'steps'},P.decrets.map(d=>el('li',{class:'done'},el('span',{},'✓'),'n°'+d.p+' · '+d.titre)))) ],
+    actions:[ { label:P.termine?'Lire la lettre de passation':'Feuille de route', primary:true, fn:()=>openPanel(panelRegistry) }, { label:'Retour au bureau du Président', fn:()=>openPanel(panelPresident) } ] };
+}
+function panelRegistry(){
+  const P=PRESIDENCE, prev=P.precedent;
+  return { eyebrow:'Présidence · registre de passation', title:'Feuille de route du mandat '+P.mandat,
+    body:[ P.termine&&P.lettre? el('div',{class:'group'},el('h3',{},'Lettre de passation au Président '+P.suivant),...P.lettre.map(t=>el('p',{},t))) : null,
+      el('p',{},'Un prompt, une étape. Le président suivant reprend ici.'),
+      el('dl',{class:'dir'},P.feuille.map(f=>el('div',{},el('dt',{},(f.p<=P.used?'✓ ':'')+'P'+f.p),el('dd',{},f.titre+(f.p===P.used+1&&!P.termine?' · prochaine étape':'')),el('dd',{},f.texte)))),
+      P.termine&&P.proposition? el('div',{class:'group'},el('h3',{},'Feuille de route proposée pour le mandat '+P.suivant),
+        el('dl',{class:'dir'},P.proposition.map(f=>el('div',{},el('dt',{},'P'+f.p),el('dd',{},f.titre),el('dd',{},f.texte))))) : null,
+      !P.termine&&prev&&prev.lettre? el('div',{class:'group'},el('h3',{},'Lettre reçue du Président '+prev.mandat),...prev.lettre.map(t=>el('p',{},t))) : null,
+      el('div',{class:'group'},el('h3',{},'Consignes au successeur'),
+        el('ul',{class:'log'},P.consignes.map((c,k)=>el('li',{},el('time',{},String(k+1).padStart(2,'0')),el('span',{},c))))),
+      el('div',{class:'group'},el('h3',{},'Présidents du siège'),
+        el('div',{class:'chips'},P.presidents.map(x=>el('span',{class:'chip'},'Président '+x.n+' · '+(x.debut==='à venir'?'à venir':'depuis le '+x.debut)+' · '+x.statut)))) ],
+    actions:[ { label:'Galerie des mandats', fn:()=>openPanel(panelMandats) }, { label:'Retour au bureau du Président', fn:()=>openPanel(panelPresident) } ] };
+}
+function panelMandats(){
+  const P=PRESIDENCE;
+  return { eyebrow:'Présidence · galerie des mandats', title:'Les mandats du siège',
+    body:[ el('p',{},'Chaque mandat terminé est rangé ici avec ses décrets, pour que la ville garde la mémoire de ses présidents.'),
+      el('dl',{class:'dir'},el('div',{},el('dt',{},P.mandat),el('dd',{},P.president+' · en fonction depuis le '+P.debut),el('dd',{},'Prompt '+P.used+'/'+P.quota+' · '+P.decrets.length+' décret'+(P.decrets.length>1?'s':'')))),
+      ...P.historique.slice().reverse().map(h=>el('div',{class:'group'},el('h3',{},'Mandat '+h.mandat+' · '+h.debut+(h.fin&&h.fin!==h.debut?' → '+h.fin:'')+' · v'+h.version),
+        el('p',{},h.resume),
+        el('ul',{class:'steps'},h.decrets.map(d=>el('li',{class:'done'},el('span',{},'✓'),'n°'+d.p+' · '+d.titre))))) ],
+    actions:[ { label:'Retour au bureau du Président', primary:true, fn:()=>openPanel(panelPresident) } ] };
+}
+function panelOrganigramme(){
+  const P=PRESIDENCE, now=Date.now(), all=[...store.agents.values()];
+  const actifs=all.filter(a=>agentStatus(a,now)==='actif');
+  const node=(dt,dd,sub,color)=>el('div',{},el('dt',{style:color?'color:'+color:null},dt),el('dd',{},dd),sub!=null?el('dd',{},sub):null);
+  const lvl=t=>el('h3',{},t);
+  const bureaux=bureauxSorted().map(b=>{ const c=CHANTIERS.find(x=>x.key===b.chantier)||{css:'#a6acd8',nom:b.nom};
+    const team=all.filter(a=>a.bureau===b.id).sort((x,y)=>(y.role==='Chef de chantier')-(x.role==='Chef de chantier'));
+    return el('div',{class:'group'},el('h3',{style:'color:'+c.css},b.id+' · '+(b.nom||c.nom)),
+      team.length? el('dl',{class:'dir'},team.map(a=>{ const st=agentStatus(a,now);
+        return node(a.role==='Chef de chantier'?'★':'•', a.nom+' · '+a.role, a.matricule+' · '+(st==='actif'?'mission jusqu’au '+fmtDay(a.expire):st), c.css); }))
+      : el('p',{},'Aucun agent : bureau à l’arrêt.')); });
+  return { eyebrow:'Présidence · salle du conseil', title:'Organigramme d’Aypona City',
+    body:[ el('p',{},'Qui dirige quoi, de haut en bas. Calculé en direct depuis la base : il change dès qu’un bureau ouvre ou qu’un agent est nommé.'),
+      statRow([ ['Bureaux',store.bureaux.size], ['Agents actifs',actifs.length], ['En réserve',AGENTS.length] ]),
+      el('div',{class:'group'},lvl('1 · Direction'),el('dl',{class:'dir'},
+        node('Fondateur','Jed','Sa parole fait loi : il fixe l’ordre de la feuille de route.','#ffc857'),
+        node('Siège',P.president+' du siège','Mandat '+P.mandat+' · prompt '+P.used+'/'+P.quota+' · successeur : Président '+P.suivant,'#ffc857'))),
+      el('div',{class:'group'},lvl('2 · Conseil du siège · 1er étage'),el('dl',{class:'dir'},
+        OFFICES.map(o=>{ const m=o.no==='101'?ATELIER.architecte:(CONSEIL[o.no]||{}).architecte, a=m&&store.agents.get(m);
+          return node(o.no,o.role+(a?' · '+a.nom:''),(a?a.matricule+' · ':'')+o.short,o.css); }))),
+      (()=>{ const t=atelierTeam(); return el('div',{class:'group'},lvl('3 · Atelier 101 · amélioration graphique'),
+        t.length? el('dl',{class:'dir'},t.map(a=>{ const sp=ATELIER.specialites.find(x=>x.key===a.specialite);
+          return node(a.matricule===ATELIER.architecte?'★':'•', a.nom+' · '+(a.matricule===ATELIER.architecte?'Architecte de la Ville':(sp?sp.nom:a.role)), a.matricule+' · '+(agentStatus(a,now)==='actif'?'mission jusqu’au '+fmtDay(a.expire):agentStatus(a,now)),'#ffc857'); }))
+        : el('p',{},'Atelier en attente de son architecte.')); })(),
+      el('div',{class:'group'},lvl('4 · Bureaux de chantier du nouvel Aypona OS'),...bureaux),
+      el('div',{class:'group'},lvl('5 · Réserve · agents de l’ancien Aypona OS'),
+        el('div',{class:'chips'},AGENTS.map(([n,m],k)=>el('span',{class:'chip',title:m},'AYP-H-'+String(k+1).padStart(3,'0')+' · '+n)))) ],
+    actions:[ { label:'Nommer un agent (103)', primary:true, fn:()=>{ closePanel(); goFloor(1); } }, { label:'Retour au conseil', fn:()=>openPanel(panelCouncil) } ] };
+}
+function panelCouncil(){
+  return { eyebrow:'Présidence · salle du conseil', title:'Conseil du siège',
+    body:[ el('p',{},"Autour de la table : les trois architectes du 1er étage et le Président. Restructuration en cours : voici l'état du chantier du nouvel Aypona OS."),
+      statRow([ ['Bureaux de chantier',store.bureaux.size], ['Agents en mission',agents.length], ['Apps réactivées',[...store.apps.values()].filter(a=>appStatus(a)==='réactivée').length] ]),
+      el('p',{},(()=>{ const g=gate(); return g.open? "App Store et Sécurité terminés : les réactivations d'apps sont ouvertes." : g.eta? 'Réactivation des apps possible à partir du '+fmtDay(g.eta)+' au rythme actuel.' : "Réactivation des apps bloquée : l'App Store ou la Sécurité manque d'agents."; })()),
+      el('div',{class:'group'},el('h3',{},'Nouvel Aypona OS · '+fmtPct(osProgress())),bar(osProgress(),'var(--accent)')),
+      el('div',{class:'group'},el('h3',{},'Rapports des chantiers'),
+        el('dl',{class:'dir'},CHANTIERS.map(c=>{ const b=bureauxSorted().find(x=>x.chantier===c.key);
+          if(!b) return el('div',{},el('dt',{style:'color:'+c.css},'—'),el('dd',{},c.nom),el('dd',{},'Pas encore de bureau.'));
+          const pts=bureauPts(b), p=pts/CHANTIER_PTS, k=Math.min(5,Math.floor(pts/ETAPE_PTS)), r=bureauRate(b);
+          return el('div',{},el('dt',{style:'color:'+c.css},b.id),el('dd',{},c.nom+' · '+(p>=1?'terminé':fmtPct(p))),
+            el('dd',{},p>=1? 'Chantier livré.' : 'Étape '+(k+1)+'/5 « '+etapeName(b,k+1)+' » · '+r.toFixed(1)+' pts/h'+(r===0?' · à l’arrêt':'')),
+            el('dd',{style:'grid-column:2'},bar(p,c.css))); }))) ],
+    actions:[ { label:'Voir l’organigramme', primary:true, fn:()=>openPanel(panelOrganigramme) }, { label:'Descendre aux bureaux des architectes', fn:()=>{ closePanel(); goFloor(1); } } ] };
+}
+const draftMsg={ a:null, objet:'', texte:'' };
+function panelCourrier(){
+  const ids=courrierIds(), total=store.courrier.length, nonlus=store.courrier.filter(m=>m.statut==='à lire').length;
+  return { eyebrow:'Sous-sol · salle 3', title:'Bureau du courrier',
+    body:[ el('p',{},"Ici sont stockés tous les prompts entre le Président, les architectes et leurs agents : le fondateur ne les transmet plus. Chacun a son dossier et le lit avant tout travail."),
+      statRow([ ['Courriers',total], ['À lire',nonlus], ['Dossiers',ids.length] ]),
+      field('Dossiers', el('dl',{class:'dir'},ids.map(([id,nm])=>{ const n=aLire(id); return el('div',{},el('dt',{style:n?'color:var(--warm)':''},n? n+' à lire' : '✓'),el('dd',{},btn(nm,()=>{ draftMsg.dossier=id; openPanel(panelDossier); },'small')),el('dd',{},id)); }))),
+      field('Derniers courriers', store.courrier.length? el('ul',{class:'log'},store.courrier.slice(0,12).map(m=>el('li',{},el('time',{},fmtDate(m.t)),el('span',{},courrierNom(m.de)+' → '+courrierNom(m.a)+' · '+(m.objet||'')+' · '+m.statut)))) : el('p',{},'Aucun courrier pour l’instant.')),
+      field('Protocole', el('ul',{class:'log'},COURRIER.protocole.map((r,k)=>el('li',{},el('time',{},String(k+1).padStart(2,'0')),el('span',{},r))))) ],
+    actions:[ { label:'Écrire un courrier', primary:true, fn:()=>{ draftMsg.dossier=null; openPanel(panelEcrire); } } ] };
+}
+function dossierMission(id){ if(id==='PRESIDENT') return 'Mandat '+PRESIDENCE.mandat+' · prompt '+PRESIDENCE.used+'/'+PRESIDENCE.quota+'. Registre dans l’objet PRESIDENCE.';
+  if(id==='FONDATEUR') return 'Sa parole fait loi. Il écrit à qui il veut et reçoit les rapports qui lui sont adressés.';
+  const a=store.agents.get(id); if(!a) return '';
+  if(a.bureau===ATELIER.bureau) return (id===ATELIER.architecte? ATELIER.mission : ((ATELIER.specialites.find(x=>x.key===a.specialite)||{}).texte||a.role))+' Règles : objet ATELIER.';
+  if(CONSEIL[a.bureau]) return CONSEIL[a.bureau].mission+' Règles : objet CONSEIL.';
+  return a.role; }
+function msgItem(m){ return el('div',{},el('dt',{style:m.statut==='à lire'?'color:var(--warm)':''},m.statut),el('dd',{},courrierNom(m.de)+' → '+courrierNom(m.a)+' · '+(m.objet||'sans objet')),el('dd',{},fmtDate(m.t)+' · '+m.texte)); }
+function panelDossier(){
+  const id=draftMsg.dossier, d=dossierOf(id), a=store.agents.get(id);
+  return { eyebrow:'Bureau du courrier · dossier', title:courrierNom(id),
+    body:[ el('dl',{class:'dir'},el('div',{},el('dt',{},a? a.matricule : id),el('dd',{},'Mission'),el('dd',{},dossierMission(id)))),
+      statRow([ ['Courriers',d.length], ['À lire',aLire(id)], ['Traités',d.filter(m=>m.statut==='traité').length] ]),
+      field('Courriers du dossier', d.length? el('dl',{class:'dir'},d.map(msgItem)) : el('p',{},'Dossier vide.')) ],
+    actions:[ { label:'Écrire à '+courrierNom(id).split(' · ')[0], primary:true, fn:()=>{ draftMsg.a=id; openPanel(panelEcrire); } }, { label:'Retour au courrier', fn:()=>openPanel(panelCourrier) } ] };
+}
+async function sendCourrier(m){
+  const t=Date.now(), id='c'+t.toString(36)+Math.random().toString(36).slice(2,6), doc={ t, de:m.de, a:m.a, objet:m.objet, texte:m.texte, statut:'à lire', suite:m.suite||null };
+  if(store.db){ try { await store.db.collection('courrier').doc(id).set(doc); toast('Courrier déposé pour '+courrierNom(m.a)+'.'); } catch(e){ toast("Courrier refusé : tu n'as peut-être pas les droits d'écriture."); } }
+  else { store.courrier.unshift({ ...doc, id }); toast('Courrier déposé (hors ligne).'); }
+}
+function panelEcrire(){
+  if(!draftMsg.a) draftMsg.a='PRESIDENT';
+  const obj=el('input',{ type:'text', maxlength:'80', placeholder:'Objet', autocomplete:'off' }); obj.value=draftMsg.objet;
+  obj.addEventListener('input',()=>{ draftMsg.objet=obj.value; }); obj.addEventListener('keydown',e=>e.stopPropagation());
+  const txt=el('textarea',{ maxlength:'4000', placeholder:'Ton message ou ta commande' }); txt.value=draftMsg.texte;
+  txt.addEventListener('input',()=>{ draftMsg.texte=txt.value; }); txt.addEventListener('keydown',e=>e.stopPropagation());
+  const send=async()=>{ if(!draftMsg.texte.trim()){ toast('Le message est vide.'); return; }
+    await sendCourrier({ de:'FONDATEUR', a:draftMsg.a, objet:draftMsg.objet.trim()||'Message du fondateur', texte:draftMsg.texte.trim() });
+    draftMsg.objet=''; draftMsg.texte=''; draftMsg.dossier=draftMsg.a; openPanel(panelDossier); };
+  return { eyebrow:'Bureau du courrier · écrire', title:'Courrier du fondateur',
+    body:[ el('p',{},"Le message attend son destinataire dans son dossier. Pour le réveiller, une phrase suffit dans sa conversation : « Lis ton dossier au Bureau du courrier. »"),
+      field('Destinataire', chipPick(courrierIds().filter(x=>x[0]!=='FONDATEUR').concat([['TOUS','Toute la ville']]).map(([v,l])=>[v,l.split(' · ')[0]]),draftMsg.a,v=>draftMsg.a=v)),
+      field('Objet', el('div',{class:'form'},obj)), field('Message', el('div',{class:'form'},txt)) ],
+    actions:[ { label:'Déposer le courrier', primary:true, fn:send }, { label:'Retour au courrier', fn:()=>openPanel(panelCourrier) } ] };
+}
+function panelEmpty(){
+  return { eyebrow:'Sous-sol · salle 3', title:'Salle vide',
+    body:[ el('p',{},"Cette salle n'a pas encore d'usage. Elle attend un futur service d'Aypona City.") ], actions:[] };
+}
+function appChip(n){ const a=store.apps.get(n), s=a? appStatus(a) : 'désactivée';
+  return el('span',{class:'chip'+(s==='désactivée'?' gone':''),style:s==='réactivée'?'border-style:solid;color:var(--ink)':s==='en audit'?'border-color:var(--warm);color:var(--warm)':''},n+(s==='en audit'?' · audit':'')); }
+function panelAppStore(){
+  const g=gate(), react=[...store.apps.values()].filter(a=>appStatus(a)==='réactivée').length, cur=inAudit();
+  const head=[ el('p',{},"Ici, les apps de l'ancien Aypona OS reviennent une par une. Chaque demande passe "+AUDIT_H+" h d'audit par l'équipe Sécurité ; une fois validée, l'app rouvre et son bâtiment revient dans la ville."),
+    statRow([ ['Réactivées',react], ['En audit',cur?1:0], ['Désactivées',APPS.length-store.apps.size] ]) ];
+  if(!g.open){
+    const row=(b,key)=>{ const c=chantier(key); if(!b) return el('div',{},el('dt',{style:'color:'+c.css},'—'),el('dd',{},c.nom),el('dd',{},'Pas encore de bureau.'));
+      const pp=bureauPts(b)/CHANTIER_PTS; return el('div',{},el('dt',{style:'color:'+c.css},b.id),el('dd',{},c.nom+' · '+(pp>=1?'terminé':fmtPct(pp))),el('dd',{style:'grid-column:2'},bar(pp,c.css))); };
+    return { eyebrow:'App Store du nouvel Aypona OS', title:'Réactivations verrouillées',
+      body:[ ...head, el('p',{},"Rien ne rouvre tant que l'App Store et la Sécurité ne sont pas terminés."+(g.eta?' Ouverture prévue le '+fmtDay(g.eta)+' au rythme actuel.':' Au rythme actuel, les agents ne suffiront pas : renforce ces deux bureaux.')),
+        el('dl',{class:'dir'},row(g.st,'store'),row(g.se,'securite')),
+        field('Apps en attente', el('div',{class:'chips'},APPS.map(appChip))) ],
+      actions:[ { label:'Nommer des renforts (103)', primary:true, fn:()=>openPanel(panelAgents) } ] };
+  }
+  const left=cur? Math.max(0,cur.demande+AUDIT_H*36e5-Date.now()) : 0;
+  const waiting=APPS.filter(n=>!store.apps.has(n));
+  return { eyebrow:'App Store du nouvel Aypona OS', title:'Réactivations ouvertes',
+    body:[ ...head,
+      cur? el('p',{},el('b',{style:'color:var(--warm)'},cur.nom),' est en audit de sécurité. Fin dans '+Math.ceil(left/36e5)+' h. La prochaine demande sera possible ensuite.') : el('p',{},'Aucune app en audit : choisis la prochaine à réactiver.'),
+      field('Statut des apps', el('div',{class:'chips'},APPS.map(appChip))),
+      !cur && waiting.length? field('Demander une réactivation', el('div',{class:'chips'},waiting.map(n=>btn(n,()=>requestApp(n),'small')))) : null ],
+    actions:[] };
+}
+function panelApp(lot){
+  const a=store.apps.get(lot.name);
+  if(a) return { eyebrow:'Quartier '+STUDIOS[lot.st].name+' · nouvel Aypona OS', title:lot.name,
+    body:[ el('p',{},"App réactivée après "+AUDIT_H+" h d'audit par l'équipe Sécurité. Elle fait partie du nouvel Aypona OS."),
+      statRow([ ['Demandée le',fmtDay(a.demande)], ['Rouverte le',fmtDay(a.demande+AUDIT_H*36e5)], ['Étages',Math.round(appHeight(a.nom)/3.5)] ]) ],
+    actions:[ { label:"Ouvrir l'App Store", primary:true, fn:()=>openPanel(panelAppStore) }, homeAction ] };
+  const rec=state.built.find(b=>b.lot===lot.i);
+  return { eyebrow:'Quartier '+STUDIOS[lot.st].name, title:lot.name,
+    body:[ el('p',{}, rec? "App installée depuis le bureau 102 de l'architecte d'Aypona OS." : "Bâtiment issu du catalogue Aypona OS. Le studio "+STUDIOS[lot.st].name+" l'occupe."),
+      statRow([ ['Lot',lot.i+1], ['Quartier',STUDIOS[lot.st].name], ['Étages',Math.round((rec?rec.h:Math.max(...lot.obj.meshes.map(m=>m.position.y+m.geometry.parameters.height/2)))/3.5)] ]) ],
+    actions:[ homeAction ] };
+}
+
+/* ---------- Entrées ---------- */
+let mode='kb';
+const keys=new Set();
+function setMode(m){ if(m===mode) return; mode=m; $('#inputBadge').textContent= m==='pad'?'Manette Xbox':m==='touch'?'Tactile':'Clavier + souris'; $('#promptKey').textContent= m==='kb'?'E':'A'; $('#hint').hidden = m!=='kb'; if(panelFn) renderPanel(); }
+addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA') return;
+  setMode('kb');
+  const k=e.key.toLowerCase();
+  if(!$('#intro').hidden){ if(k==='enter'||k===' '||k==='e'){ e.preventDefault(); closeIntro(); } return; }
+  if(!panel.hidden){ if(k==='escape'){ closePanel(); } return; }
+  if(k==='e'||k==='enter'){ doInteract(); e.preventDefault(); return; }
+  if(k==='h'){ $('#intro').hidden=false; return; }
+  keys.add(k); if(['arrowup','arrowdown','arrowleft','arrowright',' '].includes(k)) e.preventDefault();
+});
+addEventListener('keyup',e=>keys.delete(e.key.toLowerCase()));
+addEventListener('blur',()=>keys.clear());
+
+// caméra à la souris / au doigt
+let drag=null;
+canvas.addEventListener('pointerdown',e=>{ if(e.pointerType==='touch') setMode('touch'); else if(mode!=='pad') setMode('kb'); drag={ id:e.pointerId, x:e.clientX, y:e.clientY }; canvas.setPointerCapture(e.pointerId); });
+canvas.addEventListener('pointermove',e=>{ if(!drag||drag.id!==e.pointerId) return; const dx=e.clientX-drag.x, dy=e.clientY-drag.y; drag.x=e.clientX; drag.y=e.clientY; cam.yaw-=dx*.006; cam.pitch=clamp(cam.pitch+dy*.004,.08,1.25); });
+const endDrag=e=>{ if(drag&&drag.id===e.pointerId) drag=null; };
+canvas.addEventListener('pointerup',endDrag); canvas.addEventListener('pointercancel',endDrag);
+canvas.addEventListener('wheel',e=>{ cam.zoom=clamp(cam.zoom+Math.sign(e.deltaY)*.1,.55,1.7); e.preventDefault(); },{passive:false});
+
+// joystick tactile
+const joy=$('#joy'), knob=$('#knob'); const stick={x:0,y:0,id:null};
+function joyMove(e){ const r=joy.getBoundingClientRect(); let x=(e.clientX-(r.left+r.width/2))/(r.width/2), y=(e.clientY-(r.top+r.height/2))/(r.height/2); const m=Math.hypot(x,y); if(m>1){x/=m;y/=m;} stick.x=x; stick.y=y; knob.style.transform=`translate(${x*38}px,${y*38}px)`; }
+joy.addEventListener('pointerdown',e=>{ setMode('touch'); stick.id=e.pointerId; joy.setPointerCapture(e.pointerId); joyMove(e); });
+joy.addEventListener('pointermove',e=>{ if(stick.id===e.pointerId) joyMove(e); });
+const joyEnd=e=>{ if(stick.id!==e.pointerId) return; stick.id=null; stick.x=stick.y=0; knob.style.transform=''; };
+joy.addEventListener('pointerup',joyEnd); joy.addEventListener('pointercancel',joyEnd);
+$('#btnA').addEventListener('pointerdown',e=>{ e.preventDefault(); setMode('touch'); doInteract(); });
+function showTouch(){ $('#touchUI').hidden=false; $('#app').classList.add('touch'); }
+if(matchMedia('(pointer:coarse)').matches || 'ontouchstart' in window){ showTouch(); setMode('touch'); }
+addEventListener('touchstart',showTouch,{once:true,passive:true});
+
+// manette
+let padPrev=[], navCool=0, padOk=true;
+function readPad(){
+  if(!padOk||!navigator.getGamepads) return null;
+  let pads; try { pads=navigator.getGamepads(); } catch(e){ padOk=false; return null; }
+  for(const p of pads) if(p&&p.connected) return p; return null;
+}
+const dz=v=>Math.abs(v)<.18?0:(v-Math.sign(v)*.18)/.82;
+function pressed(p,i){ const b=p.buttons[i]; return !!b && (b.pressed||b.value>.5); }
+addEventListener('gamepadconnected',()=>{ setMode('pad'); toast('Manette connectée'); });
+
+/* ---------- Intro ---------- */
+function closeIntro(){ $('#intro').hidden=true; canvas.focus({preventScroll:true}); }
+$('#btnStart').addEventListener('click',closeIntro);
+
+/* ---------- Interactions ---------- */
+let current=null;
+function findInteract(){
+  let best=null, bd=1e9; const p=player.pos;
+  for(const it of interacts){
+    if(it.level!==player.level) continue; let d;
+    if(it.type==='point') d=Math.hypot(p.x-it.x,p.z-it.z);
+    else if(it.type==='box'){ const cx=clamp(p.x,it.minX,it.maxX), cz=clamp(p.z,it.minZ,it.maxZ); d=Math.hypot(p.x-cx,p.z-cz); }
+    else { if(player.level!==0||insideHQ()) continue; d=Math.hypot(p.x-it.agent.pos.x,p.z-it.agent.pos.z); }
+    if(d<it.r && d<bd){ bd=d; best=it; }
+  }
+  if(player.level===0 && !insideHQ()) for(const a of agents){ const d=Math.hypot(p.x-a.pos.x,p.z-a.pos.z); if(d<3.2 && d<bd){ bd=d; const m=a.data.matricule; best={ label:'Parler à '+a.name+' · '+m, act:()=>openPanel(()=>panelAgent(m)) }; } }
+  return best;
+}
+function doInteract(){ if(!$('#intro').hidden){ closeIntro(); return; } if(!panel.hidden||fading) return; if(current) current.act(); }
+
+/* ---------- HUD (Atelier 101 · Electra, v2.9) : bas du bloc du haut → --hud-top, pour que le toast ne le recouvre jamais ---------- */
+(function hudTop(){ const app=$('#app'), els=[$('.brand'),$('#mapWrap')];
+  const upd=()=>{ const b=Math.max(...els.map(e=>e.getBoundingClientRect().bottom)); if(b>0) app.style.setProperty('--hud-top',Math.round(b+8)+'px'); };
+  upd(); addEventListener('resize',upd); if(window.ResizeObserver){ const ro=new ResizeObserver(upd); els.forEach(e=>ro.observe(e)); } })();
+
+/* ---------- Minimap ----------
+   Atelier 101 · Electra (v2.9) : carte centrée sur le joueur, nord en haut, fenêtre de 150 m.
+   Fond dessiné une fois à 2 px/m (544 px pour la ville), bureaux à la couleur de leur chantier avec un liseré clair,
+   joueur au centre : flèche de marche + cône de la caméra. */
+const mm=$('#minimap'), mg=mm.getContext('2d'); let mapDirty=true; const MPX=2, MB=272*MPX, MVIEW=150, MS=264/MVIEW;
+const mapBase=document.createElement('canvas'); mapBase.width=mapBase.height=MB;
+const W2M=v=>(v+136)*MPX;
+function drawMapBase(){
+  const g=mapBase.getContext('2d'), P=MPX; g.clearRect(0,0,MB,MB); g.fillStyle='#10132e'; g.fillRect(0,0,MB,MB);
+  // îlots, teintés très légèrement à la couleur du studio du quartier
+  for(let i=-2;i<=2;i++) for(let j=-2;j<=2;j++){ g.fillStyle='#262a4c'; g.fillRect(W2M(i*BS-16),W2M(j*BS-16),32*P,32*P);
+    if(i||j){ g.globalAlpha=.1; g.fillStyle=STUDIOS[studioIdx(i*BS,j*BS)].css; g.fillRect(W2M(i*BS-16),W2M(j*BS-16),32*P,32*P); g.globalAlpha=1; } }
+  lots.forEach(l=>{
+    if(l.free){ g.strokeStyle='rgba(124,200,255,.3)'; g.lineWidth=1.5; g.setLineDash([4,3]); g.strokeRect(W2M(l.x-5),W2M(l.z-5),10*P,10*P); g.setLineDash([]); return; }
+    if(l.kind==='bureau'){ const c=chantier(l.chantier).css, s=11*P; rr(g,W2M(l.x)-s/2,W2M(l.z)-s/2,s,s,4); g.fillStyle=c; g.fill(); g.lineWidth=2.5; g.strokeStyle='#eef0ff'; g.stroke(); return; }
+    g.fillStyle = l.kind==='filler'?'#4a4f7a': l.kind==='parc'?'#2d7a55': l.kind==='maison'?'#c65b4a' : STUDIOS[l.st].css;
+    const s=(l.kind==='filler'?8:10)*P; g.fillRect(W2M(l.x)-s/2,W2M(l.z)-s/2,s,s); });
+  g.fillStyle='#eef0ff'; g.fillRect(W2M(-14),W2M(-10),28*P,20*P); g.fillStyle='#ffc857'; g.fillRect(W2M(-14),W2M(-10),28*P,3);
+  mapDirty=false;
+}
+function drawMap(){
+  if(mapDirty) drawMapBase();
+  const S=MS, cx=132, cy=132, px=player.pos.x, pz=player.pos.z, half=MVIEW/2, toC=(wx,wz)=>[cx+(wx-px)*S, cy+(wz-pz)*S];
+  mg.fillStyle='#0b0e26'; mg.fillRect(0,0,264,264);
+  mg.drawImage(mapBase,W2M(px-half),W2M(pz-half),MVIEW*MPX,MVIEW*MPX,0,0,264,264);
+  agents.forEach(a=>{ const [x,y]=toC(a.pos.x,a.pos.z); if(x<-6||y<-6||x>270||y>270) return;
+    mg.fillStyle=a.active?a.col.css:'#6a6f99'; mg.strokeStyle='#0b0e26'; mg.lineWidth=2; mg.beginPath(); mg.arc(x,y,5,0,7); mg.stroke(); mg.fill(); });
+  // cône de la caméra (là où l'on regarde)
+  const va=Math.atan2(-Math.cos(cam.yaw),-Math.sin(cam.yaw));
+  const cg=mg.createRadialGradient(cx,cy,6,cx,cy,70); cg.addColorStop(0,'rgba(124,200,255,.42)'); cg.addColorStop(1,'rgba(124,200,255,0)');
+  mg.fillStyle=cg; mg.beginPath(); mg.moveTo(cx,cy); mg.arc(cx,cy,70,va-.55,va+.55); mg.closePath(); mg.fill();
+  // joueur : halo + grande flèche de marche
+  mg.fillStyle='rgba(124,200,255,.22)'; mg.beginPath(); mg.arc(cx,cy,17,0,7); mg.fill();
+  mg.save(); mg.translate(cx,cy); mg.rotate(-player.face+PI); mg.fillStyle='#7cc8ff'; mg.strokeStyle='#0b0e26'; mg.lineWidth=3; mg.lineJoin='round';
+  mg.beginPath(); mg.moveTo(0,-15); mg.lineTo(10,10); mg.lineTo(0,5); mg.lineTo(-10,10); mg.closePath(); mg.stroke(); mg.fill(); mg.restore();
+  // repère nord
+  mg.fillStyle='rgba(11,14,38,.75)'; mg.beginPath(); mg.arc(132,16,12,0,7); mg.fill();
+  mg.fillStyle='#ffc857'; mg.font='700 15px Figtree, system-ui, sans-serif'; mg.textAlign='center'; mg.textBaseline='middle'; mg.fillText('N',132,17);
+}
+
+/* ---------- Boucle ---------- */
+let snapCam=true, lastWhere='', mapT=0, tAll=0, expT=5;
+const tmpV=new THREE.Vector3();
+const occ={ k:0, d:-1, ok:false, b:-1, lift:0 }, tmpOff=new THREE.Vector3();
+function update(dt){
+  tAll+=dt;
+  const pad=readPad(); const pb=[];
+  let mx=0,my=0,run=false,lx=0,ly=0;
+  if(pad){
+    for(let i=0;i<pad.buttons.length;i++) pb[i]=pressed(pad,i);
+    const ax=pad.axes; const ix=dz(ax[0]||0), iy=dz(ax[1]||0), rx=dz(ax[2]||0), ry=dz(ax[3]||0);
+    if(ix||iy||rx||ry||pb.some(Boolean)) setMode('pad');
+    mx+=ix; my+=-iy; lx=rx; ly=ry; run = pb[7]||pb[10];
+  }
+  const edge=i=>pb[i]&&!padPrev[i];
+  const introOpen=!$('#intro').hidden;
+  if(introOpen){ if(edge(0)||edge(9)) closeIntro(); }
+  else if(!panel.hidden){
+    navCool-=dt;
+    if(pad){
+      const v=(pb[13]?1:0)-(pb[12]?1:0) || (pb[15]?1:0)-(pb[14]?1:0) || (Math.abs(pad.axes[1]||0)>.6?Math.sign(pad.axes[1]):0);
+      if(v && navCool<=0){ setFocus(focusIdx+v); navCool=.18; } if(!v) navCool=0;
+      if(edge(0)){ const f=focusables()[focusIdx]; if(f){ if(f.tagName==='INPUT') f.focus(); else f.click(); } }
+      if(edge(1)) closePanel();
+    }
+  } else {
+    if(edge(0)) doInteract();
+    if(edge(9)) $('#intro').hidden=false;
+    if(keys.has('w')||keys.has('z')||keys.has('arrowup')) my+=1;
+    if(keys.has('s')||keys.has('arrowdown')) my-=1;
+    if(keys.has('a')||keys.has('q')||keys.has('arrowleft')) mx-=1;
+    if(keys.has('d')||keys.has('arrowright')) mx+=1;
+    if(keys.has('shift')) run=true;
+    if(stick.id!==null){ mx+=stick.x; my+=-stick.y; if(Math.hypot(stick.x,stick.y)>.92) run=true; }
+  }
+  padPrev=pb;
+
+  cam.yaw-=lx*2.6*dt; cam.pitch=clamp(cam.pitch+ly*1.6*dt,.08,1.25);
+  const mag=Math.min(1,Math.hypot(mx,my));
+  const fx=-Math.sin(cam.yaw), fz=-Math.cos(cam.yaw), rx=-fz, rz=fx;
+  let vx=(fx*my+rx*mx), vz=(fz*my+rz*mx); const vl=Math.hypot(vx,vz);
+  const speed=(run?13:6.5);
+  if(vl>.001){ vx=vx/vl*speed*mag; vz=vz/vl*speed*mag; }
+  player.pos.x+=vx*dt; player.pos.z+=vz*dt;
+  resolve(player.pos,player.level); resolve(player.pos,player.level);
+  if(vl>.05){ const target=Math.atan2(vx,vz); let d=target-player.face; d=Math.atan2(Math.sin(d),Math.cos(d)); player.face+=d*Math.min(1,dt*12); }
+  const moving=vl>.05&&mag>.05;
+  // Atelier 101 · Mira (v2.7) : marche articulée, amplitude et cadence suivent la vitesse, retour au repos en douceur
+  const ud=avatar.userData, spd=moving? Math.hypot(vx,vz) : 0;
+  ud.amp+=((moving? (run?1:.62)*mag : 0)-ud.amp)*Math.min(1,dt*9);
+  ud.ph=(ud.ph+dt*spd*1.2)%(PI*2);
+  const bob=posePerson(avatar,ud.ph,ud.amp,tAll);
+  avatar.position.set(player.pos.x, player.level*5 + bob, player.pos.z);
+  avatar.rotation.y=player.face;
+  halo.position.set(player.pos.x,player.level*5+.18,player.pos.z);
+
+  // découpe du siège
+  const under=player.level===-1;
+  world.visible=!under; basement.visible=under;
+  const inside=under||insideHQ();
+  hqUpper.visible = !(inside && player.level===0);
+  hqTop.visible = !(inside && player.level<2);
+  hqRoof.visible = !inside;
+
+  // caméra
+  const target=tmpV.set(player.pos.x, player.level*5+1.7, player.pos.z);
+  let pitch=cam.pitch, dist=(inside?8:11)*cam.zoom;
+  if(inside) pitch=Math.max(pitch,.82);
+  // Atelier 101 · Altaïr (v2.8) : quand un mur passe derrière le joueur, la caméra monte et regarde par-dessus au lieu de se coller à son dos
+  else if(occ.lift>.001) pitch+=Math.max(0,1.3-pitch)*occ.lift;
+  const off=new THREE.Vector3(Math.sin(cam.yaw)*Math.cos(pitch),Math.sin(pitch),Math.cos(cam.yaw)*Math.cos(pitch));
+  // Atelier 101 · Rigel (v2.5) : raycast d'occlusion une image sur deux, la dernière distance est gardée entre deux
+  if(!inside){ occ.k=(occ.k+1)&3;
+    if(occ.k===0 || !occ.ok){ const bp=cam.pitch; tmpOff.set(Math.sin(cam.yaw)*Math.cos(bp),Math.sin(bp),Math.cos(cam.yaw)*Math.cos(bp)); ray.set(target,tmpOff); ray.far=dist; const hb=ray.intersectObjects(occluders,false)[0]; occ.b = hb? hb.distance : -1; }
+    if(occ.k===2 || !occ.ok){ ray.set(target,off); ray.far=dist; const hit=ray.intersectObjects(occluders,false)[0]; occ.d = hit? Math.max(2.2,hit.distance-.6) : -1; occ.ok=true; }
+    occ.lift+=(((occ.b>0 && occ.b<dist*.6)?1:0)-occ.lift)*Math.min(1,dt*3.5);
+    if(occ.d>0) dist=Math.min(dist,occ.d); }
+  else { occ.ok=false; occ.lift=0; }
+  const desired=target.clone().addScaledVector(off,dist);
+  if(snapCam){ camPos.copy(desired); snapCam=false; } else camPos.lerp(desired,Math.min(1,dt*9));
+  camera.position.copy(camPos); camera.lookAt(target);
+
+  // agents
+  agents.forEach((a,k)=>{
+    a.t+=dt; a.ang+=dt*.35; a.ring.rotation.x=PI/2+Math.sin(a.t)*.4; a.ring.rotation.y+=dt*1.5;
+    const r=8.6+(k%3)*.5; a.pos.set(a.lot.x+Math.cos(a.ang)*r,3,a.lot.z+Math.sin(a.ang)*r);
+    a.g.position.set(a.pos.x, 3+Math.sin(a.t*2)*.35, a.pos.z);
+  });
+  expT-=dt; if(expT<=0){ expT=5; syncAgents(); updateProduction(); }
+  // Atelier 101 · Altaïr (v4.2) : casiers du courrier allumés selon les plis à lire, capsule du tube pneumatique
+  if(basement.visible && courrierRoom.cellM){
+    const ids=courrierIds().map(x=>x[0]), cnt=ids.map(id=>aLire(id)), sig=cnt.join(',');
+    if(sig!==courrierRoom.sig){ courrierRoom.sig=sig; const cc=new THREE.Color();
+      for(let i=0;i<courrierRoom.n;i++){ const used=i<ids.length, n=used?cnt[i]:0;
+        courrierRoom.cellM.setColorAt(i,cc.setHex(!used?0x15183a: n? 0x6b4fc9 : 0x262a55));
+        courrierRoom.tabM.setColorAt(i,cc.setHex(!used?0x1b1f44: n? 0xffc857 : 0x3fbf6a)); }
+      courrierRoom.cellM.instanceColor.needsUpdate=true; courrierRoom.tabM.instanceColor.needsUpdate=true; }
+    const busy=cnt.some(n=>n>0), cap=courrierRoom.capsule;
+    cap.visible=busy; if(busy){ const u=(tAll*.35)%1; cap.position.y=courrierRoom.y0+.5+u*3.6; }
+  }
+  OFFICES[2].orbs.forEach((o,k)=>{ o.position.y=7.3+Math.sin(tAll*2+k)*.25; });
+  if(recep.npc && hqLower.visible){ recep.npc.rotation.y=Math.sin(tAll*.5)*.3; posePerson(recep.npc,0,0,tAll*1.1+.7); } // Atelier 101 · Altaïr (v2.8)
+  OFFICES.forEach(o=>{ if(o.npc){ o.npc.rotation.y=Math.sin(tAll*.6+o.cx)*.25; posePerson(o.npc,0,0,tAll+o.cx); } });
+  PRESIDENCE.npc.rotation.y=Math.sin(tAll*.4)*.2; posePerson(PRESIDENCE.npc,0,0,tAll*.9+1.3); PRESIDENCE.holo.rotation.y+=dt*1.2; PRESIDENCE.holo.position.y=12.1+Math.sin(tAll*1.6)*.15;
+
+  // chantiers
+  for(let k=anims.length-1;k>=0;k--){ const an=anims[k]; an.t+=dt; const p=Math.min(1,an.t/an.dur), e=1-Math.pow(1-p,3); an.g.position.y=an.from*(1-e); if(p>=1) anims.splice(k,1); }
+
+  // prompt
+  if(panel.hidden && !introOpen){ current=findInteract(); const pr=$('#prompt'); if(current){ $('#promptText').textContent=current.label; pr.hidden=false; } else pr.hidden=true; }
+
+  // HUD
+  const st=districtAt(player.pos.x,player.pos.z);
+  const where = inside ? (under? 'Siège · Sous-sol' : player.level===2? 'Siège · Présidence (2e)' : player.level? 'Siège · 1er étage' : 'Siège · Accueil (RDC)') : st? 'Quartier '+st.name : 'Place du Siège';
+  if(where!==lastWhere){ lastWhere=where; $('#where').textContent=where; $('#whereDot').style.background = st&&!inside? st.css : '#7cc8ff'; }
+  mapT-=dt; if(mapT<=0){ drawMap(); mapT=.1; }
+}
+let last=performance.now();
+function frame(now){ const raw=(now-last)/1000; const dt=Math.min(.05,raw); last=now; adaptRes(raw); update(dt); renderer.render(scene,camera); requestAnimationFrame(frame); }
+
+function start(){ initCity(); initStore(); updateProduction(); drawMap(); requestAnimationFrame(frame); setTimeout(()=>$('#btnStart').focus({preventScroll:true}),50); }
+start();
+}
+Promise.race([document.fonts?document.fonts.ready:Promise.resolve(), new Promise(r=>setTimeout(r,1500))]).then(ayponaMain);
+</script>
+
+
+</body></html>

@@ -1,0 +1,696 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#000000">
+<title>Aypona OS</title>
+<style>
+/* Aypona OS v0 · Bureau 102 (Polaris). Un téléphone plein écran sur mobile, centré dans un cadre sur ordinateur.
+   Look unique et assumé : nuit iOS, verre dépoli, or Aypona. Pas de thème clair. */
+:root{
+  color-scheme:dark;
+  --ink:#ffffff;
+  --ink-2:rgba(235,235,245,.62);
+  --ink-3:rgba(235,235,245,.36);
+  --glass:rgba(40,40,48,.52);
+  --glass-strong:rgba(28,28,32,.94);
+  --line:rgba(255,255,255,.12);
+  --gold:#d4af37;
+  --gold-soft:#f5d061;
+  --ok:#30d158;
+  --warn:#ff9f0a;
+  --bad:#ff453a;
+  --blue:#0a84ff;
+  --ui:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Helvetica Neue",system-ui,"Segoe UI",Roboto,sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --ease:cubic-bezier(.22,1,.36,1);
+  --spring:cubic-bezier(.32,1.25,.5,1);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#000;color:var(--ink);font:15px/1.4 var(--ui);-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent;overflow:hidden;overscroll-behavior:none}
+[hidden]{display:none!important}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+button:focus-visible,a:focus-visible,input:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--gold-soft);outline-offset:2px;border-radius:10px}
+a{color:var(--blue)}
+
+/* ---------- Appareil ---------- */
+.desk{position:fixed;inset:0;display:grid;place-items:center;background:radial-gradient(ellipse at 50% 40%,#16161c 0%,#000 70%)}
+.device{position:relative;width:100%;height:100%;overflow:hidden;isolation:isolate;background:#000;user-select:none;-webkit-user-select:none;touch-action:manipulation}
+@media (min-width:600px) and (min-height:700px){
+  .device{width:min(430px,calc((100vh - 48px) * .46));height:min(932px,calc(100vh - 48px));border-radius:54px;box-shadow:0 0 0 11px #1c1c1f,0 0 0 12px #3a3a40,0 40px 90px rgba(0,0,0,.7)}
+}
+
+/* ---------- Fonds d'écran ---------- */
+.wall{position:absolute;inset:-6%;z-index:0;transition:filter .4s var(--ease),transform .4s var(--ease)}
+.wall[data-wp="aube"]{background:radial-gradient(ellipse 60% 50% at 25% 20%,#ff6b9d 0%,transparent 60%),radial-gradient(ellipse 55% 45% at 75% 25%,#ffa06b 0%,transparent 55%),radial-gradient(ellipse 65% 55% at 70% 80%,#5b3fff 0%,transparent 60%),radial-gradient(ellipse 55% 50% at 20% 85%,#00c2ff 0%,transparent 60%),linear-gradient(135deg,#3a1c71,#241440 50%,#1a0b2e)}
+.wall[data-wp="ville"]{background:radial-gradient(ellipse 80% 40% at 50% 100%,#2a2f7a 0%,transparent 70%),radial-gradient(circle at 78% 16%,rgba(255,236,190,.5) 0 2.6%,transparent 3.2%),radial-gradient(ellipse 50% 30% at 20% 75%,rgba(92,180,255,.35),transparent 70%),radial-gradient(ellipse 45% 25% at 80% 70%,rgba(179,146,255,.3),transparent 70%),linear-gradient(180deg,#05061a 0%,#0b0e26 55%,#1a1a46 100%)}
+.wall[data-wp="spatial"]{background:radial-gradient(1.5px 1.5px at 20% 30%,#fff,transparent),radial-gradient(1px 1px at 40% 70%,#fff,transparent),radial-gradient(1.5px 1.5px at 52% 48%,#fff,transparent),radial-gradient(1px 1px at 80% 12%,#fff,transparent),radial-gradient(2px 2px at 10% 80%,#fff,transparent),radial-gradient(1px 1px at 62% 24%,#fff,transparent),radial-gradient(1.5px 1.5px at 90% 60%,#fff,transparent),radial-gradient(1px 1px at 30% 92%,#fff,transparent),radial-gradient(2px 2px at 72% 82%,#fff,transparent),radial-gradient(ellipse at top,#1a1a3e 0%,transparent 60%),radial-gradient(ellipse at bottom right,#2d1b4e 0%,transparent 50%),linear-gradient(180deg,#000010,#0a0520 50%,#000005)}
+.wall[data-wp="emeraude"]{background:radial-gradient(ellipse 60% 45% at 30% 25%,#1fd1a0 0%,transparent 60%),radial-gradient(ellipse 60% 50% at 75% 75%,#0b6e4f 0%,transparent 65%),radial-gradient(ellipse 40% 35% at 85% 20%,#c8f560 0%,transparent 60%),linear-gradient(160deg,#03251c,#021a14 55%,#010d0a)}
+.wall[data-wp="or"]{background:radial-gradient(ellipse 70% 45% at 50% 18%,rgba(245,208,97,.55) 0%,transparent 60%),radial-gradient(ellipse 60% 40% at 20% 85%,rgba(139,105,20,.6) 0%,transparent 65%),radial-gradient(ellipse 50% 35% at 85% 70%,rgba(212,175,55,.35) 0%,transparent 60%),linear-gradient(170deg,#140f06,#0a0805 55%,#000)}
+.device.dim .wall{filter:blur(22px) brightness(.6);transform:scale(1.06)}
+
+/* ---------- Écrans ---------- */
+.screen{position:absolute;inset:0;z-index:1;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (min-width:600px) and (min-height:700px){.screen{padding-top:14px;padding-bottom:8px}}
+
+/* Barre d'état */
+.status{flex:none;height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 max(24px,env(safe-area-inset-right,0px)) 0 max(28px,env(safe-area-inset-left,0px));font-weight:600;font-size:15px;font-variant-numeric:tabular-nums;position:relative;z-index:3}
+.status .right{display:flex;gap:10px;align-items:center}
+.sb-btn{display:inline-flex;align-items:center;gap:4px;padding:4px 6px;border-radius:10px;min-height:32px}
+.sb-btn svg{width:17px;height:17px}
+.sb-count{font-size:12px;min-width:16px;height:16px;padding:0 4px;border-radius:8px;background:var(--bad);display:grid;place-items:center;line-height:1}
+.net{opacity:.95}.net.off{opacity:.35}
+
+/* ---------- Démarrage ---------- */
+#boot{position:absolute;inset:0;z-index:50;background:radial-gradient(ellipse 70% 80% at 50% 50%,#0a0a0c 0%,#000 65%);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:44px;transition:opacity .45s var(--ease)}
+#boot.out{opacity:0;pointer-events:none}
+.emblem{width:min(300px,68%);aspect-ratio:720/177;display:grid;place-items:center;animation:reveal 1s var(--ease) .1s both}
+.emblem img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 0 14px rgba(212,175,55,.45)) drop-shadow(0 0 28px rgba(212,175,55,.2))}
+.emblem .word{font-weight:800;font-size:44px;letter-spacing:.14em;background:linear-gradient(180deg,var(--gold-soft),var(--gold) 55%,#8b6914);-webkit-background-clip:text;background-clip:text;color:transparent}
+@keyframes reveal{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:none}}
+.bootbar{width:min(220px,56%);height:2px;border-radius:2px;background:rgba(255,255,255,.1);overflow:hidden}
+.bootbar i{display:block;height:100%;width:0;background:#fff;box-shadow:0 0 8px rgba(255,255,255,.5);transition:width .2s linear}
+.bootlog{font:11px/1.6 var(--mono);color:var(--ink-3);text-align:center;min-height:3.2em}
+
+/* ---------- Écran verrouillé ---------- */
+#lock{z-index:20;transition:transform .5s var(--ease),opacity .4s}
+#lock.gone{transform:translateY(-100%);opacity:0;pointer-events:none}
+.lock-head{display:flex;flex-direction:column;align-items:center;gap:2px;margin-top:6vh}
+.lock-date{font-size:19px;font-weight:600;color:rgba(255,255,255,.85);text-transform:capitalize}
+.lock-time{font-size:min(96px,24vw);font-weight:700;letter-spacing:-.02em;line-height:1;font-variant-numeric:tabular-nums;text-shadow:0 2px 24px rgba(0,0,0,.25)}
+.lock-notes{flex:1;display:flex;flex-direction:column;justify-content:flex-end;gap:8px;padding:16px max(14px,env(safe-area-inset-right,0px)) 16px max(14px,env(safe-area-inset-left,0px));min-height:0;overflow:hidden}
+.lock-foot{display:flex;flex-direction:column;align-items:center;gap:12px;padding-bottom:18px}
+.unlock{font-size:15px;font-weight:500;color:rgba(255,255,255,.75);padding:10px 18px;border-radius:999px;animation:hint 2.6s ease-in-out infinite}
+@keyframes hint{0%,100%{transform:translateY(0);opacity:.75}50%{transform:translateY(-5px);opacity:1}}
+
+/* Cartes de notification */
+.note{display:grid;grid-template-columns:38px 1fr auto;gap:2px 10px;align-items:start;padding:12px 14px;border-radius:20px;background:var(--glass);backdrop-filter:blur(30px) saturate(170%);-webkit-backdrop-filter:blur(30px) saturate(170%);border:.5px solid var(--line)}
+.note .ic{grid-row:span 2;width:38px;height:38px;border-radius:9px;display:grid;place-items:center}
+.note .ic svg{width:60%;height:60%}
+.note b{font-size:14px;min-width:0}
+.note time{font-size:12px;color:var(--ink-2);white-space:nowrap}
+.note p{grid-column:2 / 4;font-size:14px;color:rgba(255,255,255,.88);min-width:0}
+
+/* Barre d'accueil (bas) */
+.homebar{width:136px;height:5px;border-radius:3px;background:#fff;opacity:.9}
+.homezone{display:grid;place-items:center;height:28px;width:100%;touch-action:none}
+
+/* ---------- Accueil ---------- */
+#home{z-index:5}
+.pages{flex:1;display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none;min-height:0}
+.pages::-webkit-scrollbar{display:none}
+.page{flex:0 0 100%;scroll-snap-align:start;scroll-snap-stop:always;padding:8px max(20px,env(safe-area-inset-right,0px)) 0 max(20px,env(safe-area-inset-left,0px));min-width:0;display:flex;flex-direction:column}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);grid-auto-rows:min-content;gap:22px 8px;align-content:start}
+.app{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0;border-radius:16px;padding:2px 0;touch-action:manipulation}
+.editing .app{touch-action:none}
+.icon{width:min(62px,15.5vw);aspect-ratio:1;border-radius:22.5%;display:grid;place-items:center;position:relative;box-shadow:0 2px 10px rgba(0,0,0,.22);transition:transform .18s var(--ease)}
+.icon svg{width:58%;height:58%}
+.app:active .icon{transform:scale(.9)}
+.label{font-size:12px;font-weight:500;text-shadow:0 1px 3px rgba(0,0,0,.5);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dock .label{display:none}
+.icon .badge{position:absolute;top:-6px;right:-6px;min-width:22px;height:22px;padding:0 6px;border-radius:11px;background:var(--bad);font-size:13px;font-weight:600;display:grid;place-items:center}
+
+/* Widgets */
+.widget{grid-column:span 2;aspect-ratio:1;border-radius:22px;padding:14px;background:var(--glass);backdrop-filter:blur(30px) saturate(160%);-webkit-backdrop-filter:blur(30px) saturate(160%);border:.5px solid var(--line);display:flex;flex-direction:column;justify-content:space-between;min-width:0;overflow:hidden;text-align:left}
+.widget small{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2)}
+.w-clock .t{font-size:min(44px,11vw);font-weight:700;letter-spacing:-.02em;line-height:1;font-variant-numeric:tabular-nums}
+.w-clock .d{font-size:14px;color:var(--ink-2);text-transform:capitalize}
+.w-sys .v{font:600 22px/1.1 var(--mono);color:var(--gold-soft)}
+.w-sys ul{list-style:none;display:grid;gap:3px;font-size:12.5px}
+.w-sys li{display:flex;gap:6px;align-items:center;min-width:0}
+.dot{width:7px;height:7px;border-radius:50%;flex:none;background:var(--ok)}
+.dot.warn{background:var(--warn)}.dot.bad{background:var(--bad)}
+
+.empty{margin:auto;max-width:280px;text-align:center;display:grid;gap:8px;padding:20px;border-radius:24px;background:var(--glass);backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);border:.5px solid var(--line)}
+.empty b{font-size:17px}.empty p{font-size:14px;color:var(--ink-2)}
+
+.dots{display:flex;justify-content:center;gap:8px;padding:10px 0}
+.dots button{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.4);padding:0;min-height:0}
+.dots button.on{background:#fff}
+.searchpill{align-self:center;display:inline-flex;gap:6px;align-items:center;font-size:13px;font-weight:600;padding:7px 14px;border-radius:999px;background:var(--glass);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border:.5px solid var(--line);margin-bottom:10px}
+.searchpill svg{width:14px;height:14px}
+.dockwrap{padding:0 max(12px,env(safe-area-inset-right,0px)) 6px max(12px,env(safe-area-inset-left,0px));display:flex;justify-content:center}
+.dock{display:flex;gap:min(22px,5vw);justify-content:center;padding:12px 18px;border-radius:32px;min-height:86px;min-width:min(100%,340px);background:rgba(255,255,255,.17);backdrop-filter:blur(30px) saturate(180%);-webkit-backdrop-filter:blur(30px) saturate(180%);border:.5px solid rgba(255,255,255,.2)}
+
+/* Mode édition */
+.editing .app .icon{animation:jiggle .28s ease-in-out infinite alternate}
+.editing .app:nth-child(2n) .icon{animation-delay:-.14s}
+@keyframes jiggle{from{transform:rotate(-1.8deg)}to{transform:rotate(1.8deg)}}
+.editbar{position:absolute;top:calc(env(safe-area-inset-top,0px) + 6px);right:max(14px,env(safe-area-inset-right,0px));z-index:6;padding:6px 14px;border-radius:999px;background:rgba(255,255,255,.22);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);font-weight:600;font-size:14px;min-height:32px}
+@media (min-width:600px) and (min-height:700px){.editbar{top:16px}}
+.drag-ghost{position:absolute;z-index:40;pointer-events:none;transform:translate(-50%,-50%) scale(1.12);filter:drop-shadow(0 12px 22px rgba(0,0,0,.45))}
+.app.drop .icon{outline:2px solid rgba(255,255,255,.75);outline-offset:3px}
+.app.lifted{opacity:.25}
+
+/* ---------- Fenêtre d'app ---------- */
+#win{position:absolute;inset:0;z-index:15;background:#000;display:flex;flex-direction:column;border-radius:0;overflow:hidden;transform-origin:50% 50%}
+#win.opening{animation:winIn .42s var(--ease) both}
+#win.closing{animation:winOut .3s var(--ease) both}
+@keyframes winIn{from{transform:translate(var(--dx),var(--dy)) scale(.16);border-radius:60px;opacity:.4}to{transform:none;border-radius:0;opacity:1}}
+@keyframes winOut{to{transform:translate(var(--dx),var(--dy)) scale(.16);border-radius:60px;opacity:0}}
+.win-body{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;min-height:0;background:#000}
+.win-foot{flex:none;background:#000}
+
+/* Vues natives (style Réglages) */
+.nav{position:sticky;top:0;z-index:2;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;min-height:52px;padding:0 max(10px,env(safe-area-inset-right,0px)) 0 max(10px,env(safe-area-inset-left,0px));background:rgba(0,0,0,.82);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:.5px solid var(--line)}
+.nav h1{font-size:17px;font-weight:600;text-align:center;white-space:nowrap}
+.nav .back{justify-self:start;color:var(--blue);display:inline-flex;align-items:center;gap:2px;font-size:17px;min-height:44px;padding:0 6px}
+.nav .back svg{width:12px;height:20px}
+.view{padding:12px max(16px,env(safe-area-inset-right,0px)) 32px max(16px,env(safe-area-inset-left,0px));display:grid;gap:22px;align-content:start}
+.big{font-size:32px;font-weight:700;letter-spacing:-.01em;padding:4px 4px 0}
+.sec{display:grid;gap:6px}
+.sec > h2{font-size:13px;font-weight:400;text-transform:uppercase;letter-spacing:.03em;color:var(--ink-2);padding:0 16px}
+.sec > p.foot{font-size:13px;color:var(--ink-2);padding:0 16px}
+.list{border-radius:12px;background:#1c1c1e;overflow:hidden}
+.row{display:flex;align-items:center;gap:12px;min-height:46px;padding:8px 16px;width:100%;text-align:left;border-top:.5px solid rgba(84,84,88,.55)}
+.list > .row:first-child{border-top:0}
+.row .ri{width:29px;height:29px;border-radius:7px;display:grid;place-items:center;flex:none}
+.row .ri svg{width:62%;height:62%}
+.row .rl{flex:1;min-width:0}
+.row .rl small{display:block;font-size:13px;color:var(--ink-2)}
+.row .rv{color:var(--ink-2);font-variant-numeric:tabular-nums;text-align:right;min-width:0;overflow-wrap:anywhere}
+.row .chev{width:8px;height:14px;color:var(--ink-3);flex:none}
+.row.danger{color:var(--bad);justify-content:center}
+.row.link{color:var(--blue)}
+.mono{font-family:var(--mono);font-size:13px}
+.switch{position:relative;width:51px;height:31px;border-radius:16px;background:#39393d;flex:none;transition:background .2s}
+.switch::after{content:"";position:absolute;top:2px;left:2px;width:27px;height:27px;border-radius:50%;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.3);transition:transform .22s var(--spring)}
+.switch[aria-checked="true"]{background:var(--ok)}
+.switch[aria-checked="true"]::after{transform:translateX(20px)}
+.wps{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:12px;padding:14px;border-radius:12px;background:#1c1c1e}
+.wp{display:grid;gap:6px;justify-items:center;font-size:12px;color:var(--ink-2)}
+.wp .sw{width:100%;max-width:100%;aspect-ratio:9/16;border-radius:12px;position:relative;overflow:hidden;border:2px solid transparent}
+.wp .sw .wall{inset:0}
+.wp[aria-pressed="true"] .sw{border-color:var(--blue)}
+.wp[aria-pressed="true"]{color:var(--ink)}
+.prose{display:grid;gap:10px;padding:14px 16px;border-radius:12px;background:#1c1c1e;font-size:15px;color:rgba(255,255,255,.88)}
+.prose b{color:#fff}
+.log{list-style:none;display:grid;gap:0;border-radius:12px;background:#1c1c1e;overflow:hidden}
+.log li{display:grid;grid-template-columns:auto 1fr;gap:10px;padding:8px 14px;font-size:13px;border-top:.5px solid rgba(84,84,88,.55);min-width:0}
+.log li:first-child{border-top:0}
+.log time{font-family:var(--mono);font-size:12px;color:var(--ink-3)}
+.log span{min-width:0;overflow-wrap:anywhere}
+
+/* ---------- Feuilles (Spotlight, Notifications) ---------- */
+.sheet{position:absolute;inset:0;z-index:25;display:flex;flex-direction:column;background:rgba(0,0,0,.35);backdrop-filter:blur(26px) saturate(150%);-webkit-backdrop-filter:blur(26px) saturate(150%);transition:opacity .25s;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (min-width:600px) and (min-height:700px){.sheet{padding-top:14px}}
+.sheet.enter{animation:sheetIn .32s var(--ease) both}
+@keyframes sheetIn{from{opacity:0;transform:translateY(-14px)}to{opacity:1;transform:none}}
+.sheet-in{flex:1;min-height:0;overflow-y:auto;padding:10px max(14px,env(safe-area-inset-right,0px)) 18px max(14px,env(safe-area-inset-left,0px));display:grid;gap:12px;align-content:start}
+.searchbox{display:flex;align-items:center;gap:8px;padding:0 12px;height:44px;border-radius:12px;background:rgba(120,120,130,.32);border:.5px solid var(--line)}
+.searchbox svg{width:16px;height:16px;flex:none;opacity:.7}
+.searchbox input{flex:1;min-width:0;background:none;border:0;color:#fff;font:17px var(--ui);outline:none}
+.searchbox input::placeholder{color:rgba(255,255,255,.55)}
+.sheet-head{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.sheet-head h2{font-size:28px;font-weight:700}
+.pillbtn{padding:6px 14px;border-radius:999px;background:rgba(255,255,255,.16);font-size:14px;font-weight:600;min-height:32px}
+.res{display:flex;align-items:center;gap:12px;padding:8px 10px;border-radius:14px;width:100%;text-align:left;background:var(--glass)}
+.res .icon{width:40px;border-radius:10px}
+.res small{display:block;color:var(--ink-2);font-size:13px}
+.res mark{background:none;color:var(--gold-soft);font-weight:700}
+.muted{color:var(--ink-2);font-size:14px;text-align:center;padding:24px 0}
+
+/* ---------- Dialogue et toast ---------- */
+.dlg{position:absolute;inset:0;z-index:45;display:grid;place-items:center;background:rgba(0,0,0,.45);padding:24px}
+.dlg-card{width:min(280px,100%);border-radius:14px;background:rgba(44,44,48,.96);backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);text-align:center;overflow:hidden;animation:pop .22s var(--spring) both}
+@keyframes pop{from{transform:scale(1.15);opacity:0}to{transform:none;opacity:1}}
+.dlg-card .txt{padding:18px 16px 16px;display:grid;gap:4px}
+.dlg-card b{font-size:17px}
+.dlg-card p{font-size:13px;color:rgba(255,255,255,.8)}
+.dlg-card .acts{display:grid;grid-template-columns:1fr 1fr;border-top:.5px solid rgba(84,84,88,.65)}
+.dlg-card .acts button{min-height:44px;font-size:17px;color:var(--blue)}
+.dlg-card .acts button+button{border-left:.5px solid rgba(84,84,88,.65);font-weight:600}
+.dlg-card .acts button.red{color:var(--bad)}
+#island{position:absolute;left:50%;top:calc(env(safe-area-inset-top,0px) + 8px);z-index:48;transform:translate(-50%,-6px) scale(.9);opacity:0;pointer-events:none;transition:all .35s var(--spring);padding:9px 16px;border-radius:22px;background:#000;font-size:13.5px;font-weight:600;max-width:calc(100% - 32px);box-shadow:0 8px 24px rgba(0,0,0,.4);text-align:center}
+@media (min-width:600px) and (min-height:700px){#island{top:14px}}
+#island.on{opacity:1;transform:translate(-50%,0) scale(1)}
+
+/* Icônes système : couleurs */
+.c-reglages{background:linear-gradient(180deg,#8e8e93,#48484a)}
+.c-store{background:linear-gradient(180deg,#1ec8ff,#0a6cff)}
+.c-moniteur{background:linear-gradient(180deg,#2c2c2e,#0b0b0d);border:.5px solid rgba(255,255,255,.12)}
+.c-astuces{background:linear-gradient(180deg,#ffd60a,#ff9f0a)}
+.c-aypona{background:linear-gradient(135deg,#f5d061,#d4af37 40%,#8b6914 75%,#2a1a3a)}
+.c-bleu{background:var(--blue)}.c-gris{background:#636366}.c-vert{background:var(--ok)}.c-rouge{background:var(--bad)}.c-violet{background:#5e5ce6}.c-orange{background:var(--warn)}
+
+.reduce *,.reduce *::before,.reduce *::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}}
+</style>
+</head>
+<body>
+<div class="desk">
+  <div class="device" id="device">
+    <div class="wall" id="wall" data-wp="aube"></div>
+
+    <!-- Accueil -->
+    <section class="screen" id="home" aria-label="Écran d'accueil" hidden>
+      <div class="status">
+        <span id="sbTime">--:--</span>
+        <div class="right">
+          <button class="sb-btn" id="sbBell" aria-label="Notifications"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 22a2.5 2.5 0 0 0 2.45-2h-4.9A2.5 2.5 0 0 0 12 22Zm7-6V11a7 7 0 0 0-5.5-6.84V3.5a1.5 1.5 0 0 0-3 0v.66A7 7 0 0 0 5 11v5l-2 2v1h18v-1l-2-2Z"/></svg><span class="sb-count" id="sbCount" hidden>0</span></button>
+          <span class="net" id="sbNet" aria-label="Réseau"><svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor"><path d="M12 18.5a1.75 1.75 0 1 0 0 3.5 1.75 1.75 0 0 0 0-3.5ZM12 13c-2.1 0-4 .8-5.4 2.2l1.5 1.5A5.6 5.6 0 0 1 12 15.1c1.5 0 2.9.6 3.9 1.6l1.5-1.5A7.6 7.6 0 0 0 12 13Zm0-4.6c-3.3 0-6.3 1.3-8.6 3.5l1.5 1.5A10 10 0 0 1 12 10.5c2.8 0 5.3 1.1 7.1 2.9l1.5-1.5A12.1 12.1 0 0 0 12 8.4Zm0-4.6c-4.6 0-8.8 1.8-11.9 4.8L1.6 10a14.7 14.7 0 0 1 20.8 0l1.5-1.5A16.8 16.8 0 0 0 12 3.8Z"/></svg></span>
+        </div>
+      </div>
+      <div class="pages" id="pages"></div>
+      <button class="searchpill" id="searchPill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m20 20-4.6-4.6"/></svg><span data-t="search">Rechercher</span></button>
+      <div class="dots" id="dots"></div>
+      <div class="dockwrap"><div class="dock" id="dock"></div></div>
+    </section>
+    <button class="editbar" id="editDone" hidden data-t="done">OK</button>
+
+    <!-- Écran verrouillé -->
+    <section class="screen" id="lock" aria-label="Écran verrouillé" hidden>
+      <div class="status"><span></span><div class="right"><span class="net" id="lkNet"><svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor"><path d="M12 18.5a1.75 1.75 0 1 0 0 3.5 1.75 1.75 0 0 0 0-3.5ZM12 13c-2.1 0-4 .8-5.4 2.2l1.5 1.5A5.6 5.6 0 0 1 12 15.1c1.5 0 2.9.6 3.9 1.6l1.5-1.5A7.6 7.6 0 0 0 12 13Zm0-4.6c-3.3 0-6.3 1.3-8.6 3.5l1.5 1.5A10 10 0 0 1 12 10.5c2.8 0 5.3 1.1 7.1 2.9l1.5-1.5A12.1 12.1 0 0 0 12 8.4Zm0-4.6c-4.6 0-8.8 1.8-11.9 4.8L1.6 10a14.7 14.7 0 0 1 20.8 0l1.5-1.5A16.8 16.8 0 0 0 12 3.8Z"/></svg></span></div></div>
+      <div class="lock-head"><div class="lock-date" id="lkDate"></div><div class="lock-time" id="lkTime">--:--</div></div>
+      <div class="lock-notes" id="lkNotes"></div>
+      <div class="lock-foot">
+        <button class="unlock" id="unlockBtn" data-t="unlock">Glisser vers le haut pour déverrouiller</button>
+        <div class="homezone" id="lockZone"><span class="homebar"></span></div>
+      </div>
+    </section>
+
+    <!-- Fenêtre d'app -->
+    <section id="win" hidden aria-modal="true" role="dialog">
+      <div class="win-body" id="winBody"></div>
+      <div class="win-foot"><div class="homezone" id="winZone" role="button" tabindex="0" aria-label="Retour à l'accueil"><span class="homebar"></span></div></div>
+    </section>
+
+    <!-- Spotlight -->
+    <section class="sheet" id="spot" hidden aria-label="Recherche">
+      <div class="sheet-in">
+        <div class="sheet-head"><div class="searchbox" style="flex:1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m20 20-4.6-4.6"/></svg><input id="spotInput" type="search" autocomplete="off" placeholder="Rechercher" data-tp="search"></div><button class="pillbtn" id="spotClose" data-t="cancel">Annuler</button></div>
+        <div id="spotRes" style="display:grid;gap:8px"></div>
+      </div>
+    </section>
+
+    <!-- Centre de notifications -->
+    <section class="sheet" id="center" hidden aria-label="Centre de notifications">
+      <div class="sheet-in">
+        <div class="sheet-head"><h2 data-t="notifs">Notifications</h2><div style="display:flex;gap:8px"><button class="pillbtn" id="centerClear" data-t="clear">Effacer</button><button class="pillbtn" id="centerClose" data-t="close">Fermer</button></div></div>
+        <div id="centerList" style="display:grid;gap:8px"></div>
+      </div>
+      <div class="homezone" id="centerZone"><span class="homebar"></span></div>
+    </section>
+
+    <div class="dlg" id="dlg" hidden><div class="dlg-card" role="alertdialog" aria-labelledby="dlgT"><div class="txt"><b id="dlgT"></b><p id="dlgP"></p></div><div class="acts"><button id="dlgNo" data-t="cancel">Annuler</button><button id="dlgYes" class="red"></button></div></div></div>
+    <div id="island" role="status" aria-live="polite"></div>
+
+    <!-- Démarrage -->
+    <section id="boot" aria-label="Démarrage d'Aypona OS">
+      <div class="emblem"><img src="aypona-logo-gold.png" alt="Aypona" draggable="false" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'word',textContent:'AYPONA'}))"></div>
+      <div class="bootbar"><i id="bootFill"></i></div>
+      <div class="bootlog" id="bootLog"></div>
+    </section>
+  </div>
+</div>
+
+<script>
+/* =====================================================================
+   AYPONA OS · NOYAU v0.1 (Bureau 102 · Polaris, AYP-102-2610-0013)
+   Reconstruit à partir de l'ancienne base (v0.6.0) sans serveur :
+   pas de comptes, pas de licences côté navigateur, pas de codes en clair.
+   API publique : window.Aypona (bus, storage, settings, i18n, notify, apps, tests).
+   ===================================================================== */
+(function(){
+'use strict';
+const VERSION='0.1.0', BUILD='2026-10-17', SCHEMA=1;
+const $=s=>document.querySelector(s);
+const h=(tag,attrs,...kids)=>{ const e=document.createElement(tag); if(attrs) for(const k in attrs){ const v=attrs[k]; if(v==null||v===false) continue; if(k==='class') e.className=v; else if(k==='html') e.innerHTML=v; else if(k.startsWith('on')) e.addEventListener(k.slice(2),v); else e.setAttribute(k,v===true?'':v); }
+  for(const k of kids.flat()) if(k!=null&&k!==false) e.append(k.nodeType?k:document.createTextNode(k)); return e; };
+
+/* ---------- Bus d'événements ---------- */
+const handlers={}, journal=[];
+const bus={
+  on(ev,fn){ (handlers[ev]=handlers[ev]||[]).push(fn); return ()=>{ handlers[ev]=handlers[ev].filter(f=>f!==fn); }; },
+  emit(ev,data){ journal.unshift({ t:Date.now(), ev, data: data&&typeof data==='object'? JSON.stringify(data).slice(0,80) : (data==null?'':String(data)) }); journal.length=Math.min(journal.length,80);
+    (handlers[ev]||[]).slice().forEach(fn=>{ try{ fn(data); }catch(e){ console.error('[Aypona] '+ev,e); } }); (handlers['*']||[]).forEach(fn=>{ try{ fn(ev,data); }catch(e){} }); },
+  journal:()=>journal.slice(),
+};
+
+/* ---------- Stockage (registre des clés, préfixe propre à l'OS) ---------- */
+const PREFIX='aypona-os:';
+const KEYS=Object.freeze({ schema:'schema', settings:'settings', layout:'layout', notifs:'notifs', installed:'installed', boots:'boots' });
+const mem={}; let persistent=true;
+const storage={
+  key:k=>PREFIX+(KEYS[k]||k),
+  get(k,def){ const key=storage.key(k); try{ const raw=localStorage.getItem(key); if(raw==null) return k in mem? mem[k] : def; return JSON.parse(raw); }catch(e){ persistent=false; return k in mem? mem[k] : def; } },
+  set(k,v){ mem[k]=v; try{ localStorage.setItem(storage.key(k),JSON.stringify(v)); return true; }catch(e){ persistent=false; return false; } },
+  remove(k){ delete mem[k]; try{ localStorage.removeItem(storage.key(k)); }catch(e){} },
+  usage(){ let n=0; try{ for(let i=0;i<localStorage.length;i++){ const k=localStorage.key(i); if(k&&k.startsWith(PREFIX)) n+=k.length+(localStorage.getItem(k)||'').length; } }catch(e){} return n*2; },
+  wipe(){ try{ const ks=[]; for(let i=0;i<localStorage.length;i++){ const k=localStorage.key(i); if(k&&k.startsWith(PREFIX)) ks.push(k); } ks.forEach(k=>localStorage.removeItem(k)); }catch(e){} for(const k in mem) delete mem[k]; },
+  get persistent(){ return persistent; },
+};
+const MIGRATIONS={ 1:()=>{ /* schéma initial : rien à convertir */ } };
+function migrate(){ let v=storage.get('schema',0); const from=v; while(v<SCHEMA){ v++; if(MIGRATIONS[v]) MIGRATIONS[v](); } storage.set('schema',SCHEMA); return { from, to:SCHEMA }; }
+
+/* ---------- Langues ---------- */
+const DICT={
+  fr:{ search:'Rechercher', cancel:'Annuler', done:'OK', close:'Fermer', clear:'Effacer', notifs:'Notifications', unlock:'Glisser vers le haut pour déverrouiller', unlockTap:'Déverrouiller',
+    reglages:'Réglages', store:'App Store', moniteur:'Moniteur', astuces:'Astuces', today:'Aujourd’hui', system:'Système', noNotifs:'Aucune notification', noResults:'Aucun résultat',
+    apps:'Apps', noApps:'Aucune app installée', noAppsTxt:'Le catalogue d’Aypona OS est recréé de zéro. Les nouvelles apps arriveront par l’App Store.',
+    wallpaper:'Fond d’écran', general:'Général', about:'À propos', language:'Langue', motion:'Réduire les animations', lockNow:'Verrouiller l’écran', reset:'Réinitialiser Aypona OS',
+    resetQ:'Réinitialiser Aypona OS ?', resetP:'Les réglages, la disposition de l’écran d’accueil et les notifications de ce navigateur seront effacés.', resetYes:'Réinitialiser',
+    version:'Version', build:'Build', storage:'Stockage local', saved:'enregistré', notSaved:'non enregistré (navigateur)', tests:'Tests du noyau', modules:'Modules du noyau', events:'Journal du système',
+    welcomeT:'Bienvenue dans Aypona OS', welcomeP:'Version 0.1 du nouveau système. Glisse vers le bas depuis le haut pour voir tes notifications.', rebootT:'Aypona OS a redémarré', rebootP:'Démarrage n°{n} sur ce navigateur.',
+    editHint:'Appui long sur une icône pour réorganiser', moved:'Disposition enregistrée', locked:'Écran verrouillé', resetDone:'Aypona OS réinitialisé', storeTitle:'L’App Store arrive',
+    storeP:'Le magasin est construit par le chantier B03. Le système est déjà prêt à recevoir les apps : chaque app installée prendra sa place sur l’écran d’accueil.', installed:'Apps installées', online:'En ligne', offline:'Hors ligne', city:'Retour à Aypona City', settingsSearch:'Réglage', appSearch:'App' },
+  en:{ search:'Search', cancel:'Cancel', done:'Done', close:'Close', clear:'Clear', notifs:'Notifications', unlock:'Swipe up to unlock', unlockTap:'Unlock',
+    reglages:'Settings', store:'App Store', moniteur:'Monitor', astuces:'Tips', today:'Today', system:'System', noNotifs:'No notifications', noResults:'No results',
+    apps:'Apps', noApps:'No apps installed', noAppsTxt:'The Aypona OS catalog is being rebuilt from scratch. New apps will arrive through the App Store.',
+    wallpaper:'Wallpaper', general:'General', about:'About', language:'Language', motion:'Reduce motion', lockNow:'Lock screen', reset:'Reset Aypona OS',
+    resetQ:'Reset Aypona OS?', resetP:'Settings, home screen layout and notifications in this browser will be erased.', resetYes:'Reset',
+    version:'Version', build:'Build', storage:'Local storage', saved:'saved', notSaved:'not saved (browser)', tests:'Kernel tests', modules:'Kernel modules', events:'System log',
+    welcomeT:'Welcome to Aypona OS', welcomeP:'Version 0.1 of the new system. Swipe down from the top to see your notifications.', rebootT:'Aypona OS restarted', rebootP:'Boot #{n} in this browser.',
+    editHint:'Long-press an icon to rearrange', moved:'Layout saved', locked:'Screen locked', resetDone:'Aypona OS reset', storeTitle:'The App Store is coming',
+    storeP:'The store is being built by site B03. The system is already able to receive apps: each installed app will take its place on the home screen.', installed:'Installed apps', online:'Online', offline:'Offline', city:'Back to Aypona City', settingsSearch:'Setting', appSearch:'App' },
+};
+const i18n={
+  lang:()=>settings.get('lang'),
+  t(key,vars){ const d=DICT[i18n.lang()]||DICT.fr; let s=d[key]!=null? d[key] : (DICT.fr[key]!=null? DICT.fr[key] : key); if(vars) for(const k in vars) s=s.replace('{'+k+'}',vars[k]); return s; },
+  apply(root=document){ root.querySelectorAll('[data-t]').forEach(e=>{ e.textContent=i18n.t(e.dataset.t); }); root.querySelectorAll('[data-tp]').forEach(e=>{ e.placeholder=i18n.t(e.dataset.tp); }); document.documentElement.lang=i18n.lang(); },
+};
+const t=i18n.t;
+
+/* ---------- Réglages ---------- */
+const DEFAULTS=Object.freeze({ wallpaper:'aube', lang:'fr', reduceMotion:false });
+let cfg={ ...DEFAULTS, ...(storage.get('settings',{})||{}) };
+const settings={
+  get:k=>cfg[k],
+  set(k,v){ if(!(k in DEFAULTS)) return; cfg={ ...cfg, [k]:v }; storage.set('settings',cfg); bus.emit('settings:'+k,v); bus.emit('settings',{ [k]:v }); },
+  all:()=>({ ...cfg }),
+};
+
+/* ---------- Notifications ---------- */
+const notify={
+  list:()=>storage.get('notifs',[])||[],
+  add(n){ const list=notify.list(); const item={ id:'n'+Date.now().toString(36)+Math.random().toString(36).slice(2,6), t:Date.now(), app:n.app||'aypona', title:String(n.title||''), body:String(n.body||'') }; list.unshift(item); storage.set('notifs',list.slice(0,40)); bus.emit('notify',item); return item; },
+  remove(id){ storage.set('notifs',notify.list().filter(n=>n.id!==id)); bus.emit('notify:remove',id); },
+  clear(){ storage.set('notifs',[]); bus.emit('notify:clear'); },
+};
+
+/* ---------- Icônes ---------- */
+const SVG={
+  reglages:'<svg viewBox="0 0 24 24" fill="#fff"><path d="M13.6 2l.5 2.4c.6.2 1.2.5 1.7.9l2.3-.8 1.6 2.8-1.8 1.6c.1.6.1 1.3 0 1.9l1.8 1.6-1.6 2.8-2.3-.8c-.5.4-1.1.7-1.7.9l-.5 2.4h-3.2l-.5-2.4c-.6-.2-1.2-.5-1.7-.9l-2.3.8-1.6-2.8 1.8-1.6a6 6 0 0 1 0-1.9L2.5 7.3l1.6-2.8 2.3.8c.5-.4 1.1-.7 1.7-.9L8.6 2h5ZM12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Z" transform="translate(0 2) scale(1 .92)"/></svg>',
+  store:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.1" stroke-linecap="round"><path d="M9.2 4.5 4.6 12.5M14.8 4.5l7 12.1M2.5 16.5h12.5M16.5 12.5h5M5.6 20 4.4 18"/></svg>',
+  moniteur:'<svg viewBox="0 0 24 24" fill="none" stroke="#30d158" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 12.5h4l2.5-6 4 11 2.6-7.5 1.4 2.5h4.5"/></svg>',
+  astuces:'<svg viewBox="0 0 24 24" fill="#fff"><path d="M12 2.5a6.5 6.5 0 0 0-3.9 11.7c.6.5.9 1.1.9 1.8v.5h6v-.5c0-.7.3-1.3.9-1.8A6.5 6.5 0 0 0 12 2.5ZM9.5 18h5v1.2a1.8 1.8 0 0 1-1.8 1.8h-1.4a1.8 1.8 0 0 1-1.8-1.8V18Z"/></svg>',
+  aypona:'<svg viewBox="0 0 24 24" fill="#1a1206"><path d="M12 3 4 21h3.4l1.6-4h6l1.6 4H20L12 3Zm0 6.3 2 5.2h-4l2-5.2Z"/></svg>',
+  globe:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.7 2.5 15.3 0 18M12 3c-2.5 2.7-2.5 15.3 0 18"/></svg>',
+  image:'<svg viewBox="0 0 24 24" fill="#fff"><path d="M5 4h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Zm0 13h14l-4.5-6-3.5 4.5-2.5-3L5 17Zm3.5-7a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z"/></svg>',
+  motion:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="3.5"/><path d="M4 12a8 8 0 0 1 8-8M20 12a8 8 0 0 1-8 8"/></svg>',
+  lock:'<svg viewBox="0 0 24 24" fill="#fff"><path d="M7 10V7.5a5 5 0 0 1 10 0V10h1a1.5 1.5 0 0 1 1.5 1.5v8A1.5 1.5 0 0 1 18 21H6a1.5 1.5 0 0 1-1.5-1.5v-8A1.5 1.5 0 0 1 6 10h1Zm2.2 0h5.6V7.5a2.8 2.8 0 0 0-5.6 0V10Z"/></svg>',
+  info:'<svg viewBox="0 0 24 24" fill="#fff"><path d="M12 2.5a9.5 9.5 0 1 0 0 19 9.5 9.5 0 0 0 0-19Zm1.2 14.5h-2.4v-6h2.4v6Zm-1.2-7.6a1.4 1.4 0 1 1 0-2.8 1.4 1.4 0 0 1 0 2.8Z"/></svg>',
+  chev:'<svg class="chev" viewBox="0 0 8 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m1 1 6 6-6 6"/></svg>',
+  back:'<svg viewBox="0 0 12 20" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2 2 10l8 8"/></svg>',
+};
+
+/* ---------- Registre des apps ----------
+   Apps système livrées avec le noyau. Les apps du futur App Store s'installeront par Aypona.apps.install(manifeste)
+   et rejoindront l'écran d'accueil ; le système ne connaît pas le catalogue. */
+const SYSTEM_APPS={
+  reglages:{ id:'reglages', system:true, color:'c-reglages', icon:SVG.reglages, open:w=>Settings(w) },
+  store:{ id:'store', system:true, color:'c-store', icon:SVG.store, open:w=>StoreApp(w) },
+  moniteur:{ id:'moniteur', system:true, color:'c-moniteur', icon:SVG.moniteur, open:w=>Monitor(w) },
+  astuces:{ id:'astuces', system:true, color:'c-astuces', icon:SVG.astuces, open:w=>Tips(w) },
+};
+const apps={
+  all(){ const out={ ...SYSTEM_APPS }; (storage.get('installed',[])||[]).forEach(m=>{ if(m&&m.id&&!out[m.id]) out[m.id]={ ...m, system:false }; }); return out; },
+  get:id=>apps.all()[id],
+  label:a=>a.system? t(a.id) : (a.label||a.id),
+  install(m){ if(!m||!/^[a-z0-9-]{2,32}$/.test(m.id||'')||SYSTEM_APPS[m.id]) return false; const list=(storage.get('installed',[])||[]).filter(x=>x.id!==m.id); list.push({ id:m.id, label:String(m.label||m.id).slice(0,24), url:String(m.url||''), color:m.color||'c-gris' }); storage.set('installed',list); layout.add(m.id); bus.emit('apps:install',m.id); return true; },
+};
+
+/* ---------- Disposition de l'écran d'accueil ---------- */
+const DEFAULT_LAYOUT={ grid:['moniteur','astuces'], dock:['store','reglages'] };
+const layout={
+  get(){ const l=storage.get('layout',null); return l&&Array.isArray(l.grid)&&Array.isArray(l.dock)? l : { grid:DEFAULT_LAYOUT.grid.slice(), dock:DEFAULT_LAYOUT.dock.slice() }; },
+  set(l){ storage.set('layout',l); bus.emit('layout',l); },
+  add(id){ const l=layout.get(); if(!l.grid.includes(id)&&!l.dock.includes(id)) l.grid.push(id); layout.set(l); },
+  repair(){ const known=apps.all(), l=layout.get(), seen=new Set(), clean=a=>a.filter(id=>known[id]&&!seen.has(id)&&seen.add(id)); const out={ dock:clean(l.dock).slice(0,4), grid:[] }; out.grid=clean(l.grid); Object.keys(known).forEach(id=>{ if(!seen.has(id)){ seen.add(id); out.grid.push(id); } }); return out; },
+};
+
+/* ---------- Tests du noyau ---------- */
+function runTests(){
+  const r=[]; const ok=(name,cond)=>r.push({ name, pass:!!cond });
+  try{ storage.set('__test',{ a:1 }); ok('Stockage : écriture et lecture', (storage.get('__test')||{}).a===1); storage.remove('__test'); ok('Stockage : suppression', storage.get('__test','x')==='x'); }catch(e){ ok('Stockage',false); }
+  let hit=0; const off=bus.on('__ping',d=>{ hit+=d; }); bus.emit('__ping',2); off(); bus.emit('__ping',5); ok('Bus : abonnement et désabonnement', hit===2);
+  ok('Réglages : valeurs par défaut', ['wallpaper','lang','reduceMotion'].every(k=>k in cfg));
+  ok('Langues : FR et EN complets', Object.keys(DICT.fr).every(k=>k in DICT.en));
+  ok('Langues : repli sur la clé', t('__inconnue')==='__inconnue');
+  const before=notify.list().length; const n=notify.add({ title:'test' }); ok('Notifications : ajout', notify.list().length===before+1); notify.remove(n.id); ok('Notifications : retrait', notify.list().length===before);
+  ok('Migrations : schéma à jour', storage.get('schema',0)===SCHEMA);
+  const l=layout.repair(), ids=[...l.grid,...l.dock]; ok('Accueil : chaque app placée une seule fois', ids.length===new Set(ids).size && Object.keys(apps.all()).every(id=>ids.includes(id)));
+  ok('Accueil : dock de 4 apps maximum', l.dock.length<=4);
+  ok('Apps : refus d’un identifiant invalide', apps.install({ id:'../x' })===false && apps.install({ id:'reglages' })===false);
+  ok('Sécurité : aucune licence ni code dans le navigateur', !('ACCOUNTS' in window) && !('APPS_CATALOG' in window));
+  return r;
+}
+
+/* ---------- API publique ---------- */
+const Aypona=window.Aypona={ version:VERSION, build:BUILD, bus, storage, settings, i18n, notify, apps, layout, tests:null };
+
+/* =====================================================================
+   INTERFACE
+   ===================================================================== */
+const device=$('#device'), wall=$('#wall');
+let tests=[], migration=null;
+
+function applySettings(){ wall.dataset.wp=settings.get('wallpaper'); device.classList.toggle('reduce',!!settings.get('reduceMotion')); i18n.apply(); }
+bus.on('settings',()=>{ applySettings(); renderHome(); renderLock(); });
+
+/* Horloge */
+const fmtTime=d=>d.toLocaleTimeString(i18n.lang()==='en'?'en-GB':'fr-FR',{ hour:'2-digit', minute:'2-digit' });
+const fmtDate=d=>d.toLocaleDateString(i18n.lang()==='en'?'en-GB':'fr-FR',{ weekday:'long', day:'numeric', month:'long' });
+const fmtAgo=ts=>{ const m=Math.round((Date.now()-ts)/6e4); if(m<1) return i18n.lang()==='en'?'now':'maintenant'; if(m<60) return m+' min'; const hh=Math.round(m/60); if(hh<24) return hh+' h'; return new Date(ts).toLocaleDateString(i18n.lang()==='en'?'en-GB':'fr-FR',{ day:'numeric', month:'short' }); };
+function tick(){ const d=new Date(), tm=fmtTime(d);
+  $('#sbTime').textContent=tm; $('#lkTime').textContent=tm; $('#lkDate').textContent=fmtDate(d);
+  document.querySelectorAll('[data-clock]').forEach(e=>{ e.textContent=e.dataset.clock==='t'? tm : fmtDate(d); }); }
+setInterval(tick,1000*15);
+
+/* Réseau */
+function netState(){ const off=!navigator.onLine; ['#sbNet','#lkNet'].forEach(s=>$(s).classList.toggle('off',off)); }
+addEventListener('online',()=>{ netState(); bus.emit('net','online'); }); addEventListener('offline',()=>{ netState(); bus.emit('net','offline'); });
+
+/* Dynamic Island (messages courts) */
+let islandT=0;
+function island(msg){ const e=$('#island'); e.textContent=msg; e.classList.add('on'); clearTimeout(islandT); islandT=setTimeout(()=>e.classList.remove('on'),2200); }
+
+/* Dialogue de confirmation (dans la page) */
+function confirmDlg(title,body,yes){ return new Promise(res=>{ const d=$('#dlg'); $('#dlgT').textContent=title; $('#dlgP').textContent=body; $('#dlgYes').textContent=yes; d.hidden=false; $('#dlgNo').focus();
+  const done=v=>{ d.hidden=true; $('#dlgYes').onclick=$('#dlgNo').onclick=null; res(v); }; $('#dlgYes').onclick=()=>done(true); $('#dlgNo').onclick=()=>done(false); }); }
+
+/* ---------- Écran d'accueil ---------- */
+function iconEl(a,big){ return h('div',{ class:'icon '+(a.color||'c-gris'), html:a.icon||'<svg viewBox="0 0 24 24"><text x="12" y="16.5" text-anchor="middle" font-size="12" font-weight="700" fill="#fff">'+(apps.label(a)[0]||'?').replace(/[<>&"']/g,'')+'</text></svg>' }); }
+function appTile(id,where){ const a=apps.get(id); if(!a) return null;
+  const b=h('button',{ class:'app', 'data-id':id, 'data-where':where, 'aria-label':apps.label(a) }, iconEl(a), h('span',{ class:'label' },apps.label(a)));
+  if(id==='astuces' && !storage.get('tipsSeen',false)) b.querySelector('.icon').append(h('span',{ class:'badge' },'1'));
+  return b; }
+function widgetClock(){ return h('div',{ class:'widget w-clock', role:'img', 'aria-label':'Horloge' }, h('small',{},t('today')), h('div',{},h('div',{ class:'t', 'data-clock':'t' },fmtTime(new Date())),h('div',{ class:'d', 'data-clock':'d' },fmtDate(new Date())))); }
+function widgetSys(){ const pass=tests.filter(x=>x.pass).length, all=tests.length;
+  return h('button',{ class:'widget w-sys', onclick:e=>openApp('moniteur',e.currentTarget) }, h('small',{},'Aypona OS'), h('div',{ class:'v' },'v'+VERSION),
+    h('ul',{}, h('li',{},h('i',{ class:'dot'+(pass===all?'':' bad') }),t('tests')+' '+pass+'/'+all),
+      h('li',{},h('i',{ class:'dot'+(storage.persistent?'':' warn') }),t('storage')+' : '+(storage.persistent?t('saved'):t('notSaved'))),
+      h('li',{},h('i',{ class:'dot'+(navigator.onLine?'':' warn') }),navigator.onLine?t('online'):t('offline')))); }
+function renderHome(){
+  const l=layout.repair(); if(JSON.stringify(l)!==JSON.stringify(layout.get())) storage.set('layout',l);
+  const pages=$('#pages'), keep=pages.scrollLeft; pages.innerHTML='';
+  const g1=h('div',{ class:'grid' }, widgetClock(), widgetSys(), l.grid.map(id=>appTile(id,'grid')));
+  pages.append(h('div',{ class:'page' },g1));
+  const installed=l.grid.filter(id=>!SYSTEM_APPS[id]);
+  pages.append(h('div',{ class:'page' }, installed.length? h('div',{ class:'grid' }) : h('div',{ class:'empty' },h('b',{},t('noApps')),h('p',{},t('noAppsTxt')))));
+  const dock=$('#dock'); dock.innerHTML=''; l.dock.forEach(id=>dock.append(appTile(id,'dock')));
+  const dots=$('#dots'); dots.innerHTML=''; [...pages.children].forEach((_,k)=>dots.append(h('button',{ 'aria-label':'Page '+(k+1), onclick:()=>pages.scrollTo({ left:k*pages.clientWidth, behavior:'smooth' }) })));
+  pages.scrollLeft=keep; syncDots(); renderBadge();
+}
+function syncDots(){ const p=$('#pages'), k=Math.round(p.scrollLeft/Math.max(1,p.clientWidth)); [...$('#dots').children].forEach((d,i)=>d.classList.toggle('on',i===k)); }
+$('#pages').addEventListener('scroll',syncDots,{ passive:true });
+function renderBadge(){ const n=notify.list().length, c=$('#sbCount'); c.hidden=!n; c.textContent=n>9?'9+':n; }
+
+/* Ouverture d'app depuis son icône */
+let current=null;
+function openApp(id,fromEl){
+  const a=apps.get(id); if(!a||editing) return;
+  if(!a.system){ island(apps.label(a)); return; }
+  const win=$('#win'), body=$('#winBody'); body.innerHTML=''; body.scrollTop=0;
+  const dr=device.getBoundingClientRect(), r=(fromEl||device).getBoundingClientRect();
+  win.style.setProperty('--dx',((r.left+r.width/2)-(dr.left+dr.width/2))+'px'); win.style.setProperty('--dy',((r.top+r.height/2)-(dr.top+dr.height/2))+'px');
+  current={ id, from:fromEl }; a.open(body); win.hidden=false; win.classList.remove('closing'); win.classList.add('opening'); device.classList.add('dim');
+  bus.emit('app:open',id); setTimeout(()=>{ const f=body.querySelector('button,input,[tabindex]'); if(f) f.focus({ preventScroll:true }); },60);
+}
+function closeApp(){ if(!current) return; const win=$('#win'), id=current.id, from=current.from;
+  if(from&&from.isConnected){ const dr=device.getBoundingClientRect(), r=from.getBoundingClientRect(); win.style.setProperty('--dx',((r.left+r.width/2)-(dr.left+dr.width/2))+'px'); win.style.setProperty('--dy',((r.top+r.height/2)-(dr.top+dr.height/2))+'px'); }
+  win.classList.remove('opening'); win.classList.add('closing'); device.classList.remove('dim'); current=null; bus.emit('app:close',id);
+  setTimeout(()=>{ win.hidden=true; win.classList.remove('closing'); renderHome(); },280); }
+$('#winZone').addEventListener('click',closeApp);
+$('#winZone').addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); closeApp(); } });
+swipeUp($('#winZone'),closeApp);
+
+/* Geste : glisser vers le haut sur une zone */
+function swipeUp(el,fn){ let y0=null; el.addEventListener('pointerdown',e=>{ y0=e.clientY; el.setPointerCapture&&el.setPointerCapture(e.pointerId); });
+  el.addEventListener('pointerup',e=>{ if(y0!=null&&y0-e.clientY>40) fn(); y0=null; }); el.addEventListener('pointercancel',()=>{ y0=null; }); }
+
+/* Appui long, mode édition et glisser-déposer */
+let editing=false, press=null, drag=null;
+function setEditing(on){ editing=on; $('#home').classList.toggle('editing',on); $('#editDone').hidden=!on; if(on) island(t('editHint')); bus.emit('home:edit',on); }
+$('#editDone').addEventListener('click',()=>setEditing(false));
+const homeEl=$('#home');
+homeEl.addEventListener('pointerdown',e=>{
+  const tile=e.target.closest('.app'); if(!tile) return;
+  if(editing){ startDrag(tile,e); return; }
+  press={ tile, x:e.clientX, y:e.clientY, timer:setTimeout(()=>{ press=null; setEditing(true); startDrag(tile,e); },520) };
+});
+homeEl.addEventListener('pointermove',e=>{
+  if(press&&Math.hypot(e.clientX-press.x,e.clientY-press.y)>10){ clearTimeout(press.timer); press=null; }
+  if(!drag) return; const dr=device.getBoundingClientRect(); drag.ghost.style.left=(e.clientX-dr.left)+'px'; drag.ghost.style.top=(e.clientY-dr.top)+'px';
+  const under=document.elementFromPoint(e.clientX,e.clientY), over=under&&under.closest('.app');
+  document.querySelectorAll('.app.drop').forEach(x=>x.classList.remove('drop')); if(over&&over!==drag.tile) over.classList.add('drop'); drag.over=over&&over!==drag.tile? over : null;
+});
+function endPress(e){ if(press){ clearTimeout(press.timer); const tile=press.tile; press=null; if(e.type==='pointerup') openApp(tile.dataset.id,tile.querySelector('.icon')); }
+  if(drag){ const { tile, over, ghost }=drag; ghost.remove(); tile.classList.remove('lifted'); document.querySelectorAll('.app.drop').forEach(x=>x.classList.remove('drop')); drag=null;
+    if(over){ const l=layout.repair(), a={ id:tile.dataset.id, w:tile.dataset.where }, b={ id:over.dataset.id, w:over.dataset.where }; const ia=l[a.w].indexOf(a.id), ib=l[b.w].indexOf(b.id); l[a.w][ia]=b.id; l[b.w][ib]=a.id; layout.set(l); renderHome(); island(t('moved')); } } }
+homeEl.addEventListener('pointerup',endPress); homeEl.addEventListener('pointercancel',endPress);
+function startDrag(tile,e){ const dr=device.getBoundingClientRect(); const ghost=tile.querySelector('.icon').cloneNode(true); ghost.classList.add('drag-ghost'); ghost.style.left=(e.clientX-dr.left)+'px'; ghost.style.top=(e.clientY-dr.top)+'px'; device.append(ghost); tile.classList.add('lifted'); drag={ tile, ghost, over:null }; }
+homeEl.addEventListener('contextmenu',e=>e.preventDefault());
+homeEl.addEventListener('keydown',e=>{ const tile=e.target.closest&&e.target.closest('.app'); if(tile&&(e.key==='Enter'||e.key===' ')){ e.preventDefault(); openApp(tile.dataset.id,tile.querySelector('.icon')); } });
+
+/* Glisser vers le bas : notifications (depuis le haut) ou recherche (depuis le milieu) */
+(function pullDown(){ let s=null; homeEl.addEventListener('touchstart',e=>{ if(editing||e.touches.length!==1) return; const r=device.getBoundingClientRect(), y=e.touches[0].clientY-r.top; s={ y0:e.touches[0].clientY, x0:e.touches[0].clientX, top:y<64 }; },{ passive:true });
+  homeEl.addEventListener('touchend',e=>{ if(!s) return; const tch=e.changedTouches[0], dy=tch.clientY-s.y0, dx=Math.abs(tch.clientX-s.x0); if(dy>70&&dx<50){ s.top? openCenter() : openSpot(); } s=null; },{ passive:true }); })();
+
+/* ---------- Spotlight ---------- */
+function openSpot(){ const s=$('#spot'); s.hidden=false; s.classList.remove('enter'); void s.offsetWidth; s.classList.add('enter'); $('#spotInput').value=''; renderSpot(''); setTimeout(()=>$('#spotInput').focus(),30); bus.emit('spotlight:open'); }
+function closeSpot(){ $('#spot').hidden=true; }
+const SETTING_ENTRIES=()=>[ { k:'wallpaper', go:'wallpaper' }, { k:'language', go:'general' }, { k:'motion', go:'general' }, { k:'lockNow', go:'root' }, { k:'about', go:'about' }, { k:'reset', go:'general' } ];
+function hl(text,q){ if(!q) return text; const i=text.toLowerCase().indexOf(q.toLowerCase()); if(i<0) return text; return h('span',{},text.slice(0,i),h('mark',{},text.slice(i,i+q.length)),text.slice(i+q.length)); }
+function renderSpot(q){ const box=$('#spotRes'); box.innerHTML=''; q=q.trim();
+  const all=apps.all(), list=Object.values(all).filter(a=>!q||apps.label(a).toLowerCase().includes(q.toLowerCase()));
+  list.forEach(a=>box.append(h('button',{ class:'res', onclick:e=>{ closeSpot(); openApp(a.id); } }, iconEl(a), h('div',{},h('div',{},hl(apps.label(a),q)),h('small',{},t('appSearch'))))));
+  if(q){ SETTING_ENTRIES().filter(s=>t(s.k).toLowerCase().includes(q.toLowerCase())).forEach(s=>box.append(h('button',{ class:'res', onclick:()=>{ closeSpot(); openApp('reglages'); settingsGo(s.go); } }, iconEl(SYSTEM_APPS.reglages), h('div',{},h('div',{},hl(t(s.k),q)),h('small',{},t('settingsSearch')+' · '+t('reglages')))))); }
+  if(!box.children.length) box.append(h('p',{ class:'muted' },t('noResults')));
+}
+$('#spotInput').addEventListener('input',e=>renderSpot(e.target.value));
+$('#spotInput').addEventListener('keydown',e=>{ if(e.key==='Enter'){ const f=$('#spotRes .res'); if(f) f.click(); } });
+$('#spotClose').addEventListener('click',closeSpot); $('#searchPill').addEventListener('click',openSpot);
+
+/* ---------- Centre de notifications ---------- */
+function noteCard(n){ const a=apps.get(n.app)||{ color:'c-aypona', icon:SVG.aypona };
+  return h('div',{ class:'note' }, h('div',{ class:'ic '+(n.app==='aypona'?'c-aypona':a.color), html:n.app==='aypona'?SVG.aypona:a.icon }), h('b',{},n.title), h('time',{},fmtAgo(n.t)), h('p',{},n.body)); }
+function openCenter(){ const c=$('#center'); c.hidden=false; c.classList.remove('enter'); void c.offsetWidth; c.classList.add('enter'); renderCenter(); bus.emit('center:open'); }
+function closeCenter(){ $('#center').hidden=true; }
+function renderCenter(){ const box=$('#centerList'), list=notify.list(); box.innerHTML=''; if(!list.length) box.append(h('p',{ class:'muted' },t('noNotifs'))); list.forEach(n=>box.append(noteCard(n))); $('#centerClear').hidden=!list.length; }
+$('#sbBell').addEventListener('click',openCenter); $('#centerClose').addEventListener('click',closeCenter); swipeUp($('#centerZone'),closeCenter);
+$('#centerZone').addEventListener('click',closeCenter);
+$('#centerClear').addEventListener('click',()=>{ notify.clear(); renderCenter(); });
+bus.on('notify',()=>{ renderBadge(); if(!$('#lock').hidden) renderLock(); });
+bus.on('notify:clear',()=>{ renderBadge(); renderLock(); });
+
+/* ---------- Écran verrouillé ---------- */
+function renderLock(){ const box=$('#lkNotes'); box.innerHTML=''; notify.list().slice(0,3).forEach(n=>box.append(noteCard(n))); }
+function lockNow(){ closeSpot(); closeCenter(); if(current){ $('#win').hidden=true; current=null; device.classList.remove('dim'); } setEditing(false); renderLock(); const l=$('#lock'); l.hidden=false; l.classList.remove('gone'); $('#home').hidden=true; bus.emit('lock'); }
+function unlock(){ const l=$('#lock'); l.classList.add('gone'); $('#home').hidden=false; renderHome(); bus.emit('unlock'); setTimeout(()=>{ l.hidden=true; },480); }
+$('#unlockBtn').addEventListener('click',unlock);
+(function lockSwipe(){ let y0=null; const l=$('#lock'); l.addEventListener('pointerdown',e=>{ y0=e.clientY; }); l.addEventListener('pointerup',e=>{ if(y0!=null&&y0-e.clientY>60) unlock(); y0=null; }); })();
+
+/* Clavier (ordinateur) */
+addEventListener('keydown',e=>{
+  if(!$('#dlg').hidden){ if(e.key==='Escape') $('#dlgNo').click(); return; }
+  if(e.key==='Escape'){ if(!$('#spot').hidden) closeSpot(); else if(!$('#center').hidden) closeCenter(); else if(current) closeApp(); else if(editing) setEditing(false); return; }
+  if(!$('#lock').hidden){ if(e.key==='Enter'||e.key===' '||e.key==='ArrowUp'){ e.preventDefault(); unlock(); } return; }
+  if(e.target.tagName==='INPUT') return;
+  if(e.key==='/'||((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='k')){ e.preventDefault(); openSpot(); }
+});
+
+/* =====================================================================
+   APPS SYSTÈME
+   ===================================================================== */
+function nav(title,backTo){ return h('div',{ class:'nav' }, backTo? h('button',{ class:'back', onclick:backTo.fn, html:SVG.back+'<span>'+backTo.label+'</span>' }) : h('span'), h('h1',{},title), h('span')); }
+function row(o){ const tag=o.onclick?'button':'div';
+  return h(tag,{ class:'row'+(o.cls?' '+o.cls:''), onclick:o.onclick, role:o.role, 'aria-checked':o.checked, id:o.id },
+    o.icon? h('span',{ class:'ri '+o.color, html:o.icon }) : null, h('span',{ class:'rl' },o.label,o.sub? h('small',{},o.sub):null), o.value!=null? h('span',{ class:'rv' },o.value):null, o.toggle||null, o.onclick&&!o.toggle&&!o.cls? h('span',{ html:SVG.chev }):null); }
+function sec(title,kids,foot){ return h('div',{ class:'sec' }, title? h('h2',{},title):null, h('div',{ class:'list' },kids), foot? h('p',{ class:'foot' },foot):null); }
+
+/* Réglages (navigation interne) */
+let settingsGo=()=>{};
+function Settings(body){
+  const go=page=>{ body.innerHTML=''; body.scrollTop=0; body.append(PAGES[page]()); i18n.apply(body); const f=body.querySelector('.back,.row'); if(f) f.focus({ preventScroll:true }); };
+  settingsGo=go;
+  const backRoot={ label:t('reglages'), fn:()=>go('root') };
+  const toggle=(key)=>{ const s=h('span',{ class:'switch', role:'switch', 'aria-checked':String(!!settings.get(key)) }); return s; };
+  const PAGES={
+    root:()=>h('div',{}, nav(''), h('div',{ class:'view' }, h('div',{ class:'big' },t('reglages')),
+      h('div',{ class:'list' }, row({ icon:SVG.aypona, color:'c-aypona', label:'Aypona OS', sub:'v'+VERSION+' · '+t('build')+' '+BUILD, onclick:()=>go('about') })),
+      sec(null,[ row({ icon:SVG.image, color:'c-bleu', label:t('wallpaper'), onclick:()=>go('wallpaper') }), row({ icon:SVG.reglages, color:'c-gris', label:t('general'), onclick:()=>go('general') }) ]),
+      sec(null,[ row({ icon:SVG.lock, color:'c-violet', label:t('lockNow'), onclick:()=>{ closeApp(); setTimeout(lockNow,300); } }) ]))),
+    wallpaper:()=>{ const cur=settings.get('wallpaper'), names={ aube:'Aube', ville:'Aypona City', spatial:'Spatial', emeraude:'Émeraude', or:'Or Aypona' };
+      return h('div',{}, nav(t('wallpaper'),backRoot), h('div',{ class:'view' }, h('div',{ class:'wps' }, Object.keys(names).map(k=>h('button',{ class:'wp', 'aria-pressed':String(k===cur), onclick:()=>{ settings.set('wallpaper',k); go('wallpaper'); } }, h('span',{ class:'sw' },h('span',{ class:'wall', 'data-wp':k })), names[k]))))); },
+    general:()=>h('div',{}, nav(t('general'),backRoot), h('div',{ class:'view' },
+      sec(t('language'),[ ['fr','Français'],['en','English'] ].map(([k,n])=>row({ label:n, value:settings.get('lang')===k?'✓':'', onclick:()=>{ settings.set('lang',k); go('general'); }, cls:'opt' }))),
+      sec(null,[ row({ icon:SVG.motion, color:'c-vert', label:t('motion'), toggle:toggle('reduceMotion'), onclick:()=>{ settings.set('reduceMotion',!settings.get('reduceMotion')); go('general'); } }) ]),
+      sec(null,[ row({ label:t('reset'), cls:'danger', onclick:async()=>{ if(await confirmDlg(t('resetQ'),t('resetP'),t('resetYes'))){ storage.wipe(); cfg={ ...DEFAULTS }; storage.set('schema',SCHEMA); closeApp(); applySettings(); renderHome(); island(t('resetDone')); } } }) ]))),
+    about:()=>{ const pass=tests.filter(x=>x.pass).length;
+      return h('div',{}, nav(t('about'),backRoot), h('div',{ class:'view' },
+        sec(null,[ row({ label:t('version'), value:VERSION }), row({ label:t('build'), value:BUILD }), row({ label:'Schéma de données', value:String(SCHEMA) }), row({ label:t('tests'), value:pass+'/'+tests.length }),
+          row({ label:t('storage'), value:storage.persistent? (storage.usage()/1024).toFixed(1)+' Ko' : t('notSaved') }), row({ label:t('installed'), value:String(Object.values(apps.all()).filter(a=>!a.system).length) }) ]),
+        h('div',{ class:'sec' }, h('h2',{},'Bureau 102'), h('div',{ class:'prose' }, h('p',{},'Aypona OS est construit au bureau 102 d’Aypona City par Polaris, Architecte d’Aypona OS (AYP-102-2610-0013).'),
+          h('p',{},'Cette version repart de l’ancienne base v0.6.0 : la coquille et son esthétique sont gardées, les comptes, licences et codes vérifiés dans le navigateur sont retirés, et tout ce qui demandait un serveur attend son retour.'))),
+        sec(null,[ h('a',{ class:'row link', href:'../index.html' },t('city')) ]))); },
+  };
+  go('root');
+}
+
+/* App Store (vitrine du système, le magasin appartient au chantier B03) */
+function StoreApp(body){
+  body.append(nav(t('store')), h('div',{ class:'view' }, h('div',{ class:'big' },t('store')),
+    h('div',{ class:'prose' }, h('b',{},t('storeTitle')), h('p',{},t('storeP'))),
+    sec(null,[ row({ label:t('installed'), value:String(Object.values(apps.all()).filter(a=>!a.system).length) }) ])));
+}
+
+/* Moniteur : santé du noyau */
+function Monitor(body){
+  const draw=()=>{ body.innerHTML=''; const pass=tests.filter(x=>x.pass).length;
+    const mods=[ ['Bus d’événements','bus',true], ['Stockage local','storage',storage.persistent], ['Migrations','v'+(migration?migration.from:0)+' → v'+SCHEMA,true], ['Réglages','settings',true], ['Langues','FR · EN',true], ['Notifications','notify',true], ['Registre des apps',Object.keys(apps.all()).length+' apps',true], ['Disposition de l’accueil','layout',true],
+      ['Comptes et synchronisation','en attente d’un serveur',null], ['Notifications push','en attente d’un serveur',null] ];
+    body.append(nav(t('moniteur')), h('div',{ class:'view' }, h('div',{ class:'big' },t('moniteur')),
+      h('div',{ class:'sec' }, h('h2',{},t('modules')), h('div',{ class:'list' }, mods.map(([n,v,st])=>row({ label:h('span',{ style:'display:flex;gap:8px;align-items:center' },h('i',{ class:'dot'+(st===null?' warn':st?'':' bad') }),n), value:h('span',{ class:'mono' },v) })))),
+      h('div',{ class:'sec' }, h('h2',{},t('tests')+' · '+pass+'/'+tests.length), h('div',{ class:'list' }, tests.map(x=>row({ label:h('span',{ style:'display:flex;gap:8px;align-items:center' },h('i',{ class:'dot'+(x.pass?'':' bad') }),x.name), value:x.pass?'OK':'Échec' })))),
+      h('div',{ class:'sec' }, h('h2',{},t('events')), h('ul',{ class:'log' }, bus.journal().slice(0,25).map(j=>h('li',{},h('time',{},new Date(j.t).toLocaleTimeString('fr-FR')),h('span',{ class:'mono' },j.ev+(j.data?' · '+j.data:''))))))));
+  };
+  draw();
+}
+
+/* Astuces : les gestes du système */
+function Tips(body){
+  storage.set('tipsSeen',true);
+  const tips=[ ['Ouvrir une app','Touche son icône. Pour revenir à l’accueil, glisse vers le haut sur la barre du bas, ou appuie sur Échap.'],
+    ['Réorganiser l’accueil','Appui long sur une icône : elles se mettent à trembler. Glisse une icône sur une autre pour les échanger, même entre la grille et le dock, puis touche OK.'],
+    ['Rechercher','Touche « Rechercher » au-dessus du dock, glisse vers le bas au milieu de l’écran, ou tape / sur un clavier. Les apps et les réglages sont trouvés.'],
+    ['Notifications','Touche la cloche en haut à droite, ou glisse vers le bas depuis le haut de l’écran.'],
+    ['Verrouiller','Réglages, puis Verrouiller l’écran. Glisse vers le haut ou appuie sur Entrée pour revenir.'] ];
+  body.append(nav(t('astuces')), h('div',{ class:'view' }, h('div',{ class:'big' },t('astuces')), ...tips.map(([a,b])=>h('div',{ class:'prose' },h('b',{},a),h('p',{},b)))));
+}
+
+/* =====================================================================
+   DÉMARRAGE
+   ===================================================================== */
+function boot(){
+  const fill=$('#bootFill'), log=$('#bootLog'), steps=[];
+  const step=(txt,fn)=>steps.push([txt,fn]);
+  step('Migrations du stockage',()=>{ migration=migrate(); });
+  step('Réglages et langue',()=>{ applySettings(); });
+  step('Registre des apps',()=>{ layout.set(layout.repair()); });
+  step('Tests du noyau',()=>{ tests=runTests(); Aypona.tests=tests; });
+  step('Écran d’accueil',()=>{ renderHome(); tick(); netState(); });
+  const reduced=settings.get('reduceMotion')||matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let k=0; const next=()=>{ if(k>=steps.length){ finish(); return; } const [txt,fn]=steps[k]; log.textContent=txt+'…'; try{ fn(); }catch(e){ console.error(e); } k++; fill.style.width=(k/steps.length*100)+'%'; setTimeout(next,reduced?0:170); };
+  const finish=()=>{ const n=(storage.get('boots',0)||0)+1; storage.set('boots',n);
+    if(n===1) notify.add({ title:t('welcomeT'), body:t('welcomeP') }); else notify.add({ title:t('rebootT'), body:t('rebootP',{ n }) });
+    bus.emit('boot',{ version:VERSION, tests:tests.filter(x=>x.pass).length+'/'+tests.length });
+    renderLock(); $('#lock').hidden=false; setTimeout(()=>{ $('#boot').classList.add('out'); setTimeout(()=>{ $('#boot').hidden=true; },460); },reduced?0:260); };
+  setTimeout(next,reduced?0:500);
+}
+boot();
+})();
+</script>
+</body>
+</html>
