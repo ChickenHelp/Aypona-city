@@ -1,0 +1,16 @@
+{
+  "name": "aypona-city",
+  "private": true,
+  "type": "module",
+  "description": "Aypona City : page unique assemblée depuis les fragments de src/ (une zone par dossier).",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "decouper": "node scripts/assemblage.mjs decouper",
+    "verifier": "node scripts/assemblage.mjs verifier && vite build && cmp dist/index.html index.html && echo 'dist/index.html identique à index.html'"
+  },
+  "devDependencies": {
+    "playwright": "1.56.1",
+    "vite": "5.4.10"
+  }
+}

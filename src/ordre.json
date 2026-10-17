@@ -1,0 +1,167 @@
+[
+ {
+  "fichier": "page/01-entete.html",
+  "debut": "<!doctype html><html><head><meta charset=utf8><meta name=viewport cont"
+ },
+ {
+  "fichier": "atelier-101/styles.css",
+  "debut": "/* Layout: plein écran 3D, HUD en verre dépoli flottant aux bords (est"
+ },
+ {
+  "fichier": "page/02-fin-styles.html",
+  "debut": "</style>"
+ },
+ {
+  "fichier": "atelier-101/interface.html",
+  "debut": "<div id=\"app\">"
+ },
+ {
+  "fichier": "page/03-ouverture-script.html",
+  "debut": "<script>"
+ },
+ {
+  "fichier": "socle/donnees.js",
+  "debut": "/* ---------- Données Aypona OS ---------- */"
+ },
+ {
+  "fichier": "presidence/presidence.js",
+  "debut": "/* ---------- PRÉSIDENCE DU SIÈGE (registre de passation) ----------"
+ },
+ {
+  "fichier": "presidence/atelier.js",
+  "debut": "/* ---------- ATELIER 101 · Architecte de la Ville (décret n°3 du mand"
+ },
+ {
+  "fichier": "presidence/conseil.js",
+  "debut": "/* ---------- CONSEIL DES ARCHITECTES · bureaux 102 et 103 (décret n°2"
+ },
+ {
+  "fichier": "presidence/transition.js",
+  "debut": "/* ---------- TRANSITION GITHUB & CLAUDE CODE · bureau 104 (décret n°3"
+ },
+ {
+  "fichier": "presidence/courrier.js",
+  "debut": "/* ---------- BUREAU DU COURRIER · sous-sol, salle 3 (décret n°3 du ma"
+ },
+ {
+  "fichier": "socle/sauvegarde-locale.js",
+  "debut": "/* ---------- Sauvegarde locale ---------- */"
+ },
+ {
+  "fichier": "atelier-101/moteur-3d.js",
+  "debut": "/* ---------- Three.js ---------- */"
+ },
+ {
+  "fichier": "atelier-101/sol-routes-ciel.js",
+  "debut": "/* ---------- Sol, routes, lampadaires ---------- */"
+ },
+ {
+  "fichier": "atelier-101/personnages.js",
+  "debut": "/* ---------- Personnages ---------- */"
+ },
+ {
+  "fichier": "atelier-101/quartiers-lots.js",
+  "debut": "/* ---------- Quartiers & lots ---------- */"
+ },
+ {
+  "fichier": "atelier-101/siege.js",
+  "debut": "/* ---------- Le Siège (accueil + 3 bureaux) ---------- */"
+ },
+ {
+  "fichier": "atelier-101/joueur.js",
+  "debut": "/* ---------- Joueur ---------- */"
+ },
+ {
+  "fichier": "bureau-103/chantiers.js",
+  "debut": "/* ---------- Restructuration : bureaux de construction & agents -----"
+ },
+ {
+  "fichier": "socle/store-base.js",
+  "debut": "const store = { bureaux:new Map(), agents:new Map(), apps:new Map(), a"
+ },
+ {
+  "fichier": "bureau-103/agents.js",
+  "debut": "/* Statut, matricule, durée */"
+ },
+ {
+  "fichier": "bureau-102/apps.js",
+  "debut": "/* ---------- Réactivation des apps du nouvel Aypona OS ----------"
+ },
+ {
+  "fichier": "bureau-103/agents-en-mission.js",
+  "debut": "/* Agents en mission : ils tournent autour de leur bureau */"
+ },
+ {
+  "fichier": "bureau-103/production.js",
+  "debut": "/* ---------- Production des chantiers ----------"
+ },
+ {
+  "fichier": "atelier-101/ville-videe.js",
+  "debut": "/* ---------- Ville vidée (restructuration) ---------- */"
+ },
+ {
+  "fichier": "socle/interface-panneaux.js",
+  "debut": "/* ---------- UI ---------- */"
+ },
+ {
+  "fichier": "socle/panneau-accueil.js",
+  "debut": "function panelReception(){"
+ },
+ {
+  "fichier": "atelier-101/panneau-101.js",
+  "debut": "function statRow(rows){ return el('div',{class:'stats'},rows.map(([k,v"
+ },
+ {
+  "fichier": "bureau-103/panneau-bureaux.js",
+  "debut": "function bureauxSorted(){ return [...store.bureaux.values()].sort((a,b"
+ },
+ {
+  "fichier": "bureau-103/panneau-103.js",
+  "debut": "function agentRow(a){"
+ },
+ {
+  "fichier": "socle/panneaux-sous-sol.js",
+  "debut": "function fmtDate(t){ try { return new Date(t).toLocaleString('fr-FR',{"
+ },
+ {
+  "fichier": "bureau-102/panneau-102.js",
+  "debut": "function panelOS(){"
+ },
+ {
+  "fichier": "presidence/releases.js",
+  "debut": "const RELEASES = ["
+ },
+ {
+  "fichier": "socle/panneau-mises-a-jour.js",
+  "debut": "function panelUpdates(){"
+ },
+ {
+  "fichier": "presidence/panneaux-presidence.js",
+  "debut": "function panelPresident(){"
+ },
+ {
+  "fichier": "presidence/panneaux-courrier.js",
+  "debut": "const draftMsg={ a:null, objet:'', texte:'' };"
+ },
+ {
+  "fichier": "bureau-102/panneaux-app-store.js",
+  "debut": "/* Bureau 102 · Polaris (v4.8) : App Store du catalogue neuf (décret n"
+ },
+ {
+  "fichier": "socle/entrees.js",
+  "debut": "/* ---------- Entrées ---------- */"
+ },
+ {
+  "fichier": "atelier-101/hud-minimap.js",
+  "debut": "/* ---------- HUD (Atelier 101 · Electra, v2.9) : bas du bloc du haut "
+ },
+ {
+  "fichier": "atelier-101/boucle.js",
+  "debut": "/* ---------- Boucle ---------- */"
+ },
+ {
+  "fichier": "page/04-fin.html",
+  "debut": "Promise.race(",
+  "decalage": -1
+ }
+]
