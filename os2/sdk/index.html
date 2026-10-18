@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>Kit Aypona OS 2</title>
+<style>
+  :root{--ink:#fff;--ink-2:rgba(235,235,245,.7);--line:rgba(255,255,255,.13);--panel:#15161f;--gold:#f5d061;--blue:#4da3ff;--ok:#30d158;--bad:#ff6b61;
+    --ui:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,Roboto,sans-serif;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+  *{box-sizing:border-box}
+  body{margin:0;background:radial-gradient(ellipse 80% 40% at 50% 0%,#1a1f5a 0%,transparent 70%),#05061a;color:var(--ink);font:1rem/1.6 var(--ui)}
+  main{max-width:46rem;margin:0 auto;padding:2rem 1rem 4rem;display:grid;gap:2rem}
+  header{display:grid;gap:.4rem}
+  .sur{font:600 .75rem var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--gold)}
+  h1{margin:0;font-size:clamp(1.9rem,6vw,2.6rem);line-height:1.1}
+  h2{margin:0 0 .6rem;font-size:1.3rem}
+  p{margin:0 0 .7rem;color:var(--ink-2)}
+  a{color:var(--blue)}
+  section{background:rgba(22,24,40,.78);border:1px solid var(--line);border-radius:1rem;padding:1.2rem}
+  pre,code{font-family:var(--mono);font-size:.85rem}
+  pre{background:#0b0c14;border:1px solid var(--line);border-radius:.7rem;padding:.9rem;overflow:auto;margin:0 0 .8rem;line-height:1.5}
+  table{width:100%;border-collapse:collapse;font-size:.9rem}
+  th,td{text-align:left;padding:.5rem .4rem;border-top:1px solid var(--line);vertical-align:top}
+  th{color:var(--ink-2);font-weight:600}
+  td code{color:var(--gold)}
+  .tab-wrap{overflow-x:auto}
+  textarea{width:100%;min-height:15rem;background:#0b0c14;color:#fff;border:1px solid var(--line);border-radius:.7rem;padding:.8rem;font:.85rem/1.5 var(--mono)}
+  button{font:inherit;font-weight:600;padding:.6rem 1.1rem;border-radius:.7rem;border:0;background:#0a84ff;color:#fff;min-height:44px;cursor:pointer}
+  ul.msgs{list-style:none;padding:0;margin:.8rem 0 0;display:grid;gap:.35rem}
+  ul.msgs li{padding:.5rem .7rem;border-radius:.6rem;background:rgba(255,69,58,.14);color:#ffb3ad}
+  ul.msgs li.ok{background:rgba(48,209,88,.14);color:#9ff0b5}
+  .dom{display:inline-flex;gap:.35rem;align-items:center;font-size:.8rem;font-weight:600;padding:.1rem .55rem;border-radius:1rem;background:rgba(255,255,255,.08)}
+  .dom i{width:.5rem;height:.5rem;border-radius:50%}
+  :focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <span class="sur">Bureau 102 · Kit des développeurs</span>
+    <h1>Kit Aypona OS 2</h1>
+    <p>Tout ce qu'il faut pour qu'une app parle au système : un fichier JavaScript, un protocole de messages, un manifeste. L'app tourne dans un cadre isolé ; elle ne voit que ce que le système lui donne.</p>
+  </header>
+
+  <section aria-labelledby="s1">
+    <h2 id="s1">1. Brancher le kit</h2>
+    <p>Copiez <a href="aypona.js" download>aypona.js</a> à côté de votre page, puis :</p>
+<pre>&lt;script src="aypona.js"&gt;&lt;/script&gt;
+&lt;script&gt;
+  const os = await Aypona.connecter();       // { systeme, version, langue, theme, app, permissions }
+  await Aypona.notifier('Bonjour', 'Depuis mon app');
+  await Aypona.fichiers.ecrire('note.txt', 'Contenu');
+  await Aypona.stockage.ecrire('score', 12);
+  Aypona.sur('langue', l =&gt; document.documentElement.lang = l);
+&lt;/script&gt;</pre>
+    <p>Essayez l'<a href="exemple.html">app d'exemple</a> depuis Aypona OS 2 : Réglages › Développeur › Essayer l'app d'exemple.</p>
+  </section>
+
+  <section aria-labelledby="s2">
+    <h2 id="s2">2. Protocole</h2>
+    <p>Le kit envoie <code>{ aypona: 2, type: 'connexion' }</code> à la fenêtre parente ; Aypona OS répond par un <code>MessageChannel</code> privé. Chaque requête porte un <code>id</code> ; la réponse revient avec <code>re</code>, <code>ok</code> et <code>data</code> ou <code>error</code>.</p>
+    <div class="tab-wrap"><table>
+      <thead><tr><th scope="col">Type</th><th scope="col">Données</th><th scope="col">Permission</th></tr></thead>
+      <tbody>
+        <tr><td><code>bonjour</code></td><td>—</td><td>aucune</td></tr>
+        <tr><td><code>notifier</code></td><td>titre, texte</td><td>notifications</td></tr>
+        <tr><td><code>fichiers.liste</code></td><td>—</td><td>fichiers</td></tr>
+        <tr><td><code>fichiers.lire</code></td><td>nom</td><td>fichiers</td></tr>
+        <tr><td><code>fichiers.ecrire</code></td><td>nom, contenu, mime (5 Mo au plus)</td><td>fichiers</td></tr>
+        <tr><td><code>fichiers.supprimer</code></td><td>nom</td><td>fichiers</td></tr>
+        <tr><td><code>stockage.lire</code> · <code>.ecrire</code> · <code>.supprimer</code></td><td>cle, valeur (256 Ko par app)</td><td>aucune</td></tr>
+        <tr><td><code>permission.etat</code> · <code>.demander</code></td><td>nom</td><td>—</td></tr>
+      </tbody>
+    </table></div>
+    <p>Événements poussés par le système : <code>{ evenement: 'langue' | 'theme', valeur }</code>. Limites : 40 requêtes par seconde, 6 Mo par message. Une app qui ne se connecte pas dans les 9 secondes se voit proposer l'ouverture dans un onglet.</p>
+    <p>Permissions : demandées au moment de l'usage (une fois, toujours, refuser) et seulement si elles figurent dans le manifeste. Erreurs : <code>permission-absente:&lt;nom&gt;</code>, <code>permission-refusee:&lt;nom&gt;</code>, <code>introuvable</code>, <code>doublon</code>, <code>trop-gros</code>, <code>plein</code>, <code>debit</code>, <code>delai</code>.</p>
+  </section>
+
+  <section aria-labelledby="s3">
+    <h2 id="s3">3. Manifeste v1 et domiciles</h2>
+    <p>Chaque app du catalogue neuf est décrite par un manifeste, validé par l'App Store de la ville avant 12 h d'audit de la Sécurité. Trois domiciles :
+      <span class="dom"><i style="background:#ff6fae"></i>privé</span> (adresse réglée sur l'appareil, jamais publiée),
+      <span class="dom"><i style="background:#5ef0ff"></i>service</span> (https),
+      <span class="dom"><i style="background:#f4f6ff"></i>public</span> (GitHub Pages en https, ou <code>apps/&lt;id&gt;/….html</code> publié avec le système).</p>
+    <label for="mf"><b>Valideur</b> (mêmes règles que l'App Store de la ville)</label>
+    <textarea id="mf" spellcheck="false"></textarea>
+    <div style="margin-top:.6rem"><button id="verif">Vérifier</button></div>
+    <ul class="msgs" id="msgs" aria-live="polite"></ul>
+  </section>
+</main>
+<script type="module">
+  import { valider, exemple } from '../js/manifeste.js';
+  const ta = document.getElementById('mf'), msgs = document.getElementById('msgs');
+  ta.value = JSON.stringify(exemple(), null, 2);
+  document.getElementById('verif').addEventListener('click', () => {
+    msgs.replaceChildren();
+    const li = (txt, ok) => { const e = document.createElement('li'); e.textContent = txt; if (ok) e.className = 'ok'; msgs.append(e); };
+    let m; try { m = JSON.parse(ta.value); } catch (e) { li('JSON invalide.'); return; }
+    const r = valider(m); if (r.ok) li('Manifeste valide.', true); else r.errors.forEach(x => li(x));
+  });
+</script>
+</body>
+</html>

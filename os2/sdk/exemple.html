@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Exemple du kit Aypona OS 2</title>
+<style>
+  :root{color-scheme:light;--ink:#14151f;--muted:#5b5e72;--accent:#0a84ff;--nativus:#1c9e70}
+  *{box-sizing:border-box}
+  body{margin:0;font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--ink);background:#f6f7fb}
+  main{max-width:34rem;margin:0 auto;padding:1.2rem 1rem 2rem;display:grid;gap:1rem}
+  h1{margin:0;font-size:1.4rem}
+  p{margin:0;color:var(--muted)}
+  .carte{background:#fff;border-radius:14px;padding:1rem;display:grid;gap:.6rem;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+  .carte h2{margin:0;font-size:1rem}
+  button{font:inherit;font-weight:600;padding:.6rem 1rem;border-radius:10px;border:0;background:var(--accent);color:#fff;min-height:44px;cursor:pointer}
+  button.gris{background:#e7e8ef;color:var(--ink)}
+  .rang{display:flex;flex-wrap:wrap;gap:.5rem}
+  input{font:inherit;padding:.55rem .7rem;border-radius:10px;border:1px solid #cfd2de;min-width:0;flex:1}
+  pre{margin:0;background:#14151f;color:#d6f5e8;border-radius:10px;padding:.7rem;font:13px/1.45 ui-monospace,Menlo,monospace;white-space:pre-wrap;overflow-wrap:anywhere;max-height:14rem;overflow:auto}
+  .badge{display:inline-block;font-size:.75rem;font-weight:700;padding:.1rem .5rem;border-radius:1rem;background:#e3f7ef;color:var(--nativus)}
+  :focus-visible{outline:3px solid #f5b400;outline-offset:2px}
+</style>
+</head>
+<body>
+<main>
+  <div><span class="badge">Exemple du kit · hors catalogue</span><h1>Bonjour, Aypona OS</h1><p id="etat">Connexion au système…</p></div>
+  <section class="carte" aria-labelledby="t1"><h2 id="t1">Notifications</h2><p>La première fois, Aypona OS vous demande la permission.</p>
+    <div class="rang"><button id="notif">Envoyer une notification</button></div></section>
+  <section class="carte" aria-labelledby="t2"><h2 id="t2">Fichiers de l'app</h2>
+    <div class="rang"><label for="txt" class="vh" style="position:absolute;left:-9999px">Texte</label><input id="txt" value="Écrit par l'exemple du kit"><button id="ecrire">Écrire note.txt</button></div>
+    <div class="rang"><button class="gris" id="lister">Lister</button><button class="gris" id="lire">Lire note.txt</button></div></section>
+  <section class="carte" aria-labelledby="t3"><h2 id="t3">Stockage privé</h2><p>Sans permission, 256 Ko par app.</p>
+    <div class="rang"><button id="compteur">Compteur : <span id="nb">…</span></button></div></section>
+  <section class="carte" aria-labelledby="t4"><h2 id="t4">Journal</h2><pre id="log" aria-live="polite"></pre></section>
+</main>
+<script src="aypona.js"></script>
+<script>
+  const log = (...a) => { const p = document.getElementById('log'); p.textContent = a.map(x => typeof x === 'string' ? x : JSON.stringify(x)).join(' ') + '\n' + p.textContent; };
+  const essai = f => async () => { try { log('✓', await f()); } catch (e) { log('✗', e.message); } };
+  Aypona.connecter().then(async info => {
+    document.getElementById('etat').textContent = info.systeme + ' ' + info.version + ' · langue ' + info.langue;
+    document.documentElement.lang = info.langue;
+    log('bonjour', info);
+    document.getElementById('nb').textContent = (await Aypona.stockage.lire('compteur')) || 0;
+  }).catch(e => { document.getElementById('etat').textContent = e.message === 'hors-aypona' ? 'Ouvrez cette page depuis Aypona OS 2 (Réglages › Développeur › Essayer l’app d’exemple).' : 'Erreur : ' + e.message; });
+  Aypona.sur('langue', l => { log('langue', l); document.documentElement.lang = l; });
+  Aypona.sur('theme', th => log('thème', th));
+  document.getElementById('notif').onclick = essai(() => Aypona.notifier('Exemple du kit', 'Notification envoyée à ' + new Date().toLocaleTimeString()));
+  document.getElementById('ecrire').onclick = essai(() => Aypona.fichiers.ecrire('note.txt', document.getElementById('txt').value));
+  document.getElementById('lister').onclick = essai(() => Aypona.fichiers.liste());
+  document.getElementById('lire').onclick = essai(() => Aypona.fichiers.lire('note.txt'));
+  document.getElementById('compteur').onclick = essai(async () => { const n = ((await Aypona.stockage.lire('compteur')) || 0) + 1; await Aypona.stockage.ecrire('compteur', n); document.getElementById('nb').textContent = n; return { compteur: n }; });
+</script>
+</body>
+</html>

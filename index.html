@@ -1538,19 +1538,24 @@ function panelOS(){
   // Bureau 102 · Polaris (v3.3, v4.8) : sur ordre du fondateur, le bureau 102 construit le système Aypona OS (noyau, interface, socle).
   // Le système est publié avec la ville, à l'adresse relative os/index.html ; les apps et l'App Store sortent de la mission.
   const OS_URL='os/index.html', openOS=()=>openHref(OS_URL);
+  const OS2_URL='os2/index.html'; // Bureau 102 · Polaris (v5.3) : Aypona OS 2 en aperçu dans os2/, os/ reste en ligne jusqu'à la bascule (décret n°2 du mandat V)
   const noyau=bureauOf('noyau'), inter=bureauOf('interface');
   const row=(b,key)=>{ const c=chantier(key); if(!b) return el('div',{},el('dt',{style:'color:'+c.css},'—'),el('dd',{},c.nom),el('dd',{},'Pas encore de bureau.'));
     const pp=bureauPts(b)/CHANTIER_PTS; return el('div',{},el('dt',{style:'color:'+c.css},b.id),el('dd',{},c.nom+' · '+(pp>=1?'terminé':fmtPct(pp))),el('dd',{style:'grid-column:2'},bar(pp,c.css))); };
   return { eyebrow:'Bureau 102 · 1er étage', title:"Architecte d'Aypona OS"+(store.agents.get(CONSEIL['102'].architecte)?' · '+store.agents.get(CONSEIL['102'].architecte).nom:''),
     body:[ conseilHead('102'),
       el('p',{},"Je construis le système Aypona OS : noyau, interface et socle. Décret n°2 du mandat IV : le catalogue est recréé de zéro, chaque app arrive avec un manifeste et un domicile (privé, service, public) ; les anciennes apps et l'univers lore sont aux archives."),
-      statRow([ ['Système','v0.2.0'], ['Apps publiées',appsSorted().filter(a=>appStatus(a)==='publiée').length], ['Tests du noyau',24] ]),
+      statRow([ ['Système en ligne','v0.2.0'], ['Aperçu','OS 2.0.0'], ['Tests d’OS 2',106] ]),
       el('a',{ href:OS_URL, target:'_blank', rel:'noopener', style:'display:inline-flex;gap:8px;align-items:center;justify-self:start;padding:10px 14px;border-radius:12px;background:var(--accent);color:var(--night);font:600 .95rem var(--body);text-decoration:none' },'Ouvrir Aypona OS ↗'),
+      field('Aypona OS 2 · aperçu', el('p',{},"Commande c0033 (décret n°2 du mandat V) : un nouveau système sans les défauts de l'ancien Aypona OS ni de la v0.2. Il vit à part, dans os2/ ; la v0.2 reste le système en ligne jusqu'à la bascule, que le Président décrétera."),
+        el('ul',{class:'log'},[ ['Hors ligne','installable (PWA), service worker versionné'], ['Stockage','IndexedDB durable, sauvegarde .aypona signée (export, import, fusion), reprise des données de la v0.2'], ['Système','recherche globale, centre de contrôle, deux apps côte à côte sur tablette, Ne pas déranger'], ['Apps','hôte isolé sans allow-same-origin, canal privé, permissions demandées à l’usage, kit des développeurs'], ['Accessibilité','clavier complet, lecteur d’écran, taille du texte, contraste, transparence et mouvement'], ['Tests','106 tests internes et 15 scénarios Playwright, dont 390 × 780'] ].map(([k,v])=>el('li',{},el('time',{},k),el('span',{},v)))),
+        el('a',{ href:OS2_URL, target:'_blank', rel:'noopener', style:'display:inline-flex;gap:8px;align-items:center;justify-self:start;padding:10px 14px;border-radius:12px;border:1px solid var(--line);color:var(--ink);font:600 .95rem var(--body);text-decoration:none' },'Ouvrir l’aperçu d’Aypona OS 2 ↗')),
       field('Chantiers du système', el('dl',{class:'dir'},row(noyau,'noyau'),row(inter,'interface'))),
       field('Dans la v0.2', el('ul',{class:'log'},[ ['Manifeste','id, nom, studio, version, domicile, adresse, icône, permissions ; manifestes invalides refusés'], ['Hôte d’apps','les apps publiées avec le système s’ouvrent dans une fenêtre isolée et parlent au système par messages ; les autres par un vrai lien'], ['Système','sélecteur d’apps, Fichiers, widgets au choix, notifications envoyées par les apps, App Store relié au catalogue de la ville'], ['Tests','24 tests au démarrage'], ['En attente','comptes, synchronisation et notifications push, qui demandent un serveur ; v0.3 sur GitHub avec Antarès'] ].map(([k,v])=>el('li',{},el('time',{},k),el('span',{},v))))) ],
-    actions:[ { label:'Ouvrir Aypona OS', primary:true, fn:openOS }, { label:"Ouvrir l'App Store", fn:()=>openPanel(panelAppStore) }, { label:'Archives de l’ancien catalogue', fn:()=>openPanel(panelOldCatalog) } ] };
+    actions:[ { label:'Ouvrir Aypona OS', primary:true, fn:openOS }, { label:'Aperçu d’Aypona OS 2', fn:()=>openHref(OS2_URL) }, { label:"Ouvrir l'App Store", fn:()=>openPanel(panelAppStore) }, { label:'Archives de l’ancien catalogue', fn:()=>openPanel(panelOldCatalog) } ] };
 }
 const RELEASES = [
+  ['5.3','Bureau 102 · Polaris (AYP-102-2610-0013) : commande c0033 exécutée, Aypona OS 2 en aperçu dans os2/ (os/ et la v0.2 inchangés). Registre de 28 défauts de l’ancien Aypona OS et de la v0.2 (c0038). Nouveau système en modules : stockage IndexedDB durable avec sauvegarde .aypona signée et reprise de la v0.2, installable et hors ligne, recherche globale, centre de contrôle, deux apps côte à côte sur tablette, hôte d’apps sans allow-same-origin avec canal privé, permissions demandées à l’usage, kit des développeurs (os2/sdk), accessibilité complète, français et anglais, 106 tests internes et 15 scénarios Playwright dont 390 × 780. Manifeste v1, App Store de la ville, gate, bureauPts et règle de réouverture inchangés.'],
   ['5.2','Présidence : décret n°3 du mandat V. Étape 3 de la transition validée après vérification : la branche de Polaris est fusionnée sur main et le build Vite du découpage par zones (41 fragments, transition/decoupage) reproduit la v5.1 en ligne octet pour octet. Fusion du découpage sur main décrétée (c0036), étape 4 autorisée (tests automatiques sur GitHub Actions), Antarès prolongé jusqu’au 16 déc. par Capella (c0037).'],
   ['5.1','Présidence : décret n°2 du mandat V. Ordre du fondateur : pas de première app ; Polaris (bureau 102) prépare Aypona OS 2, qui gomme les défauts de l’ancien Aypona OS et de la v0.2 et ajoute de nouvelles fonctionnalités, dans os2/ et sur la branche bureau-102/aypona-os-2. Feuille de route du mandat V réécrite. Commande c0033 à Polaris, annonce c0034 à toute la ville.'],
   ['5.0','Prise de fonction du Président V : dossier PRESIDENT lu au Bureau du courrier (c0028), mandat IV rangé dans la galerie des mandats (v4.9, 5 décrets, lettre), feuille de route du mandat V adoptée. Dépôt vérifié : branche de Polaris pas encore fusionnée, découpage pas commencé. Relance d’Antarès (c0031) et annonce à toute la ville (c0032).'],
@@ -2051,6 +2056,7 @@ start();
 }
 Promise.race([document.fonts?document.fonts.ready:Promise.resolve(), new Promise(r=>setTimeout(r,1500))]).then(ayponaMain);
 </script>
+
 
 
 
